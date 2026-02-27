@@ -1,0 +1,32 @@
+/* ========== LAYOUT BASE ========== */
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ========== TEMA ADMIN (Rol 1) - Verde claro ========== */
+.layout-admin {
+  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+}
+
+.layout-admin .main-content {
+  color: #1b5e20;
+}
+
+/* ========== TEMA USUARIO (Rol 2) - Blanco ========== */
+.layout-user {
+  background: #ffffff;
+}
+
+.layout-user .main-content {
+  color: #333333;
+}

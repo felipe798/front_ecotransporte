@@ -1,0 +1,332 @@
+.edit-document {
+  padding: 1rem 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.edit-header {
+  margin-bottom: 2rem;
+}
+
+.edit-header .back-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.edit-header .back-link:hover {
+  text-decoration: underline;
+}
+
+.edit-header h1 {
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  margin-bottom: 0.25rem;
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lock-badge {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
+
+/* Aviso de documento bloqueado */
+.locked-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(217, 119, 6, 0.06);
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.lock-icon-large {
+  font-size: 2rem;
+}
+
+.locked-text strong {
+  display: block;
+  color: #b45309;
+  margin-bottom: 0.25rem;
+}
+
+.locked-text p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Campo de ticket destacado */
+.ticket-highlight {
+  position: relative;
+}
+
+.ticket-highlight label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.editable-badge {
+  background: var(--accent-color);
+  color: white;
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.ticket-input {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.1);
+}
+
+/* Sección bloqueada */
+.locked-section {
+  opacity: 0.85;
+}
+
+.locked-section h2 {
+  color: var(--text-secondary) !important;
+}
+
+.readonly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.readonly-item {
+  background: var(--bg-tertiary);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px dashed var(--border-color);
+}
+
+.readonly-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.readonly-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.edit-header .document-code {
+  color: var(--accent-color);
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+
+.edit-info {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.info-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.info-row .label {
+  color: var(--text-secondary);
+}
+
+.info-row span:last-child {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.edit-form {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.form-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.form-section h2 {
+  color: var(--accent-color);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+}
+
+.form-group input::placeholder {
+  color: var(--text-secondary);
+}
+
+.form-group select {
+  cursor: pointer;
+}
+
+.form-group select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.error-message {
+  background: rgba(27, 116, 48, 0.15);
+  border: 1px solid rgba(27, 116, 48, 0.3);
+  color: #0F4019;
+  padding: 0.875rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-container {
+  text-align: center;
+  padding: 4rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.error-container p {
+  color: #0F4019;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.error-container .btn-primary {
+  display: inline-block;
+}

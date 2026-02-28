@@ -1,4 +1,9 @@
-const API_URL = 'http://localhost:3000';
+// API base url comes from Vite environment variable. In development the .env file
+// supplies VITE_API_URL (default http://localhost:3000), but in a deployed build
+// this value should be set to the real backend host. Using import.meta.env allows
+// the value to be replaced at build time.
+
+const API_URL = import.meta.env.VITE_API_URL || '';
 export { API_URL };
 
 // Helper para manejar respuestas

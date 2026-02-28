@@ -79,22 +79,9 @@ const FileDropdown = ({ document, onUpdate }) => {
     window.open(proxyUrl, '_blank');
   };
 
-  const downloadAll = () => {
-    files.forEach((_, idx) => {
-      const proxyUrl = `${API_URL}/documents/${document.id}/files/${idx}`;
-      window.open(proxyUrl, '_blank');
-    });
-  };
 
   return (
     <div className="file-dropdown">
-      {files.length > 0 && (
-        <div className="files-header">
-          <button className="btn-download-all" onClick={downloadAll} title="Descargar todo">
-            ↓ Descargar todos
-          </button>
-        </div>
-      )}
       <ul className="file-list">
         {files.map((url, idx) => (
           <li

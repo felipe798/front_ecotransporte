@@ -5,6 +5,7 @@ import { documentService } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import logoEmpresa from '../assets/Images/logo-empresa.png';
 import './Documents.css';
+import FileDropdown from '../components/FileDropdown';
 
 const Documents = () => {
   const { user } = useAuth();
@@ -13,6 +14,7 @@ const Documents = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openFilesFor, setOpenFilesFor] = useState(null);
   const PAGE_SIZE = 20;
   const notification = useNotification();
 
@@ -120,6 +122,7 @@ const Documents = () => {
           <table className="documents-table">
             <thead>
               <tr>
+                <th>Archivos</th>
                 <th></th>
                 <th>Fecha</th>
                 <th>GRT</th>
@@ -133,8 +136,18 @@ const Documents = () => {
             </thead>
             <tbody>
               {paginatedDocuments.map((doc) => (
-                <tr key={doc.id} className={doc.anulado ? 'row-anulado' : ''}>
-                  <td className="lock-cell">
+                <>
+                  <tr key={doc.id} className={doc.anulado ? 'row-anulado' : ''}>
+                    <td className="files-cell">
+                      <button
+                        className="btn-files"
+                        onClick={() => setOpenFilesFor(openFilesFor === doc.id ? null : doc.id)}
+                        title="Administrar archivos"
+                      >
+                        📎
+                      </button>
+                    </td>
+                    <td className="lock-cell">
                     {doc.anulado ? (
                       <span className="anulado-icon" title="Documento anulado">🚫</span>
                     ) : (
@@ -165,8 +178,21 @@ const Documents = () => {
                         {deleteId === doc.id ? '...' : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>}
                       </button>
                     )}
-                  </td>
-                </tr>
+                    </td>
+                  </tr>
+                  {openFilesFor === doc.id && (
+                    <tr className="files-row">
+                      <td colSpan="10">
+                        <FileDropdown
+                          document={doc}
+                          onUpdate={(updated) => {
+                            setDocuments(docs => docs.map(x => x.id === updated.id ? updated : x));
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>

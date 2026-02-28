@@ -1,4 +1,5 @@
 const API_URL = 'http://localhost:3000';
+export { API_URL };
 
 // Helper para manejar respuestas
 const handleResponse = async (response) => {
@@ -139,6 +140,36 @@ export const documentService = {
     const response = await fetch(`${API_URL}/documents/reassociate`, {
       method: 'PATCH',
       headers: authHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  recalculate: async (id) => {
+    const response = await fetch(`${API_URL}/documents/${id}/recalculate`, {
+      method: 'PATCH',
+      headers: authHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  uploadFile: async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await fetch(`${API_URL}/documents/${id}/files`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: formData
+    });
+    return handleResponse(response);
+  },
+
+  deleteFile: async (id, url) => {
+    const response = await fetch(`${API_URL}/documents/${id}/files`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+      body: JSON.stringify({ url })
     });
     return handleResponse(response);
   }

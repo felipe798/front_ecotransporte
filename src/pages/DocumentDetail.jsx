@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { documentService } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import './DocumentDetail.css';
+import FileDropdown from '../components/FileDropdown';
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -211,11 +212,16 @@ const DocumentDetail = () => {
               <label>TN Recibida</label>
               <span className="value-large">{document.tn_recibida || '-'}</span>
             </div>
-            <div className="info-item">
-              <label>TN Recibida (Data Cruda)</label>
-              <span className="value-large">{document.tn_recibida_data_cruda || '-'}</span>
-            </div>
           </div>
+        </div>
+
+        {/* Archivos adjuntos */}
+        <div className="detail-section">
+          <h2>Archivos adjuntos</h2>
+          <FileDropdown
+            document={document}
+            onUpdate={(updated) => setDocument(updated)}
+          />
         </div>
 
         {/* Facturación */}
@@ -226,34 +232,6 @@ const DocumentDetail = () => {
               <label>Código de Factura</label>
               <span className={getFactura(document.id) ? '' : 'no-data'}>{getFactura(document.id) || 'Sin factura'}</span>
             </div>
-            <div className="info-item">
-              <label>PDF de Factura</label>
-              {facturaPdf ? (
-                <div className="factura-uploaded">
-                  <span className="factura-file-name">📄 {facturaPdf.name}</span>
-                  <button onClick={() => setFacturaPdf(null)} className="factura-remove">✕</button>
-                </div>
-              ) : (
-                <span className="no-data">No adjuntado</span>
-              )}
-            </div>
-            {getFactura(document.id) && (
-              <div className="info-item full">
-                <input
-                  type="file"
-                  ref={facturaInputRef}
-                  onChange={handleFacturaUpload}
-                  accept=".pdf"
-                  hidden
-                />
-                <button
-                  onClick={() => facturaInputRef.current?.click()}
-                  className="btn-upload-factura"
-                >
-                  📎 {facturaPdf ? 'Cambiar PDF de Factura' : 'Subir PDF de Factura'}
-                </button>
-              </div>
-            )}
           </div>
         </div>
 

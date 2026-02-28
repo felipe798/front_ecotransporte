@@ -197,6 +197,10 @@
   color: var(--accent-color) !important;
 }
 
+.file-dropdown {
+  margin: 0.5rem 0;
+}
+
 .value-large.positive {
   color: #1B7430 !important;
 }

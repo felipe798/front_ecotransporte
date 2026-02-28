@@ -152,6 +152,7 @@
   padding: 12px;
   text-align: left;
   border-bottom: 1px solid #eee;
+  white-space: nowrap;
 }
 
 .tabla-dias th {

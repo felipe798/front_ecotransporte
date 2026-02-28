@@ -175,6 +175,25 @@
   cursor: not-allowed;
 }
 
+/* Columna de archivos */
+.files-cell {
+  width: 40px;
+  text-align: center;
+}
+
+.btn-files {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.files-row td {
+  padding: 0;
+  background: #fafafa;
+  overflow-x: auto;
+}
+
 /* Columna de candado */
 .lock-cell {
   width: 30px;

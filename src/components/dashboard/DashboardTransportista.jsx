@@ -196,8 +196,8 @@ const DashboardTransportista = () => {
                   <tr key={index}>
                     <td>{item.transportista || 'Sin asignar'}</td>
                     <td>{item.cantidad_traslados}</td>
-                    <td>{parseFloat(item.tn_recibido).toFixed(2)}</td>
-                    <td>S/ {parseFloat(item.costo_total).toFixed(2)}</td>
+                    <td>{(parseFloat(item.tn_recibido) || 0).toFixed(2)}</td>
+                    <td>S/ {(parseFloat(item.costo_total) || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -211,9 +211,9 @@ const DashboardTransportista = () => {
         const chartHeight = Math.max(300, tnPorUnidad.length * 50);
         const pieRadius = Math.min(200, Math.floor((chartHeight - 20) / 2));
         return (
-      <div className="charts-row">
+        <>
         {/* TN por Unidad (Placa) */}
-        <div className="chart-section half">
+        <div className="section-card">
           <h2>TN por Unidad</h2>
           <div className="chart-container">
             {tnPorUnidad.length === 0 ? (
@@ -249,7 +249,7 @@ const DashboardTransportista = () => {
         </div>
 
         {/* TN por Cliente */}
-        <div className="chart-section half">
+        <div className="section-card">
           <h2>TN por Cliente</h2>
           <div className="chart-container pie-chart">
             {tnPorCliente.length === 0 ? (
@@ -295,7 +295,7 @@ const DashboardTransportista = () => {
             )}
           </div>
         </div>
-      </div>
+        </>
         );
       })()}
 

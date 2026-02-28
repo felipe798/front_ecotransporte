@@ -17,20 +17,17 @@ const FileDropdown = ({ document, onUpdate }) => {
   const handleFileChange = async (e) => {
     const selected = Array.from(e.target.files);
     if (selected.length === 0) return;
-    console.log('FileDropdown: user selected files', selected.map(f => f.name));
     if (uploading) return;
     setUploading(true);
 
     for (const file of selected) {
       try {
         const resp = await documentService.uploadFile(document.id, file);
-        console.log('FileDropdown: uploadFile response', resp);
         if (resp.document) {
           refresh(resp.document);
           notification.success(`Archivo "${file.name}" agregado correctamente`);
         }
       } catch (err) {
-        console.error('FileDropdown uploadFile error', err);
         notification.error(err.message || `Error subiendo archivo "${file.name}"`);
       }
     }
@@ -41,21 +38,17 @@ const FileDropdown = ({ document, onUpdate }) => {
 
   const handleRemove = async (url) => {
     if (!window.confirm('¿Eliminar este archivo?')) return;
-    console.log('FileDropdown: deleting url', url);
     try {
       const resp = await documentService.deleteFile(document.id, url);
-      console.log('FileDropdown: deleteFile response', resp);
       if (resp.document) {
         refresh(resp.document);
         notification.success('Archivo eliminado');
       }
     } catch (err) {
-      console.error('FileDropdown deleteFile error', err);
       notification.error(err.message || 'Error eliminando el archivo');
     }
   };
 
-  // drag-and-drop handlers
   const onDragStart = (e, idx) => {
     e.dataTransfer.setData('text/plain', idx);
   };
@@ -70,26 +63,19 @@ const FileDropdown = ({ document, onUpdate }) => {
     const newOrder = [...files];
     const [moved] = newOrder.splice(from, 1);
     newOrder.splice(idx, 0, moved);
-    console.log(`FileDropdown: dnd ${from} -> ${idx}`);
-
     try {
       const resp = await documentService.update(document.id, { documentos: newOrder });
-      console.log('FileDropdown: update order response', resp);
       if (resp.data) {
         refresh(resp.data);
         notification.success('Orden actualizado');
       }
     } catch (err) {
-      console.error('FileDropdown move error', err);
       notification.error(err.message || 'Error reordenando');
     }
   };
 
-
-  // download by fetching the resource as a blob first, which avoids cross-origin restrictions
   const downloadFile = (url, idx) => {
     const proxyUrl = `${API_URL}/documents/${document.id}/files/${idx}`;
-    console.log('FileDropdown: open proxy download in new tab', proxyUrl);
     window.open(proxyUrl, '_blank');
   };
 
@@ -142,7 +128,7 @@ const FileDropdown = ({ document, onUpdate }) => {
         ))}
         <li className="file-item add-item">
           <label className="btn-upload">
-            {uploading ? 'Subiendo...' : 'Agregar archivo(s)'}
+            {uploading ? 'Subiendo...' : 'Agregar PDF, fotos y archivos'}
             <input
               type="file"
               accept=".pdf,image/*"

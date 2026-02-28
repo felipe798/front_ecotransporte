@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { dashboardService } from '../../services/api';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell
+} from 'recharts';
 import './DashboardComponents.css';
 
 const FILTER_FIELDS = ['mes', 'semana', 'cliente', 'transportista', 'unidad', 'transportado'];
@@ -229,13 +232,54 @@ const DashboardResumen = () => {
         <h2>Control de Peso</h2>
         <div className="control-peso-grid single">
           <div className="peso-item">
-            <label>TN Recibido</label>
+            <label>Peso Guía (TN Enviado)</label>
+            <span className="peso-value recibido">
+              {data.controlPeso.tn_enviado_total > 0 
+                ? data.controlPeso.tn_enviado_total.toFixed(2) 
+                : 'Pendiente'}
+            </span>
+          </div>
+          <div className="peso-item">
+            <label>Peso Ticket (TN Recibido)</label>
             <span className="peso-value recibido">
               {data.controlPeso.tn_recibida_total > 0 
                 ? data.controlPeso.tn_recibida_total.toFixed(2) 
                 : 'Pendiente'}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Gráfico Peso Guía vs Peso Ticket */}
+      <div className="section-card">
+        <h2>Peso Guía vs Peso Ticket</h2>
+        <div className="chart-container">
+          {(() => {
+            const pesoGuia = data.controlPeso.tn_enviado_total || 0;
+            const pesoTicket = data.controlPeso.tn_recibida_total || 0;
+            if (pesoGuia === 0 && pesoTicket === 0) return <p className="empty-message">No hay datos para mostrar</p>;
+            const chartData = [
+              { nombre: 'Peso Guía', valor: pesoGuia },
+              { nombre: 'Peso Ticket', valor: pesoTicket },
+            ];
+            const COLORS = ['#1B7430', '#E8913A'];
+            return (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 80, left: 10, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" tick={{ fontSize: 12 }} hide />
+                  <YAxis dataKey="nombre" type="category" width={100} tick={{ fontSize: 13, fontWeight: 600 }} />
+                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} />
+                  <Bar dataKey="valor" name="TN">
+                    {chartData.map((entry, index) => (
+                      <Cell key={index} fill={COLORS[index]} />
+                    ))}
+                    <LabelList dataKey="valor" position="right" formatter={(v) => `${parseFloat(v).toFixed(2)} TN`} style={{ fontSize: 12, fontWeight: 600 }} />
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            );
+          })()}
         </div>
       </div>
     </div>

@@ -183,6 +183,7 @@ const EditDocument = () => {
                 className="ticket-input"
               />
             </div>
+
             <div className="form-group ticket-highlight">
               <label htmlFor="tn_recibida_data_cruda">
                 TN Recibida (Data Cruda)
@@ -199,6 +200,7 @@ const EditDocument = () => {
                 className="ticket-input"
               />
             </div>
+
           </div>
         </div>
 

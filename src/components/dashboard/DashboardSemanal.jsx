@@ -42,7 +42,6 @@ const Modal = ({ title, items, onClose }) => (
                 <th>Fecha</th>
                 <th>Cliente</th>
                 <th>Unidad</th>
-                <th>TN Rec. Cruda</th>
                 <th>Ticket</th>
                 <th>TN Recibida</th>
                 <th>Acciones</th>
@@ -55,7 +54,6 @@ const Modal = ({ title, items, onClose }) => (
                   <td>{doc.fecha || '-'}</td>
                   <td>{doc.cliente || '-'}</td>
                   <td>{doc.unidad || '-'}</td>
-                  <td>{doc.tn_recibida_data_cruda ? Number(doc.tn_recibida_data_cruda).toFixed(2) : '-'}</td>
                   <td className="dm-code">{doc.ticket || '-'}</td>
                   <td>{doc.tn_recibida ? Number(doc.tn_recibida).toFixed(2) : '-'}</td>
                   <td>
@@ -78,7 +76,6 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
   const [tnRecibidoPorSemana, setTnRecibidoPorSemana] = useState([]);
   const [tnRecibidoPorConcentrado, setTnRecibidoPorConcentrado] = useState([]);
   const [guiasPorVerificar, setGuiasPorVerificar] = useState(0);
-  const [ticketsNoRecepcionados, setTicketsNoRecepcionados] = useState(0);
   const [modal, setModal] = useState(null); // { title, items }
   const [loadingModal, setLoadingModal] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -181,20 +178,6 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
     }
   };
 
-  const openTicketsModal = async () => {
-    setLoadingModal(true);
-    setModal({ title: 'Tickets no recepcionados', items: [] });
-    try {
-      const activeFilters = getActiveFilters();
-      const items = await dashboardService.getTicketsNoRecepcionadosList(activeFilters);
-      setModal({ title: 'Tickets no recepcionados', items: items || [] });
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoadingModal(false);
-    }
-  };
-
   // Combinar filtros locales (solo los que tienen valor)
   const getActiveFilters = () => {
     const filters = {};
@@ -208,12 +191,11 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
     setLoading(true);
     try {
       const activeFilters = getActiveFilters();
-      const [enviado, recibido, concentradoRecibido, guiasRes, ticketsRes] = await Promise.all([
+      const [enviado, recibido, concentradoRecibido, guiasRes] = await Promise.all([
         dashboardService.getTnEnviadoPorSemana(activeFilters),
         dashboardService.getTnRecibidoPorSemana(activeFilters),
         dashboardService.getTnRecibidoPorConcentrado(activeFilters),
         dashboardService.getGuiasPorVerificarCount(activeFilters),
-        dashboardService.getTicketsNoRecepcionadosCount(activeFilters),
       ]);
       // Parsear valores a números
       setTnEnviadoPorSemana((enviado || []).map(item => ({
@@ -229,7 +211,6 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
         total: parseFloat(item.total) || 0
       })));
       setGuiasPorVerificar(guiasRes?.count || 0);
-      setTicketsNoRecepcionados(ticketsRes?.count || 0);
     } catch (error) {
       console.error('Error cargando datos semanales:', error);
     } finally {
@@ -264,14 +245,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
           </div>
           <span className="card-arrow">→</span>
         </div>
-        <div className="verificacion-card danger clickable" onClick={openTicketsModal} title="Ver detalle">
-          <div className="verificacion-icon">🎫</div>
-          <div className="verificacion-content">
-            <span className="verificacion-value">{ticketsNoRecepcionados}</span>
-            <span className="verificacion-label">Tickets no recepcionados</span>
-          </div>
-          <span className="card-arrow">→</span>
-        </div>
+
       </div>
 
       {/* Filtros exclusivos de esta sección */}

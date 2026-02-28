@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { documentService, empresaTransporteService, unidadService } from '../services/api';
+import { documentService, empresaTransporteService, unidadService, clientTariffService } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import logoEmpresa from '../assets/Images/logo-empresa.png';
 import './Upload.css';
@@ -17,10 +17,14 @@ const Upload = () => {
   const notification = useNotification();
 
   // Wizard state
-  const [wizardStep, setWizardStep] = useState(null); // null | 'empresas' | 'placas' | 'done'
+  const [wizardStep, setWizardStep] = useState(null); // null | 'placas' | 'tarifas' | 'done'
   const [newPlacas, setNewPlacas] = useState([]); // [{placa, empresaId}]
   const [empresas, setEmpresas] = useState([]);
   const [savingWizard, setSavingWizard] = useState(false);
+
+  // Tariff wizard state
+  const [missingTariffs, setMissingTariffs] = useState([]); // [{docId, cliente, partida, llegada, transportado, precioVentaSinIgv, precioCostoSinIgv, moneda, divisa}]
+  const [savingTariff, setSavingTariff] = useState(false);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -89,6 +93,7 @@ const Upload = () => {
     setResults([]);
     const uploadResults = [];
     const placasNuevas = new Set();
+    const tarifasFaltantes = [];
 
     for (let i = 0; i < files.length; i++) {
       setCurrentIndex(i);
@@ -99,6 +104,19 @@ const Upload = () => {
         uploadResults.push({ file: files[i].name, success: true, document: response.document });
         if (response.placaNoRegistrada) {
           placasNuevas.add(response.placaNoRegistrada);
+        }
+        if (response.tarifaNoEncontrada && response.document?.id) {
+          tarifasFaltantes.push({
+            docId: response.document.id,
+            cliente: response.tarifaNoEncontrada.cliente || '',
+            partida: response.tarifaNoEncontrada.partida || '',
+            llegada: response.tarifaNoEncontrada.llegada || '',
+            transportado: response.tarifaNoEncontrada.transportado || '',
+            precioVentaSinIgv: '',
+            precioCostoSinIgv: '',
+            moneda: 'USD',
+            divisa: 'USD',
+          });
         }
       } catch (err) {
         console.error('Upload error for', files[i].name, err);
@@ -120,10 +138,9 @@ const Upload = () => {
       notification.error(`${fallidos} documento(s) fallaron`);
     }
 
-    // Si hay placas nuevas, iniciar wizard
+    // Si hay placas nuevas, iniciar wizard de placas
     if (placasNuevas.size > 0) {
       setNewPlacas([...placasNuevas].map(p => ({ placa: p, empresaId: '' })));
-      // Cargar empresas existentes
       try {
         const resp = await empresaTransporteService.getActivas();
         setEmpresas(resp || []);
@@ -131,6 +148,15 @@ const Upload = () => {
         setEmpresas([]);
       }
       setWizardStep('placas');
+    } else if (tarifasFaltantes.length > 0) {
+      // Si no hay placas nuevas pero sí tarifas faltantes, ir directo a tarifas
+      setMissingTariffs(tarifasFaltantes);
+      setWizardStep('tarifas');
+    }
+
+    // Guardar tarifas faltantes para después del wizard de placas
+    if (placasNuevas.size > 0 && tarifasFaltantes.length > 0) {
+      setMissingTariffs(tarifasFaltantes);
     }
   };
 
@@ -190,13 +216,77 @@ const Upload = () => {
 
     notification.success(`${saved} placa(s) registrada(s) y documentos re-asociados`);
     setSavingWizard(false);
-    setWizardStep(null);
     setNewPlacas([]);
+    // Si hay tarifas faltantes, pasar al wizard de tarifas
+    if (missingTariffs.length > 0) {
+      setWizardStep('tarifas');
+    } else {
+      setWizardStep(null);
+    }
   };
 
   const handleSkipWizard = () => {
-    setWizardStep(null);
     setNewPlacas([]);
+    // Si estamos en placas y hay tarifas pendientes, pasar a tarifas
+    if (wizardStep === 'placas' && missingTariffs.length > 0) {
+      setWizardStep('tarifas');
+    } else {
+      setWizardStep(null);
+      setMissingTariffs([]);
+    }
+  };
+
+  // === TARIFF WIZARD HANDLERS ===
+  const handleTariffFieldChange = (idx, field, value) => {
+    setMissingTariffs(prev => prev.map((t, i) => i === idx ? { ...t, [field]: value } : t));
+  };
+
+  const handleSaveTariffs = async () => {
+    const incomplete = missingTariffs.filter(t => !t.precioVentaSinIgv || !t.precioCostoSinIgv);
+    if (incomplete.length > 0) {
+      notification.error(`Completa los precios de todas las tarifas (${incomplete.length} pendiente(s))`);
+      return;
+    }
+
+    setSavingTariff(true);
+    let saved = 0;
+    for (const t of missingTariffs) {
+      try {
+        await clientTariffService.create({
+          cliente: t.cliente,
+          partida: t.partida,
+          llegada: t.llegada,
+          material: t.transportado,
+          precioVentaSinIgv: Number(t.precioVentaSinIgv),
+          precioCostoSinIgv: Number(t.precioCostoSinIgv),
+          moneda: t.moneda,
+          divisa: t.divisa,
+        });
+        saved++;
+
+        // Recalcular campos financieros del documento
+        try {
+          await documentService.recalculate(t.docId);
+        } catch (e) {
+          console.error(`Error recalculando doc ${t.docId}:`, e);
+        }
+      } catch (e) {
+        console.error(`Error creando tarifa para ${t.cliente}:`, e);
+        notification.error(`Error al crear tarifa: ${t.cliente}`);
+      }
+    }
+
+    if (saved > 0) {
+      notification.success(`${saved} tarifa(s) creada(s) y documentos recalculados`);
+    }
+    setSavingTariff(false);
+    setWizardStep(null);
+    setMissingTariffs([]);
+  };
+
+  const handleSkipTariffWizard = () => {
+    setWizardStep(null);
+    setMissingTariffs([]);
   };
 
   const handleReset = () => {
@@ -206,6 +296,7 @@ const Upload = () => {
     setCurrentIndex(0);
     setWizardStep(null);
     setNewPlacas([]);
+    setMissingTariffs([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -433,6 +524,102 @@ const Upload = () => {
                     className="btn-primary"
                   >
                     {savingWizard ? 'Guardando...' : `Registrar ${newPlacas.length} Placa(s)`}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Wizard: Tarifas no encontradas */}
+          {wizardStep === 'tarifas' && (
+            <div className="wizard-overlay">
+              <div className="wizard-modal wizard-modal-wide">
+                <div className="wizard-header">
+                  <h2>💰 Tarifas No Encontradas</h2>
+                  <p>Se detectaron <strong>{missingTariffs.length}</strong> documento(s) sin tarifa. Completa los precios para crear las tarifas automáticamente.</p>
+                </div>
+
+                <div className="wizard-tariff-list">
+                  {missingTariffs.map((t, idx) => (
+                    <div key={idx} className="wizard-tariff-card">
+                      <div className="wizard-tariff-info">
+                        <div className="wizard-tariff-field">
+                          <span className="wizard-tariff-label">Cliente:</span>
+                          <span className="wizard-tariff-value">{t.cliente || '—'}</span>
+                        </div>
+                        <div className="wizard-tariff-field">
+                          <span className="wizard-tariff-label">Partida:</span>
+                          <span className="wizard-tariff-value">{t.partida || '—'}</span>
+                        </div>
+                        <div className="wizard-tariff-field">
+                          <span className="wizard-tariff-label">Llegada:</span>
+                          <span className="wizard-tariff-value">{t.llegada || '—'}</span>
+                        </div>
+                        <div className="wizard-tariff-field">
+                          <span className="wizard-tariff-label">Material:</span>
+                          <span className="wizard-tariff-value">{t.transportado || '—'}</span>
+                        </div>
+                      </div>
+                      <div className="wizard-tariff-prices">
+                        <div className="wizard-tariff-price-row">
+                          <label>Precio Venta (sin IGV):</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={t.precioVentaSinIgv}
+                            onChange={e => handleTariffFieldChange(idx, 'precioVentaSinIgv', e.target.value)}
+                            className="wizard-input wizard-input-price"
+                          />
+                        </div>
+                        <div className="wizard-tariff-price-row">
+                          <label>Precio Costo (sin IGV):</label>
+                          <input
+                            type="number"
+                            step="0.01"
+                            placeholder="0.00"
+                            value={t.precioCostoSinIgv}
+                            onChange={e => handleTariffFieldChange(idx, 'precioCostoSinIgv', e.target.value)}
+                            className="wizard-input wizard-input-price"
+                          />
+                        </div>
+                        <div className="wizard-tariff-price-row">
+                          <label>Moneda Venta:</label>
+                          <select
+                            value={t.moneda}
+                            onChange={e => handleTariffFieldChange(idx, 'moneda', e.target.value)}
+                            className="wizard-select wizard-select-small"
+                          >
+                            <option value="USD">USD</option>
+                            <option value="PEN">PEN</option>
+                          </select>
+                        </div>
+                        <div className="wizard-tariff-price-row">
+                          <label>Moneda Costo:</label>
+                          <select
+                            value={t.divisa}
+                            onChange={e => handleTariffFieldChange(idx, 'divisa', e.target.value)}
+                            className="wizard-select wizard-select-small"
+                          >
+                            <option value="USD">USD</option>
+                            <option value="PEN">PEN</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="wizard-actions">
+                  <button onClick={handleSkipTariffWizard} className="btn-secondary">
+                    Omitir (crear después)
+                  </button>
+                  <button
+                    onClick={handleSaveTariffs}
+                    disabled={savingTariff}
+                    className="btn-primary"
+                  >
+                    {savingTariff ? 'Guardando...' : `Crear ${missingTariffs.length} Tarifa(s)`}
                   </button>
                 </div>
               </div>

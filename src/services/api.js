@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 // Helper para manejar respuestas
 const handleResponse = async (response) => {
@@ -139,6 +139,35 @@ export const documentService = {
     const response = await fetch(`${API_URL}/documents/reassociate`, {
       method: 'PATCH',
       headers: authHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Upload a single file (image or PDF) and attach it to an existing document
+   */
+  uploadFile: async (id, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_URL}/documents/${id}/files`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${getToken()}`
+      },
+      body: formData
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Remove an existing file URL from a document
+   */
+  deleteFile: async (id, url) => {
+    const response = await fetch(`${API_URL}/documents/${id}/files`, {
+      method: 'DELETE',
+      headers: authHeaders(),
+      body: JSON.stringify({ url })
     });
     return handleResponse(response);
   }

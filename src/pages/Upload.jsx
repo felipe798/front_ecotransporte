@@ -92,13 +92,16 @@ const Upload = () => {
 
     for (let i = 0; i < files.length; i++) {
       setCurrentIndex(i);
+      console.log('Upload: processing file', files[i].name, 'index', i);
       try {
         const response = await documentService.upload(files[i]);
+        console.log('Upload: success response', response);
         uploadResults.push({ file: files[i].name, success: true, document: response.document });
         if (response.placaNoRegistrada) {
           placasNuevas.add(response.placaNoRegistrada);
         }
       } catch (err) {
+        console.error('Upload error for', files[i].name, err);
         const reason = err.rejected
           ? err.reason || 'Documento rechazado'
           : err.message || 'Error al procesar';

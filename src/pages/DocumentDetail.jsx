@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { documentService } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import './DocumentDetail.css';
+import FileDropdown from '../components/FileDropdown';
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -216,6 +217,15 @@ const DocumentDetail = () => {
               <span className="value-large">{document.tn_recibida_data_cruda || '-'}</span>
             </div>
           </div>
+        </div>
+
+        {/* Archivos adjuntos */}
+        <div className="detail-section">
+          <h2>Archivos adjuntos</h2>
+          <FileDropdown
+            document={document}
+            onUpdate={(updated) => setDocument(updated)}
+          />
         </div>
 
         {/* Facturación */}

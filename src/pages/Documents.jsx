@@ -15,6 +15,7 @@ const Documents = () => {
   const [deleteId, setDeleteId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [openFilesFor, setOpenFilesFor] = useState(null);
+  const [filterIncomplete, setFilterIncomplete] = useState(false);
   const PAGE_SIZE = 20;
   const notification = useNotification();
 
@@ -49,13 +50,21 @@ const Documents = () => {
     }
   };
 
-  const filteredDocuments = documents.filter(doc => 
-    doc.grt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.transportista?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.grr?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.factura?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const isIncomplete = (doc) =>
+    (doc.precio_unitario === null || doc.precio_unitario === undefined) && !doc.anulado;
+
+  const incompleteCount = documents.filter(isIncomplete).length;
+
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch =
+      doc.grt?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.transportista?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.cliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.grr?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.factura?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesIncomplete = filterIncomplete ? isIncomplete(doc) : true;
+    return matchesSearch && matchesIncomplete;
+  });
 
   const totalPages = Math.ceil(filteredDocuments.length / PAGE_SIZE);
   const paginatedDocuments = filteredDocuments.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -102,6 +111,16 @@ const Documents = () => {
             onChange={(e) => handleSearch(e.target.value)}
             className="search-input"
           />
+          <button
+            className={`btn-filter-incomplete${filterIncomplete ? ' active' : ''}`}
+            onClick={() => { setFilterIncomplete(f => !f); setCurrentPage(1); }}
+            title="Mostrar solo documentos con datos incompletos (sin tarifa)"
+          >
+            ⚠️ Incompletos
+            {incompleteCount > 0 && (
+              <span className="incomplete-badge">{incompleteCount}</span>
+            )}
+          </button>
           {user?.role === 1 && (
             <Link to="/upload" className="btn-upload">
               + Subir PDF
@@ -137,7 +156,7 @@ const Documents = () => {
             <tbody>
               {paginatedDocuments.map((doc) => (
                 <>
-                  <tr key={doc.id} className={doc.anulado ? 'row-anulado' : ''}>
+                  <tr key={doc.id} className={`${doc.anulado ? 'row-anulado' : ''} ${isIncomplete(doc) ? 'row-incomplete' : ''}`}>
                     <td className="files-cell">
                       <button
                         className="btn-files"

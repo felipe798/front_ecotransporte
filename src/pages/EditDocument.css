@@ -330,3 +330,94 @@
 .error-container .btn-primary {
   display: inline-block;
 }
+
+/* Barra de auditoría: quién editó por última vez */
+.edit-audit-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(99, 102, 241, 0.07);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.edit-audit-bar strong {
+  color: var(--text-primary);
+}
+
+.audit-date {
+  color: var(--text-secondary);
+}
+
+/* Aviso de documento incompleto para admin */
+.admin-warning-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(245, 158, 11, 0.07);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.admin-warning-notice span:first-child {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.admin-warning-notice strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #d97706;
+}
+
+.admin-warning-notice p {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* Sección solo admin */
+.admin-section {
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  background: rgba(99, 102, 241, 0.02);
+}
+
+/* Badge "Solo Admin" */
+.admin-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Select en formulario */
+.edit-form select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: border-color 0.2s;
+}
+
+.edit-form select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+}

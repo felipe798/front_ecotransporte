@@ -221,6 +221,57 @@
   opacity: 0.6;
 }
 
+/* Fila de documento incompleto (sin tarifa/datos) */
+.row-incomplete {
+  background: rgba(251, 191, 36, 0.08) !important;
+  border-left: 3px solid #f59e0b;
+}
+
+.row-incomplete:hover {
+  background: rgba(251, 191, 36, 0.15) !important;
+}
+
+/* Botón filtro incompletos */
+.btn-filter-incomplete {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  background: transparent;
+  color: #f59e0b;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-filter-incomplete:hover {
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.btn-filter-incomplete.active {
+  background: #f59e0b;
+  color: #000;
+  font-weight: 600;
+}
+
+.incomplete-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 /* Columna de usuario que subió */
 .uploader {
   font-size: 0.85rem;

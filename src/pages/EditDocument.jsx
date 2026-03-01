@@ -171,7 +171,7 @@ const EditDocument = () => {
   return (
     <div className="edit-document">
       <div className="edit-header">
-        <Link to={`/documents/${id}`} className="back-link">â† Volver</Link>
+        <Link to={`/documents/${id}`} className="back-link">← Volver</Link>
         <div className="header-title-row">
           <h1>
             <span className="lock-badge">{isAdmin ? 'âœï¸' : 'ðŸ”’'}</span>
@@ -181,22 +181,22 @@ const EditDocument = () => {
         <p className="document-code">{document?.grt}</p>
       </div>
 
-      {/* AuditorÃ­a: quiÃ©n editÃ³ por Ãºltima vez */}
+      {/* Auditoría: quién editó por última vez */}
       {document?.updater && (
         <div className="edit-audit-bar">
-          <span>âœï¸ Ãšltima ediciÃ³n por <strong>{document.updater?.userInformation?.userName || document.updater?.email}</strong></span>
+          <span>✏️ Última edición por <strong>{document.updater?.userInformation?.userName || document.updater?.email}</strong></span>
           {document.updated_at && (
-            <span className="audit-date"> Â· {new Date(document.updated_at).toLocaleString('es-PE')}</span>
+            <span className="audit-date"> · {new Date(document.updated_at).toLocaleString('es-PE')}</span>
           )}
         </div>
       )}
 
       {!isAdmin && (
         <div className="locked-notice">
-          <span className="lock-icon-large">ðŸ”’</span>
+          <span className="lock-icon-large">🔒</span>
           <div className="locked-text">
             <strong>Documento bloqueado</strong>
-            <p>Solo puedes editar los datos del ticket: nÃºmero de ticket y tonelaje recibido.</p>
+            <p>Solo puedes editar los datos del ticket: número de ticket y tonelaje recibido.</p>
           </div>
         </div>
       )}
@@ -220,7 +220,7 @@ const EditDocument = () => {
           <div className="form-grid">
             <div className="form-group ticket-highlight">
               <label htmlFor="ticket">Ticket <span className="editable-badge">Editable</span></label>
-              <input type="text" id="ticket" name="ticket" value={formData.ticket} onChange={handleChange} placeholder="NÃºmero de ticket" className="ticket-input" />
+              <input type="text" id="ticket" name="ticket" value={formData.ticket} onChange={handleChange} placeholder="Número de ticket" className="ticket-input" />
             </div>
             <div className="form-group ticket-highlight">
               <label htmlFor="factura">ID de Factura <span className="editable-badge">Editable</span></label>
@@ -241,7 +241,7 @@ const EditDocument = () => {
         {isAdmin && (
           <>
             <div className="form-section admin-section">
-              <h2>ðŸ”§ Datos del Documento <span className="admin-badge">Solo Admin</span></h2>
+              <h2>🔧 Datos del Documento <span className="admin-badge">Solo Admin</span></h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="fecha">Fecha</label>
@@ -280,14 +280,14 @@ const EditDocument = () => {
                   <input type="number" step="0.01" id="tn_enviado" name="tn_enviado" value={formData.tn_enviado} onChange={handleChange} />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="deposito">DepÃ³sito</label>
+                  <label htmlFor="deposito">Depósito</label>
                   <input type="text" id="deposito" name="deposito" value={formData.deposito} onChange={handleChange} placeholder="IMPALA / LOGIMINSA" />
                 </div>
               </div>
             </div>
 
             <div className="form-section admin-section">
-              <h2>ðŸ“ Ruta y Carga <span className="admin-badge">Solo Admin</span></h2>
+              <h2>📍 Ruta y Carga <span className="admin-badge">Solo Admin</span></h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="cliente">Cliente</label>
@@ -309,7 +309,7 @@ const EditDocument = () => {
             </div>
 
             <div className="form-section admin-section">
-              <h2>ðŸ’° Datos Financieros <span className="admin-badge">Solo Admin</span></h2>
+              <h2>💰 Datos Financieros <span className="admin-badge">Solo Admin</span></h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="precio_unitario">Precio Unitario</label>
@@ -351,7 +351,7 @@ const EditDocument = () => {
         {/* No-admin: solo lectura del resto */}
         {!isAdmin && (
           <div className="form-section locked-section">
-            <h2>ðŸ”’ Datos del Documento (Solo Lectura)</h2>
+            <h2>🔒 Datos del Documento (Solo Lectura)</h2>
             <div className="readonly-grid">
               <div className="readonly-item">
                 <span className="readonly-label">TN Enviado:</span>

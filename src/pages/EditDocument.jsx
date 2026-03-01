@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { documentService } from '../services/api';
+import { documentService, empresaTransporteService, unidadService, clientTariffService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import './EditDocument.css';
@@ -18,6 +18,11 @@ const EditDocument = () => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [document, setDocument] = useState(null);
+
+  // Catálogos desde la BD
+  const [empresas, setEmpresas] = useState([]);
+  const [unidades, setUnidades] = useState([]);
+  const [tarifas, setTarifas] = useState([]);
 
   const [formData, setFormData] = useState({
     ticket: '',
@@ -49,7 +54,29 @@ const EditDocument = () => {
 
   useEffect(() => {
     loadDocument();
+    loadCatalogos();
   }, [id]);
+
+  const loadCatalogos = async () => {
+    try {
+      const [empRes, unidRes, tarRes] = await Promise.all([
+        empresaTransporteService.getActivas(),
+        unidadService.getActivas(),
+        clientTariffService.getAll(),
+      ]);
+      setEmpresas(empRes || []);
+      setUnidades(unidRes || []);
+      setTarifas(tarRes || []);
+    } catch (err) {
+      console.error('Error cargando catálogos:', err);
+    }
+  };
+
+  // Valores únicos para selects de tarifa
+  const clientesUnicos = [...new Set((tarifas).map(t => t.cliente))].filter(Boolean).sort();
+  const partidasUnicas = [...new Set((tarifas).map(t => t.partida))].filter(Boolean).sort();
+  const llegadasUnicas = [...new Set((tarifas).map(t => t.llegada))].filter(Boolean).sort();
+  const materialesUnicos = [...new Set((tarifas).map(t => t.material))].filter(Boolean).sort();
 
   const loadDocument = async () => {
     try {
@@ -93,6 +120,17 @@ const EditDocument = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Al cambiar la placa, auto-rellena empresa si está en la BD
+  const handleUnidadChange = (e) => {
+    const placa = e.target.value;
+    const unidadEncontrada = unidades.find(u => u.placa === placa);
+    setFormData(prev => ({
+      ...prev,
+      unidad: placa,
+      empresa: unidadEncontrada?.empresa?.nombre || prev.empresa,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -269,11 +307,21 @@ const EditDocument = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="unidad">Placa (Unidad)</label>
-                  <input type="text" id="unidad" name="unidad" value={formData.unidad} onChange={handleChange} placeholder="ABC123" />
+                  <select id="unidad" name="unidad" value={formData.unidad} onChange={handleUnidadChange}>
+                    <option value="">-- Seleccionar placa --</option>
+                    {unidades.map(u => (
+                      <option key={u.id} value={u.placa}>{u.placa}{u.empresa ? ` (${u.empresa.nombre})` : ''}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label htmlFor="empresa">Empresa</label>
-                  <input type="text" id="empresa" name="empresa" value={formData.empresa} onChange={handleChange} placeholder="Nombre de empresa" />
+                  <select id="empresa" name="empresa" value={formData.empresa} onChange={handleChange}>
+                    <option value="">-- Seleccionar empresa --</option>
+                    {empresas.map(e => (
+                      <option key={e.id} value={e.nombre}>{e.nombre}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label htmlFor="tn_enviado">TN Enviado</label>
@@ -291,19 +339,39 @@ const EditDocument = () => {
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="cliente">Cliente</label>
-                  <input type="text" id="cliente" name="cliente" value={formData.cliente} onChange={handleChange} placeholder="NOMBRE S.A.C." />
+                  <select id="cliente" name="cliente" value={formData.cliente} onChange={handleChange}>
+                    <option value="">-- Seleccionar cliente --</option>
+                    {clientesUnicos.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label htmlFor="partida">Punto de Partida</label>
-                  <input type="text" id="partida" name="partida" value={formData.partida} onChange={handleChange} placeholder="REGION-PROVINCIA-DISTRITO" />
+                  <select id="partida" name="partida" value={formData.partida} onChange={handleChange}>
+                    <option value="">-- Seleccionar partida --</option>
+                    {partidasUnicas.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label htmlFor="llegada">Punto de Llegada</label>
-                  <input type="text" id="llegada" name="llegada" value={formData.llegada} onChange={handleChange} placeholder="REGION-PROVINCIA-DISTRITO" />
+                  <select id="llegada" name="llegada" value={formData.llegada} onChange={handleChange}>
+                    <option value="">-- Seleccionar llegada --</option>
+                    {llegadasUnicas.map(l => (
+                      <option key={l} value={l}>{l}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label htmlFor="transportado">Material Transportado</label>
-                  <input type="text" id="transportado" name="transportado" value={formData.transportado} onChange={handleChange} placeholder="CONCENTRADO DE ZN..." />
+                  <select id="transportado" name="transportado" value={formData.transportado} onChange={handleChange}>
+                    <option value="">-- Seleccionar material --</option>
+                    {materialesUnicos.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>

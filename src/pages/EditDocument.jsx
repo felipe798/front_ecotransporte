@@ -209,39 +209,37 @@ const EditDocument = () => {
   return (
     <div className="edit-document">
       <div className="edit-header">
-        <Link to={`/documents/${id}`} className="back-link">← Volver</Link>
+        <Link to={`/documents/${id}`} className="back-link">&larr; Volver</Link>
         <div className="header-title-row">
           <h1>
-            <span className="lock-badge">{isAdmin ? 'âœï¸' : 'ðŸ”’'}</span>
             {isAdmin ? 'Editar Documento (Admin)' : 'Editar Datos del Ticket'}
           </h1>
         </div>
         <p className="document-code">{document?.grt}</p>
       </div>
 
-      {/* Auditoría: quién editó por última vez */}
       {document?.updater && (
         <div className="edit-audit-bar">
-          <span>✏️ Última edición por <strong>{document.updater?.userInformation?.userName || document.updater?.email}</strong></span>
+          <span>Ultima edicion por <strong>{document.updater?.userInformation?.userName || document.updater?.email}</strong></span>
           {document.updated_at && (
-            <span className="audit-date"> · {new Date(document.updated_at).toLocaleString('es-PE')}</span>
+            <span className="audit-date"> - {new Date(document.updated_at).toLocaleString('es-PE')}</span>
           )}
         </div>
       )}
 
       {!isAdmin && (
         <div className="locked-notice">
-          <span className="lock-icon-large">🔒</span>
+          <span className="lock-icon-large">&#128274;</span>
           <div className="locked-text">
             <strong>Documento bloqueado</strong>
-            <p>Solo puedes editar los datos del ticket: número de ticket y tonelaje recibido.</p>
+            <p>Solo puedes editar los datos del ticket: numero de ticket y tonelaje recibido.</p>
           </div>
         </div>
       )}
 
       {isAdmin && !document?.precio_unitario && (
         <div className="admin-warning-notice">
-          <span>âš ï¸</span>
+          <span>Atencion</span>
           <div>
             <strong>Documento incompleto</strong>
             <p>Este documento no tiene tarifa asignada. Puedes completar los campos financieros manualmente.</p>
@@ -254,11 +252,11 @@ const EditDocument = () => {
 
         {/* ===== DATOS DEL TICKET (todos) ===== */}
         <div className="form-section">
-          <h2>ðŸ“ Datos del Ticket</h2>
+          <h2>Datos del Ticket</h2>
           <div className="form-grid">
             <div className="form-group ticket-highlight">
               <label htmlFor="ticket">Ticket <span className="editable-badge">Editable</span></label>
-              <input type="text" id="ticket" name="ticket" value={formData.ticket} onChange={handleChange} placeholder="Número de ticket" className="ticket-input" />
+              <input type="text" id="ticket" name="ticket" value={formData.ticket} onChange={handleChange} placeholder="Numero de ticket" className="ticket-input" />
             </div>
             <div className="form-group ticket-highlight">
               <label htmlFor="factura">ID de Factura <span className="editable-badge">Editable</span></label>
@@ -279,7 +277,7 @@ const EditDocument = () => {
         {isAdmin && (
           <>
             <div className="form-section admin-section">
-              <h2>🔧 Datos del Documento <span className="admin-badge">Solo Admin</span></h2>
+              <h2>Datos del Documento <span className="admin-badge">Solo Admin</span></h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="fecha">Fecha</label>
@@ -335,7 +333,7 @@ const EditDocument = () => {
             </div>
 
             <div className="form-section admin-section">
-              <h2>📍 Ruta y Carga <span className="admin-badge">Solo Admin</span></h2>
+              <h2>Ruta y Carga <span className="admin-badge">Solo Admin</span></h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="cliente">Cliente</label>
@@ -377,7 +375,7 @@ const EditDocument = () => {
             </div>
 
             <div className="form-section admin-section">
-              <h2>💰 Datos Financieros <span className="admin-badge">Solo Admin</span></h2>
+              <h2>Datos Financieros <span className="admin-badge">Solo Admin</span></h2>
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="precio_unitario">Precio Unitario</label>
@@ -419,7 +417,7 @@ const EditDocument = () => {
         {/* No-admin: solo lectura del resto */}
         {!isAdmin && (
           <div className="form-section locked-section">
-            <h2>🔒 Datos del Documento (Solo Lectura)</h2>
+            <h2>Datos del Documento (Solo Lectura)</h2>
             <div className="readonly-grid">
               <div className="readonly-item">
                 <span className="readonly-label">TN Enviado:</span>

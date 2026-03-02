@@ -1,0 +1,269 @@
+/* ===================== TABLA UNIDADES MODAL ===================== */
+
+.tu-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  animation: tuFadeIn 0.2s ease;
+}
+
+@keyframes tuFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tu-modal-content {
+  background: #fff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 100%;
+  max-height: 96vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  animation: tuSlideUp 0.25s ease;
+}
+
+@keyframes tuSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Header */
+.tu-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 2px solid #e0e0e0;
+  background: #f8f9fa;
+  flex-shrink: 0;
+}
+
+.tu-modal-title h1 {
+  font-size: 0.85rem;
+  color: #1a1a1a;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.tu-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Filters bar */
+.tu-filters-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 5px 12px;
+  background: #f0f7f1;
+  border-bottom: 1px solid #ddd;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.tu-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tu-filter-item label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.tu-filter-item select {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  background: #fff;
+  cursor: pointer;
+  min-width: 110px;
+}
+
+.tu-filter-item select:disabled {
+  background: #eee;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.tu-filter-tarifa select {
+  min-width: 200px;
+}
+
+.tu-btn-generar {
+  padding: 5px 14px;
+  background: #1B7430;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  align-self: flex-end;
+}
+
+.tu-btn-generar:hover:not(:disabled) {
+  background: #145524;
+}
+
+.tu-btn-generar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Body */
+.tu-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px 10px;
+}
+
+/* Table */
+.tu-table-scroll {
+  overflow-x: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-top: 6px;
+}
+
+.tu-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.62rem;
+  white-space: nowrap;
+}
+
+.tu-table thead th {
+  background: #1B7430;
+  color: #fff;
+  padding: 3px 4px;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid #158a35;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  font-size: 0.6rem;
+}
+
+.tu-table thead th.col-unidad {
+  background: #145524;
+  text-align: left;
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  min-width: 80px;
+}
+
+.tu-table tbody td {
+  padding: 2px 4px;
+  text-align: right;
+  border: 1px solid #e0e0e0;
+  color: #333;
+}
+
+.tu-table tbody td.col-unidad {
+  text-align: left;
+  font-weight: 500;
+  background: #fff;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  border-right: 2px solid #ccc;
+}
+
+.tu-table tbody tr:nth-child(even) td {
+  background-color: #fafafa;
+}
+
+.tu-table tbody tr:nth-child(even) td.col-unidad {
+  background-color: #fafafa;
+}
+
+.tu-table tbody tr:hover td {
+  background-color: #e8f5e9;
+}
+
+.tu-table tbody tr:hover td.col-unidad {
+  background-color: #e8f5e9;
+}
+
+/* Total row */
+.tu-table tbody tr.fila-total td {
+  background: #e8f5e9;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-top: 2px solid #1B7430;
+}
+
+.tu-table tbody tr.fila-total td.col-unidad {
+  background: #e8f5e9;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .tu-filters-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+
+  .tu-filter-item select {
+    min-width: 100%;
+  }
+
+  .tu-filter-tarifa select {
+    min-width: 100%;
+  }
+
+  .tu-btn-generar {
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .tu-modal-header {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .tu-modal-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .tu-table {
+    font-size: 0.55rem;
+  }
+
+  .tu-table thead th {
+    font-size: 0.53rem;
+    padding: 2px 3px;
+  }
+
+  .tu-table tbody td {
+    padding: 1px 3px;
+  }
+
+  .tu-table thead th.col-unidad {
+    min-width: 70px;
+  }
+}

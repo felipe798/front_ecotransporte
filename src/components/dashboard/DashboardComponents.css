@@ -818,3 +818,37 @@
   font-family: monospace;
   font-size: 0.85rem;
 }
+
+/* Botón Ver Tablas Detalladas */
+.btn-ver-tablas {
+  padding: 12px 28px;
+  background: #1B7430;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-ver-tablas:hover {
+  background: #145524;
+  transform: translateY(-1px);
+}
+
+.btn-ver-guias {
+  background: #0d47a1;
+}
+
+.btn-ver-guias:hover {
+  background: #0a3478;
+}
+
+.btn-ver-unidades {
+  background: #e65100;
+}
+
+.btn-ver-unidades:hover {
+  background: #bf360c;
+}

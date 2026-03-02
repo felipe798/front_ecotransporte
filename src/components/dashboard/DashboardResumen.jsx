@@ -4,6 +4,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell
 } from 'recharts';
 import './DashboardComponents.css';
+import TablasDetalladasModal from './TablasDetalladasModal';
+import ReporteGuiasModal from './ReporteGuiasModal';
+import TablaUnidadesModal from './TablaUnidadesModal';
 
 const FILTER_FIELDS = ['mes', 'semana', 'cliente', 'transportista', 'unidad', 'transportado'];
 
@@ -12,6 +15,9 @@ const DashboardResumen = () => {
   const [loading, setLoading] = useState(true);
   const [filtersLoading, setFiltersLoading] = useState(false);
   const [filters, setFilters] = useState({});
+  const [showTablas, setShowTablas] = useState(false);
+  const [showGuias, setShowGuias] = useState(false);
+  const [showUnidades, setShowUnidades] = useState(false);
   const [segmentadores, setSegmentadores] = useState({
     meses: [],
     semanas: [],
@@ -282,6 +288,38 @@ const DashboardResumen = () => {
           })()}
         </div>
       </div>
+
+      {/* Botón Tablas Detalladas */}
+      <div className="section-card" style={{ textAlign: 'center', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+        <button className="btn-ver-tablas" onClick={() => setShowTablas(true)}>
+          📊 Tablas Detalladas
+        </button>
+        <button className="btn-ver-tablas btn-ver-guias" onClick={() => setShowGuias(true)}>
+          🚛 Reporte de Guías
+        </button>
+        <button className="btn-ver-tablas btn-ver-unidades" onClick={() => setShowUnidades(true)}>
+          🚚 Tabla de Unidades
+        </button>
+      </div>
+
+      {/* Modal Tablas Detalladas */}
+      <TablasDetalladasModal
+        isOpen={showTablas}
+        onClose={() => setShowTablas(false)}
+        mesesDisponibles={segmentadores.meses}
+      />
+
+      {/* Modal Reporte Guías */}
+      <ReporteGuiasModal
+        isOpen={showGuias}
+        onClose={() => setShowGuias(false)}
+      />
+
+      {/* Modal Tabla Unidades */}
+      <TablaUnidadesModal
+        isOpen={showUnidades}
+        onClose={() => setShowUnidades(false)}
+      />
     </div>
   );
 };

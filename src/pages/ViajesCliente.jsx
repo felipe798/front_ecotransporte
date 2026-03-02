@@ -48,11 +48,25 @@ const ViajesCliente = () => {
       if (selectedCliente) filters.cliente = selectedCliente;
       if (selectedPlaca) filters.unidad = selectedPlaca;
 
+      console.log('[ViajesCliente] Cargando datos con filtros:', filters);
+
       const [diasRes, placasRes, resumenRes] = await Promise.all([
         dashboardService.getDiasConViajes(filters),
         dashboardService.getViajesPorPlaca(filters),
         dashboardService.getResumenViajesCliente(filters),
       ]);
+
+      console.log('[ViajesCliente] getDiasConViajes — total filas:', diasRes?.length);
+      if (diasRes?.length > 0) {
+        console.log('[ViajesCliente] Primeras 3 filas:', diasRes.slice(0, 3));
+        console.log('[ViajesCliente] Tipos fila[0]:', {
+          fecha: typeof diasRes[0].fecha, fechaVal: diasRes[0].fecha,
+          traslados: typeof diasRes[0].traslados, trasladosVal: diasRes[0].traslados,
+          tonelaje_recibido: typeof diasRes[0].tonelaje_recibido, tonelajeVal: diasRes[0].tonelaje_recibido,
+        });
+      }
+      console.log('[ViajesCliente] getViajesPorPlaca — total filas:', placasRes?.length);
+      console.log('[ViajesCliente] getResumenViajesCliente:', resumenRes);
 
       setDiasViajes(diasRes || []);
       setViajesPorPlaca(placasRes || []);

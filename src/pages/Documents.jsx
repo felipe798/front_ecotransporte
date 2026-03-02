@@ -16,6 +16,8 @@ const Documents = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [openFilesFor, setOpenFilesFor] = useState(null);
   const [filterIncomplete, setFilterIncomplete] = useState(false);
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
   const PAGE_SIZE = 20;
   const notification = useNotification();
 
@@ -63,7 +65,10 @@ const Documents = () => {
       doc.grr?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.factura?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesIncomplete = filterIncomplete ? isIncomplete(doc) : true;
-    return matchesSearch && matchesIncomplete;
+    const docFecha = doc.fecha ? doc.fecha.toString().substring(0, 10) : '';
+    const matchesDateFrom = filterDateFrom ? docFecha >= filterDateFrom : true;
+    const matchesDateTo = filterDateTo ? docFecha <= filterDateTo : true;
+    return matchesSearch && matchesIncomplete && matchesDateFrom && matchesDateTo;
   });
 
   const totalPages = Math.ceil(filteredDocuments.length / PAGE_SIZE);
@@ -111,6 +116,27 @@ const Documents = () => {
             onChange={(e) => handleSearch(e.target.value)}
             className="search-input"
           />
+          <div className="date-filter-group">
+            <label>Desde:</label>
+            <input
+              type="date"
+              value={filterDateFrom}
+              onChange={(e) => { setFilterDateFrom(e.target.value); setCurrentPage(1); }}
+              className="date-filter-input"
+            />
+            <label>Hasta:</label>
+            <input
+              type="date"
+              value={filterDateTo}
+              onChange={(e) => { setFilterDateTo(e.target.value); setCurrentPage(1); }}
+              className="date-filter-input"
+            />
+            {(filterDateFrom || filterDateTo) && (
+              <button className="btn-clear-date" onClick={() => { setFilterDateFrom(''); setFilterDateTo(''); setCurrentPage(1); }} title="Limpiar filtro de fecha">
+                &times;
+              </button>
+            )}
+          </div>
           <button
             className={`btn-filter-incomplete${filterIncomplete ? ' active' : ''}`}
             onClick={() => { setFilterIncomplete(f => !f); setCurrentPage(1); }}
@@ -150,6 +176,7 @@ const Documents = () => {
                 <th>TN Recibido</th>
                 <th>Cliente</th>
                 <th>Factura</th>
+                <th>Motivo</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -180,6 +207,11 @@ const Documents = () => {
                   <td className="number">{doc.tn_recibida}</td>
                   <td>{doc.cliente}</td>
                   <td className="code factura-cell">{doc.factura || <span className="no-factura">—</span>}</td>
+                  <td className="motivo-cell">
+                    {doc.motivo ? (
+                      <span className="motivo-badge" title={doc.motivo}>!</span>
+                    ) : null}
+                  </td>
                   <td className="actions">
                     <Link to={`/documents/${doc.id}`} className="btn-action btn-view" title="Ver detalle">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

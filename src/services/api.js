@@ -618,24 +618,6 @@ export const dashboardService = {
     return handleResponse(response);
   },
 
-  // Opciones para la tabla de unidades (meses, semanas, filas seleccionables)
-  getTablaUnidadesOpciones: async (mes) => {
-    const params = mes ? new URLSearchParams({ mes }).toString() : '';
-    const response = await fetch(`${API_URL}/dashboard/tabla-unidades-opciones?${params}`, {
-      headers: authHeaders()
-    });
-    return handleResponse(response);
-  },
-
-  // Tabla de unidades desglosada por semana
-  getTablaUnidades: async ({ mes, semanaInicio, semanaFin, tarifaKey }) => {
-    const params = new URLSearchParams({ mes, semanaInicio, semanaFin, tarifaKey }).toString();
-    const response = await fetch(`${API_URL}/dashboard/tabla-unidades?${params}`, {
-      headers: authHeaders()
-    });
-    return handleResponse(response);
-  },
-
   // Opciones para reporte de guías (empresas y meses)
   getReporteGuiasOpciones: async () => {
     const response = await fetch(`${API_URL}/dashboard/reporte-guias-opciones`, {

@@ -6,7 +6,6 @@ import {
 import './DashboardComponents.css';
 import TablasDetalladasModal from './TablasDetalladasModal';
 import ReporteGuiasModal from './ReporteGuiasModal';
-import TablaUnidadesModal from './TablaUnidadesModal';
 
 const FILTER_FIELDS = ['mes', 'semana', 'cliente', 'transportista', 'unidad', 'transportado'];
 
@@ -17,7 +16,6 @@ const DashboardResumen = () => {
   const [filters, setFilters] = useState({});
   const [showTablas, setShowTablas] = useState(false);
   const [showGuias, setShowGuias] = useState(false);
-  const [showUnidades, setShowUnidades] = useState(false);
   const [segmentadores, setSegmentadores] = useState({
     meses: [],
     semanas: [],
@@ -297,9 +295,6 @@ const DashboardResumen = () => {
         <button className="btn-ver-tablas btn-ver-guias" onClick={() => setShowGuias(true)}>
           🚛 Reporte de Guías
         </button>
-        <button className="btn-ver-tablas btn-ver-unidades" onClick={() => setShowUnidades(true)}>
-          🚚 Tabla de Unidades
-        </button>
       </div>
 
       {/* Modal Tablas Detalladas */}
@@ -315,11 +310,6 @@ const DashboardResumen = () => {
         onClose={() => setShowGuias(false)}
       />
 
-      {/* Modal Tabla Unidades */}
-      <TablaUnidadesModal
-        isOpen={showUnidades}
-        onClose={() => setShowUnidades(false)}
-      />
     </div>
   );
 };

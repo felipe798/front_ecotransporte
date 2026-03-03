@@ -187,7 +187,7 @@ const DashboardTransportista = () => {
                 <tr>
                   <th>Transportista</th>
                   <th>Traslados</th>
-                  <th>TN Recibido</th>
+                  <th>Peso Ticket</th>
                   <th>Costo Total</th>
                 </tr>
               </thead>
@@ -306,7 +306,7 @@ const DashboardTransportista = () => {
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (
           <div className="chart-container">
-<ResponsiveContainer width="100%" height={300}>
+<ResponsiveContainer width="100%" height={Math.max(300, trasladosPorUnidad.length * 28)}>
               <BarChart data={trasladosPorUnidad} margin={{ top: 35, right: 20, left: 0, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="placa" tick={{ fontSize: 11 }} interval={0} angle={0} textAnchor="middle" />

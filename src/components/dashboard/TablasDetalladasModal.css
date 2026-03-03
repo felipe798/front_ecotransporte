@@ -244,13 +244,22 @@
   background-color: #e8f5e9;
 }
 
-/* Fixed rows */
-.tabla-detallada tbody tr.fila-fixed td {
-  background-color: #fff;
+/* Client header rows */
+.tabla-detallada tbody tr.fila-cliente-header td {
+  background: #1B7430;
+  color: white;
+  font-weight: 700;
+  font-size: 0.85em;
+  padding: 4px 8px;
+  text-align: left;
+  border: 1px solid #145524;
 }
 
-.tabla-detallada tbody tr.fila-fixed td.col-cliente {
-  background-color: #fff;
+/* Material sub-rows */
+.tabla-detallada tbody td.col-material {
+  padding-left: 20px;
+  font-weight: 400;
+  font-size: 0.82em;
 }
 
 /* Total rows */

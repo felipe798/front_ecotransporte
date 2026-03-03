@@ -51,8 +51,9 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
           th { background: #1B7430; color: white; font-weight: 600; text-align: center; }
           th.col-cliente { text-align: left; background: #145524; }
           td.col-cliente { text-align: left; font-weight: 500; }
+          td.col-material { padding-left: 20px; font-weight: 400; font-size: 9px; }
+          tr.fila-cliente-header td { background: #1B7430; color: white; font-weight: 700; text-align: left; }
           tr.fila-total { background: #e8f5e9; font-weight: 700; }
-          tr.fila-fixed { background: #fafafa; }
           .margen-table { max-width: 400px; margin: 10px auto; }
           .margen-table th { background: #0d47a1; }
           .margen-table td { font-weight: 600; }
@@ -81,7 +82,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
 
   const renderTable = (title, type) => {
     if (!data) return null;
-    const { empresas, filas, totales } = data;
+    const { empresas, grupos, totales } = data;
 
     return (
       <div className="tabla-detallada-section">
@@ -105,19 +106,30 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
               </tr>
             </thead>
             <tbody>
-              {filas.map((fila, idx) => (
-                <tr key={idx} className={fila.isFixed ? 'fila-fixed' : ''}>
-                  <td className="col-cliente">{fila.label}</td>
-                  <td>{formatNum(fila.data.general.tne)}</td>
-                  <td>{formatNum(type === 'venta' ? fila.data.general.importeVenta : fila.data.general.importeCosto)}</td>
-                  {empresas.map(emp => {
-                    const d = fila.data[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
-                    return [
-                      <td key={`${emp}-${idx}-tne`}>{formatNum(d.tne)}</td>,
-                      <td key={`${emp}-${idx}-imp`}>{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
-                    ];
-                  })}
-                </tr>
+              {grupos.map((grupo, gIdx) => (
+                <>
+                  {/* Fila encabezado del cliente */}
+                  <tr key={`cliente-${gIdx}`} className="fila-cliente-header">
+                    <td className="col-cliente" colSpan={3 + empresas.length * 2}>
+                      {grupo.cliente}
+                    </td>
+                  </tr>
+                  {/* Filas de materiales */}
+                  {grupo.materiales.map((mat, mIdx) => (
+                    <tr key={`mat-${gIdx}-${mIdx}`}>
+                      <td className="col-cliente col-material">{mat.label}</td>
+                      <td>{formatNum(mat.data.general.tne)}</td>
+                      <td>{formatNum(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto)}</td>
+                      {empresas.map(emp => {
+                        const d = mat.data[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
+                        return [
+                          <td key={`${emp}-${gIdx}-${mIdx}-tne`}>{formatNum(d.tne)}</td>,
+                          <td key={`${emp}-${gIdx}-${mIdx}-imp`}>{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
+                        ];
+                      })}
+                    </tr>
+                  ))}
+                </>
               ))}
               {/* Total Dólares */}
               <tr className="fila-total">

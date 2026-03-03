@@ -55,7 +55,7 @@ const ViajesCliente = () => {
       ]);
 
       setDiasViajes(diasRes || []);
-      setViajesPorPlaca(placasRes || []);
+      setViajesPorPlaca((placasRes || []).map(item => ({ ...item, viajes: parseInt(item.viajes) || 0 })));
       setResumen(resumenRes || { viajes: 0, traslados: 0 });
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -179,7 +179,7 @@ const ViajesCliente = () => {
 
             {/* Gráfico de barras */}
             <div className="seccion-grafico">
-              <h2>Viajes por Placa</h2>
+              <h2>Traslados por Placa</h2>
               {viajesPorPlaca.length === 0 ? (
                 <p className="empty-message">No hay datos para mostrar</p>
               ) : (
@@ -199,14 +199,14 @@ const ViajesCliente = () => {
                         tick={{ fontSize: 11, fill: '#555' }}
                       />
                       <Tooltip
-                        formatter={(value) => [`${value} viajes`, 'Viajes']}
+                        formatter={(value) => [`${value} traslados`, 'Traslados']}
                         labelFormatter={(label) => `Placa: ${label}`}
                       />
-                      <Bar dataKey="viajes" name="Viajes">
+                      <Bar dataKey="viajes" name="Traslados">
                         {viajesPorPlaca.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
-                        <LabelList dataKey="viajes" position="right" style={{ fontSize: 11, fontWeight: 600, fill: '#333' }} formatter={(value) => `${value} viajes`} />
+                        <LabelList dataKey="viajes" position="right" style={{ fontSize: 11, fontWeight: 600, fill: '#333' }} formatter={(value) => Number(value) === 1 ? `${value} traslado` : `${value} traslados`} />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>

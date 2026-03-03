@@ -264,6 +264,75 @@
   font-style: italic;
 }
 
+.btn-factura-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 2px 6px;
+  margin-left: 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+.btn-factura-edit:hover {
+  color: var(--accent-color);
+  background: rgba(27, 116, 48, 0.1);
+}
+
+.factura-inline-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.factura-input {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  width: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.factura-input:focus {
+  border-color: var(--accent-color);
+}
+
+.btn-factura-save,
+.btn-factura-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-factura-save {
+  background: var(--accent-color);
+  color: #fff;
+}
+
+.btn-factura-save:hover {
+  background: var(--accent-hover);
+}
+
+.btn-factura-cancel {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-factura-cancel:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
 .btn-upload-factura {
   display: inline-flex;
   align-items: center;

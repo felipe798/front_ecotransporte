@@ -501,7 +501,7 @@ const DashboardFinanciero = ({ filters }) => {
                     {porCobrar.map((item, index) => (
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
-                        <td>{item.empresa}</td>
+                        <td>{item.empresa === 'ECOTRANSPORTE' ? 'ECOTRANSPORTE' : `ECOTRANSPORTE(${item.empresa})`}</td>
                         <td>{item.divisa || 'PEN'}</td>
                         <td className="amount">{formatCurrency(item.total, item.divisa)}</td>
                       </tr>
@@ -612,7 +612,7 @@ const DashboardFinanciero = ({ filters }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {porPagar.map((item, index) => (
+                    {porPagar.filter(item => item.empresa !== 'ECOTRANSPORTE').map((item, index) => (
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
                         <td>{item.empresa}</td>

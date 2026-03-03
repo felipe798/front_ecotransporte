@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { documentService } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
@@ -12,26 +12,27 @@ const DocumentDetail = () => {
   const [document, setDocument] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [facturaPdf, setFacturaPdf] = useState(null);
-  const facturaInputRef = useRef(null);
+  const [editingFactura, setEditingFactura] = useState(false);
+  const [facturaValue, setFacturaValue] = useState('');
+  const [savingFactura, setSavingFactura] = useState(false);
 
-  const getFactura = (docId) => {
-    if (!docId) return null;
-    const seed = docId * 7 + 3;
-    if (seed % 3 === 0) return null;
-    const num = String(((seed * 13 + 17) % 900) + 100).padStart(3, '0');
-    return `Factura-${num}`;
+  const handleSaveFactura = async () => {
+    setSavingFactura(true);
+    try {
+      const response = await documentService.update(id, { factura: facturaValue.trim() || null });
+      setDocument(response.data);
+      setEditingFactura(false);
+      notification.success('Factura actualizada correctamente');
+    } catch (err) {
+      notification.error('Error al actualizar la factura');
+    } finally {
+      setSavingFactura(false);
+    }
   };
 
-  const handleFacturaUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'application/pdf') {
-      setFacturaPdf(file);
-      notification.success(`PDF de factura "${file.name}" cargado correctamente`);
-    } else if (file) {
-      notification.error('Solo se permiten archivos PDF');
-    }
-    if (facturaInputRef.current) facturaInputRef.current.value = '';
+  const handleCancelFactura = () => {
+    setEditingFactura(false);
+    setFacturaValue(document?.factura || '');
   };
 
   useEffect(() => {
@@ -230,7 +231,32 @@ const DocumentDetail = () => {
           <div className="info-grid">
             <div className="info-item">
               <label>Código de Factura</label>
-              <span className={getFactura(document.id) ? '' : 'no-data'}>{getFactura(document.id) || 'Sin factura'}</span>
+              {editingFactura ? (
+                <div className="factura-inline-edit">
+                  <input
+                    type="text"
+                    value={facturaValue}
+                    onChange={(e) => setFacturaValue(e.target.value)}
+                    placeholder="Ingrese código de factura"
+                    className="factura-input"
+                    autoFocus
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleSaveFactura(); if (e.key === 'Escape') handleCancelFactura(); }}
+                  />
+                  <button onClick={handleSaveFactura} className="btn-factura-save" disabled={savingFactura} title="Guardar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </button>
+                  <button onClick={handleCancelFactura} className="btn-factura-cancel" title="Cancelar">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+              ) : (
+                <span className={document.factura ? '' : 'no-data'}>
+                  {document.factura || 'Sin factura'}
+                  <button className="btn-factura-edit" onClick={() => { setFacturaValue(document.factura || ''); setEditingFactura(true); }} title="Editar factura">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                </span>
+              )}
             </div>
           </div>
         </div>

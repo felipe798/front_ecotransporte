@@ -87,10 +87,9 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
 
   const formatDate = (d) => {
     if (!d) return '';
-    const date = new Date(d);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
+    // Parsear solo YYYY-MM-DD para evitar desfase UTC→Lima (UTC-5)
+    const dateStr = typeof d === 'string' ? d.substring(0, 10) : new Date(d).toISOString().substring(0, 10);
+    const [year, month, day] = dateStr.split('-');
     return `${day}/${month}/${year}`;
   };
 

@@ -80,7 +80,11 @@ const ViajesCliente = () => {
 
   const formatFecha = (fecha) => {
     if (!fecha) return '-';
-    const date = new Date(fecha);
+    // Parsear solo la parte YYYY-MM-DD para evitar el desfase de timezone UTC-5.
+    // Si hacemos new Date("2026-01-01T00:00:00.000Z") en Peru, da 31/12/2025.
+    const dateStr = typeof fecha === 'string' ? fecha.substring(0, 10) : new Date(fecha).toISOString().substring(0, 10);
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // fecha local, sin UTC
     return date.toLocaleDateString('es-PE', {
       weekday: 'short',
       day: '2-digit',

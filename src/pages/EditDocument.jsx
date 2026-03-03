@@ -250,7 +250,7 @@ const EditDocument = () => {
       <form onSubmit={handleSubmit} className="edit-form">
         {error && <div className="error-message">{error}</div>}
 
-        {/* ===== DATOS DEL TICKET (todos) ===== */}
+        {/* ===== DATOS DEL TICKET (todos)----- ===== */}
         <div className="form-section">
           <h2>Datos del Ticket</h2>
           <div className="form-grid">

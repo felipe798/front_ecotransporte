@@ -613,7 +613,8 @@
 .wizard-tariff-field {
   display: flex;
   gap: 0.4rem;
-  align-items: baseline;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .wizard-tariff-label {
@@ -627,6 +628,36 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+/* Route fields in tariff wizard */
+
+.wizard-select-route {
+  flex: 1;
+  min-width: 140px;
+  max-width: 100%;
+}
+
+.wizard-field-empty {
+  border-color: #f59e0b !important;
+}
+
+.wizard-field-required {
+  font-size: 0.7rem;
+  color: #f59e0b;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.wizard-input {
+  flex: 1;
+  min-width: 140px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 0.85rem;
 }
 
 .wizard-tariff-prices {

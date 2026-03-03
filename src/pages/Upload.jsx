@@ -25,6 +25,20 @@ const Upload = () => {
   // Tariff wizard state
   const [missingTariffs, setMissingTariffs] = useState([]); // [{docId, cliente, partida, llegada, transportado, precioVentaSinIgv, precioCostoSinIgv, moneda, divisa}]
   const [savingTariff, setSavingTariff] = useState(false);
+  const [tarifasCatalogo, setTarifasCatalogo] = useState([]); // datos de client_tariff para selects
+
+  // Cargar catálogo de tarifas cuando se abre el wizard de tarifas
+  useEffect(() => {
+    if (wizardStep === 'tarifas' && tarifasCatalogo.length === 0) {
+      clientTariffService.getAll().then(res => setTarifasCatalogo(res || [])).catch(() => {});
+    }
+  }, [wizardStep]);
+
+  // Valores únicos para selects del wizard de tarifas
+  const clientesUnicos = [...new Set(tarifasCatalogo.map(t => t.cliente))].filter(Boolean).sort();
+  const partidasUnicas = [...new Set(tarifasCatalogo.map(t => t.partida))].filter(Boolean).sort();
+  const llegadasUnicas = [...new Set(tarifasCatalogo.map(t => t.llegada))].filter(Boolean).sort();
+  const materialesUnicos = [...new Set(tarifasCatalogo.map(t => t.material))].filter(Boolean).sort();
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -247,6 +261,11 @@ const Upload = () => {
       notification.error(`Completa los precios de todas las tarifas (${incomplete.length} pendiente(s))`);
       return;
     }
+    const sinRuta = missingTariffs.filter(t => !t.cliente || !t.partida);
+    if (sinRuta.length > 0) {
+      notification.error(`Selecciona cliente y punto de partida en todos los documentos (${sinRuta.length} pendiente(s))`);
+      return;
+    }
 
     setSavingTariff(true);
     let saved = 0;
@@ -263,6 +282,18 @@ const Upload = () => {
           divisa: t.divisa,
         });
         saved++;
+
+        // Actualizar campos de ruta en el documento si venían vacíos del PDF
+        try {
+          await documentService.update(t.docId, {
+            cliente: t.cliente || null,
+            partida: t.partida || null,
+            llegada: t.llegada || null,
+            transportado: t.transportado || null,
+          });
+        } catch (e) {
+          console.error(`Error actualizando ruta en doc ${t.docId}:`, e);
+        }
 
         // Recalcular campos financieros del documento
         try {
@@ -543,21 +574,71 @@ const Upload = () => {
                   {missingTariffs.map((t, idx) => (
                     <div key={idx} className="wizard-tariff-card">
                       <div className="wizard-tariff-info">
+                        {/* Cliente: editable siempre (select si hay catalogo, sino input) */}
                         <div className="wizard-tariff-field">
-                          <span className="wizard-tariff-label">Cliente:</span>
-                          <span className="wizard-tariff-value">{t.cliente || '—'}</span>
+                          <label className="wizard-tariff-label">Cliente:</label>
+                          {clientesUnicos.length > 0 ? (
+                            <select
+                              value={t.cliente || ''}
+                              onChange={e => handleTariffFieldChange(idx, 'cliente', e.target.value)}
+                              className={`wizard-select wizard-select-route ${!t.cliente ? 'wizard-field-empty' : ''}`}
+                            >
+                              <option value="">-- Seleccionar cliente --</option>
+                              {clientesUnicos.map(c => <option key={c} value={c}>{c}</option>)}
+                            </select>
+                          ) : (
+                            <input type="text" value={t.cliente || ''} onChange={e => handleTariffFieldChange(idx, 'cliente', e.target.value)} className="wizard-input" placeholder="Nombre cliente" />
+                          )}
+                          {!t.cliente && <span className="wizard-field-required">Requerido</span>}
                         </div>
+                        {/* Partida: editable siempre */}
                         <div className="wizard-tariff-field">
-                          <span className="wizard-tariff-label">Partida:</span>
-                          <span className="wizard-tariff-value">{t.partida || '—'}</span>
+                          <label className="wizard-tariff-label">Partida:</label>
+                          {partidasUnicas.length > 0 ? (
+                            <select
+                              value={t.partida || ''}
+                              onChange={e => handleTariffFieldChange(idx, 'partida', e.target.value)}
+                              className={`wizard-select wizard-select-route ${!t.partida ? 'wizard-field-empty' : ''}`}
+                            >
+                              <option value="">-- Seleccionar partida --</option>
+                              {partidasUnicas.map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
+                          ) : (
+                            <input type="text" value={t.partida || ''} onChange={e => handleTariffFieldChange(idx, 'partida', e.target.value)} className="wizard-input" placeholder="REGION-PROVINCIA-DISTRITO" />
+                          )}
+                          {!t.partida && <span className="wizard-field-required">Requerido</span>}
                         </div>
+                        {/* Llegada: editable siempre */}
                         <div className="wizard-tariff-field">
-                          <span className="wizard-tariff-label">Llegada:</span>
-                          <span className="wizard-tariff-value">{t.llegada || '—'}</span>
+                          <label className="wizard-tariff-label">Llegada:</label>
+                          {llegadasUnicas.length > 0 ? (
+                            <select
+                              value={t.llegada || ''}
+                              onChange={e => handleTariffFieldChange(idx, 'llegada', e.target.value)}
+                              className="wizard-select wizard-select-route"
+                            >
+                              <option value="">-- Seleccionar llegada --</option>
+                              {llegadasUnicas.map(l => <option key={l} value={l}>{l}</option>)}
+                            </select>
+                          ) : (
+                            <input type="text" value={t.llegada || ''} onChange={e => handleTariffFieldChange(idx, 'llegada', e.target.value)} className="wizard-input" placeholder="REGION-PROVINCIA-DISTRITO" />
+                          )}
                         </div>
+                        {/* Material: editable siempre */}
                         <div className="wizard-tariff-field">
-                          <span className="wizard-tariff-label">Material:</span>
-                          <span className="wizard-tariff-value">{t.transportado || '—'}</span>
+                          <label className="wizard-tariff-label">Material:</label>
+                          {materialesUnicos.length > 0 ? (
+                            <select
+                              value={t.transportado || ''}
+                              onChange={e => handleTariffFieldChange(idx, 'transportado', e.target.value)}
+                              className="wizard-select wizard-select-route"
+                            >
+                              <option value="">-- Seleccionar material --</option>
+                              {materialesUnicos.map(m => <option key={m} value={m}>{m}</option>)}
+                            </select>
+                          ) : (
+                            <input type="text" value={t.transportado || ''} onChange={e => handleTariffFieldChange(idx, 'transportado', e.target.value)} className="wizard-input" placeholder="CONCENTRADO DE ZN..." />
+                          )}
                         </div>
                       </div>
                       <div className="wizard-tariff-prices">

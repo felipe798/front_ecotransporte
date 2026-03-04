@@ -263,11 +263,11 @@ const EditDocument = () => {
               <input type="text" id="factura" name="factura" value={formData.factura} onChange={handleChange} placeholder="Ej: F001-00001234" className="ticket-input" />
             </div>
             <div className="form-group ticket-highlight">
-              <label htmlFor="tn_recibida">TN Recibida <span className="editable-badge">Editable</span></label>
+              <label htmlFor="tn_recibida">Peso Ticket (TN Recibida) <span className="editable-badge">Editable</span></label>
               <input type="number" step="0.01" id="tn_recibida" name="tn_recibida" value={formData.tn_recibida} onChange={handleChange} placeholder="Tonelaje recibido" className="ticket-input" />
             </div>
             <div className="form-group ticket-highlight">
-              <label htmlFor="tn_recibida_data_cruda">TN Recibida (Data Cruda) <span className="editable-badge">Editable</span></label>
+              <label htmlFor="tn_recibida_data_cruda">Peso Ticket - Data Cruda <span className="editable-badge">Editable</span></label>
               <input type="number" step="0.01" id="tn_recibida_data_cruda" name="tn_recibida_data_cruda" value={formData.tn_recibida_data_cruda} onChange={handleChange} placeholder="Tonelaje crudo del ticket" className="ticket-input" />
             </div>
           </div>
@@ -322,7 +322,7 @@ const EditDocument = () => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="tn_enviado">TN Enviado</label>
+                  <label htmlFor="tn_enviado">Peso Guía (TN Enviada)</label>
                   <input type="number" step="0.01" id="tn_enviado" name="tn_enviado" value={formData.tn_enviado} onChange={handleChange} />
                 </div>
                 <div className="form-group">
@@ -420,7 +420,7 @@ const EditDocument = () => {
             <h2>Datos del Documento (Solo Lectura)</h2>
             <div className="readonly-grid">
               <div className="readonly-item">
-                <span className="readonly-label">TN Enviado:</span>
+                <span className="readonly-label">Peso Guía (TN Enviada):</span>
                 <span className="readonly-value">{document?.tn_enviado || '-'}</span>
               </div>
               <div className="readonly-item">

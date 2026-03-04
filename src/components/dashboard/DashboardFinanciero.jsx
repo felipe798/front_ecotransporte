@@ -428,7 +428,7 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Por Cobrar */}
       {activeTab === 'cobrar' && (
         <div className="financiero-section">
-          <h2>Por Cobrar por Cliente / Empresa</h2>
+          <h2>💵 Por Cobrar por Cliente / Empresa</h2>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -521,15 +521,15 @@ const DashboardFinanciero = ({ filters }) => {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(300, cobrarChart.length * 50)}>
                   <BarChart data={cobrarChart} layout="vertical" margin={{ right: 110, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={180} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} />
+                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     <Legend />
-                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN}>
+                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
                     </Bar>
-                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD}>
+                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
@@ -543,7 +543,7 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Por Pagar */}
       {activeTab === 'pagar' && (
         <div className="financiero-section">
-          <h2>Por Pagar por Cliente / Empresa</h2>
+          <h2>💸 Por Pagar por Cliente / Empresa</h2>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -634,15 +634,15 @@ const DashboardFinanciero = ({ filters }) => {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(300, pagarChart.length * 50)}>
                   <BarChart data={pagarChart} layout="vertical" margin={{ right: 110, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={180} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} />
+                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     <Legend />
-                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN}>
+                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
                     </Bar>
-                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD}>
+                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
@@ -656,7 +656,7 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Margen Operativo */}
       {activeTab === 'margen' && (
         <div className="financiero-section">
-          <h2>Margen Operativo por Cliente / Empresa</h2>
+          <h2>📈 Margen Operativo por Cliente / Empresa</h2>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -752,15 +752,15 @@ const DashboardFinanciero = ({ filters }) => {
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(300, margenChart.length * 50)}>
                   <BarChart data={margenChart} layout="vertical" margin={{ right: 110, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={180} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} />
+                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     <Legend />
-                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN}>
+                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
                     </Bar>
-                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD}>
+                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
@@ -774,7 +774,7 @@ const DashboardFinanciero = ({ filters }) => {
       {/* TN por Cliente/Empresa */}
       {activeTab === 'tonelaje' && (
         <div className="financiero-section">
-          <h2>Tonelaje Recibido por Cliente / Empresa</h2>
+          <h2>⚖️ Tonelaje Recibido por Cliente / Empresa</h2>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -828,7 +828,7 @@ const DashboardFinanciero = ({ filters }) => {
           </div>
 
           <div className="section-card">
-            <h3>Tabla Dinámica - TN Recibido</h3>
+            <h3>Tabla Dinámica - Peso Ticket (TN Recibida)</h3>
             {tnClienteEmpresa.length === 0 ? (
               <p className="empty-message">No hay datos de tonelaje</p>
             ) : (
@@ -838,7 +838,7 @@ const DashboardFinanciero = ({ filters }) => {
                     <tr>
                       <th>Cliente</th>
                       <th>Empresa</th>
-                      <th>TN Recibido</th>
+                      <th>Peso Ticket (TN Recibida)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -856,19 +856,19 @@ const DashboardFinanciero = ({ filters }) => {
           </div>
 
           <div className="chart-section">
-            <h3>Gráfica - TN Recibido por Cliente / Empresa</h3>
+            <h3>Gráfica - Peso Ticket por Cliente / Empresa</h3>
             <div className="chart-container">
               {tnChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
                 <ResponsiveContainer width="100%" height={Math.max(300, tnChart.length * 50)}>
                   <BarChart data={tnChart} layout="vertical" margin={{ right: 90, left: 10 }}>
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={200} tick={{ fontSize: 11 }} />
-                    <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Tonelaje']} />
+                    <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Tonelaje']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     <Legend />
-                    <Bar dataKey="total" name="TN Recibido" fill={COLORS.PEN}>
+                    <Bar dataKey="total" name="Peso Ticket" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
                       <LabelList dataKey="total" position="right" formatter={(v) => v > 0 ? `${parseFloat(v).toFixed(1)} TN` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
                     </Bar>
                   </BarChart>
@@ -882,7 +882,7 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Seguimiento de Transporte */}
       {activeTab === 'seguimiento' && (
         <div className="financiero-section">
-          <h2>Seguimiento de Transporte - TN Enviado por Semana</h2>
+          <h2>🚧 Seguimiento de Transporte - Peso Guía por Semana</h2>
           
           <div className="section-card full-width">
             <h3>Tabla de Seguimiento (Cliente → Empresa → Unidad → Semana)</h3>

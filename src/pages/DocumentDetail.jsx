@@ -113,7 +113,7 @@ const DocumentDetail = () => {
       <div className="detail-header">
         <div className="header-info">
           <Link to="/documents" className="back-link">← Volver</Link>
-          <h1>Guía de Remisión</h1>
+          <h1>📝 Guía de Remisión</h1>
           <p className="document-code">{document.grt}</p>
         </div>
         <div className="header-actions">
@@ -132,7 +132,7 @@ const DocumentDetail = () => {
       <div className="detail-grid">
         {/* Información General */}
         <div className="detail-section">
-          <h2>Información General</h2>
+          <h2>📋 Información General</h2>
           <div className="info-grid">
             <div className="info-item">
               <label>GRT</label>
@@ -163,7 +163,7 @@ const DocumentDetail = () => {
 
         {/* Transporte */}
         <div className="detail-section">
-          <h2>Transporte</h2>
+          <h2>🚚 Transporte</h2>
           <div className="info-grid">
             <div className="info-item full">
               <label>Conductor Principal</label>
@@ -186,7 +186,7 @@ const DocumentDetail = () => {
 
         {/* Origen y Destino */}
         <div className="detail-section">
-          <h2>Origen y Destino</h2>
+          <h2>📍 Origen y Destino</h2>
           <div className="info-grid">
             <div className="info-item full">
               <label>Empresa Remitente</label>
@@ -213,14 +213,14 @@ const DocumentDetail = () => {
 
         {/* Tonelaje */}
         <div className="detail-section highlight">
-          <h2>Tonelaje</h2>
+          <h2>⚖️ Tonelaje</h2>
           <div className="info-grid">
             <div className="info-item">
-              <label>TN Enviado</label>
+              <label>Peso Guía (TN Enviada)</label>
               <span className="value-large">{document.tn_enviado || '-'}</span>
             </div>
             <div className="info-item">
-              <label>TN Recibida</label>
+              <label>Peso Ticket (TN Recibida)</label>
               <span className="value-large">{document.tn_recibida || '-'}</span>
             </div>
           </div>
@@ -228,7 +228,7 @@ const DocumentDetail = () => {
 
         {/* Archivos adjuntos */}
         <div className="detail-section">
-          <h2>Archivos adjuntos</h2>
+          <h2>📎 Archivos adjuntos</h2>
           <FileDropdown
             document={document}
             onUpdate={(updated) => setDocument(updated)}
@@ -237,7 +237,7 @@ const DocumentDetail = () => {
 
         {/* Facturación */}
         <div className="detail-section">
-          <h2>Facturación</h2>
+          <h2>🧾 Facturación</h2>
           <div className="info-grid">
             <div className="info-item">
               <label>Código de Factura</label>
@@ -273,7 +273,7 @@ const DocumentDetail = () => {
 
         {/* Información Financiera */}
         <div className="detail-section">
-          <h2>Información Financiera</h2>
+          <h2>💰 Información Financiera</h2>
           <div className="info-grid">
             <div className="info-item">
               <label>Precio Unitario</label>

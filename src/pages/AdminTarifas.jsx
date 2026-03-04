@@ -152,7 +152,7 @@ const AdminTarifas = () => {
   return (
     <div className="admin-page">
       <div className="admin-header">
-        <h1>Tarifas de Clientes</h1>
+        <h1>💲 Tarifas de Clientes</h1>
         <div className="admin-actions">
           <button className="btn-primary" onClick={openCreateModal}>
             + Nueva Tarifa

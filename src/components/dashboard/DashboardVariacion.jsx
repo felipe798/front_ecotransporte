@@ -77,7 +77,7 @@ const DashboardVariacion = ({ filters }) => {
     <div className="dashboard-variacion">
       {/* Tabla Pivot TN Recibidas */}
       <div className="section-card full-width">
-        <h2>Tabla Pivot - TN Recibidas por Semana</h2>
+        <h2>📊 Tabla Pivot - Peso Ticket por Semana</h2>
         {tablaPivot.length === 0 ? (
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (
@@ -87,8 +87,8 @@ const DashboardVariacion = ({ filters }) => {
                 <tr>
                   <th>Semana</th>
                   <th>Cliente</th>
-                  <th>TN Enviado</th>
-                  <th>TN Recibido</th>
+                  <th>Peso Guía (TN Enviada)</th>
+                  <th>Peso Ticket (TN Recibida)</th>
                   <th>Variación</th>
                   <th>% Variación</th>
                 </tr>
@@ -121,24 +121,25 @@ const DashboardVariacion = ({ filters }) => {
 
       {/* TN por Unidad por Mes */}
       <div className="chart-section">
-        <h2>TN Enviado/Recibido por Unidad por Mes</h2>
+        <h2>🚛 Peso Guía / Peso Ticket por Unidad por Mes</h2>
         <div className="chart-container">
           {datosGrafico.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
           ) : (
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={datosGrafico}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis dataKey="mes" />
                 <YAxis />
-                <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} />
+                <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 <Legend />
                 {placasUnicas.slice(0, 8).map((placa, index) => (
                   <Bar 
                     key={placa} 
                     dataKey={placa} 
                     name={placa} 
-                    fill={colors[index % colors.length]} 
+                    fill={colors[index % colors.length]}
+                    radius={[4, 4, 0, 0]}
                   />
                 ))}
               </BarChart>
@@ -149,7 +150,7 @@ const DashboardVariacion = ({ filters }) => {
 
       {/* Resumen de Variación */}
       <div className="section-card">
-        <h2>Resumen de Variación</h2>
+        <h2>⚖️ Resumen de Variación</h2>
         <div className="variacion-summary">
           {(() => {
             const totalEnviado = tablaPivot.reduce((sum, item) => sum + parseFloat(item.tn_enviado || 0), 0);
@@ -160,11 +161,11 @@ const DashboardVariacion = ({ filters }) => {
             return (
               <>
                 <div className="summary-item">
-                  <label>Total TN Enviado</label>
+                  <label>Total Peso Guía (TN Enviada)</label>
                   <span className="summary-value">{totalEnviado.toFixed(2)}</span>
                 </div>
                 <div className="summary-item">
-                  <label>Total TN Recibido</label>
+                  <label>Total Peso Ticket (TN Recibida)</label>
                   <span className="summary-value">{totalRecibido.toFixed(2)}</span>
                 </div>
                 <div className="summary-item">
@@ -181,7 +182,7 @@ const DashboardVariacion = ({ filters }) => {
 
       {/* Tabla detallada por Unidad y Mes */}
       <div className="section-card full-width">
-        <h2>Detalle TN por Unidad y Mes</h2>
+        <h2>📝 Detalle TN por Unidad y Mes</h2>
         {tnPorUnidadMes.length === 0 ? (
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (

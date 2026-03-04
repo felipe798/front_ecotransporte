@@ -47,15 +47,20 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
           h2 { font-size: 16px; margin: 15px 0 8px 0; color: #1a1a1a; }
           h3 { font-size: 13px; margin: 10px 0 5px 0; text-align: center; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
-          th, td { border: 1px solid #333; padding: 4px 6px; text-align: right; }
+          th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; }
           th { background: #1B7430; color: white; font-weight: 600; text-align: center; }
           th.col-cliente { text-align: left; background: #145524; }
+          th.col-general { background: #2563EB; border-color: #1D4ED8; }
+          th.col-empresa-0 { background: #5B21B6; border-color: #4C1D95; }
+          th.col-empresa-1 { background: #B45309; border-color: #92400E; }
+          th.col-empresa-2 { background: #7F1D1D; border-color: #691B1B; }
+          th.col-empresa-3 { background: #374151; border-color: #1F2937; }
           td.col-cliente { text-align: left; font-weight: 500; }
           td.col-material { padding-left: 20px; font-weight: 400; font-size: 9px; }
-          tr.fila-cliente-header td { background: #1B7430; color: white; font-weight: 700; text-align: left; }
-          tr.fila-total { background: #e8f5e9; font-weight: 700; }
-          .margen-table { max-width: 400px; margin: 10px auto; }
-          .margen-table th { background: #0d47a1; }
+          tr.fila-cliente-header td { background: #374151; color: white; font-weight: 700; text-align: left; }
+          tr.fila-total { background: #F1F5F9; font-weight: 700; }
+          .margen-table { margin: 10px 0; }
+          .margen-table th { background: #2563EB; }
           .margen-table td { font-weight: 600; }
           @media print { body { padding: 10px; } }
         </style>
@@ -89,20 +94,27 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         <h2>{title}</h2>
         <div className="tabla-scroll-container">
           <table className="tabla-detallada">
+            <colgroup>
+              <col style={{ minWidth: '140px' }} />
+              {empresas.concat(['general']).map(() => [
+                <col key={Math.random()} style={{ minWidth: '80px' }} />,
+                <col key={Math.random()} style={{ minWidth: '90px' }} />,
+              ])}
+            </colgroup>
             <thead>
               <tr>
                 <th className="col-cliente" rowSpan={2}>Cliente</th>
-                <th colSpan={2}>General</th>
-                {empresas.map(emp => (
-                  <th key={emp} colSpan={2}>{emp}</th>
+                <th className="col-general" colSpan={2}>General</th>
+                {empresas.map((emp, idx) => (
+                  <th key={emp} className={`col-empresa-${idx % 4}`} colSpan={2}>{emp}</th>
                 ))}
               </tr>
               <tr>
-                <th>TNE</th>
-                <th>Importe</th>
-                {empresas.map(emp => (
-                  <th key={`${emp}-tne`}>TNE</th>
-                )).flatMap((el, i) => [el, <th key={`${empresas[i]}-imp`}>Importe</th>])}
+                <th className="col-general">TNE</th>
+                <th className="col-general">Importe</th>
+                {empresas.map((emp, idx) => (
+                  <th key={`${emp}-tne`} className={`col-empresa-${idx % 4}`}>TNE</th>
+                )).flatMap((el, i) => [el, <th key={`${empresas[i]}-imp`} className={`col-empresa-${i % 4}`}>Importe</th>])}
               </tr>
             </thead>
             <tbody>
@@ -118,13 +130,13 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   {grupo.materiales.map((mat, mIdx) => (
                     <tr key={`mat-${gIdx}-${mIdx}`}>
                       <td className="col-cliente col-material">{mat.label}</td>
-                      <td>{formatNum(mat.data.general.tne)}</td>
-                      <td>{formatNum(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto)}</td>
+                      <td>{formatNum(mat.data.general.tne)} TN</td>
+                      <td>{mat.divisa === 'PEN' ? 'S/' : '$'}{formatNum(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto)}</td>
                       {empresas.map(emp => {
                         const d = mat.data[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
                         return [
-                          <td key={`${emp}-${gIdx}-${mIdx}-tne`}>{formatNum(d.tne)}</td>,
-                          <td key={`${emp}-${gIdx}-${mIdx}-imp`}>{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
+                          <td key={`${emp}-${gIdx}-${mIdx}-tne`}>{formatNum(d.tne)} TN</td>,
+                          <td key={`${emp}-${gIdx}-${mIdx}-imp`}>{mat.divisa === 'PEN' ? 'S/' : '$'}{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
                         ];
                       })}
                     </tr>
@@ -134,26 +146,26 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
               {/* Total Dólares */}
               <tr className="fila-total">
                 <td className="col-cliente">Total Dólares (USD)</td>
-                <td>{formatNum(totales.USD.general.tne)}</td>
-                <td>{formatNum(type === 'venta' ? totales.USD.general.importeVenta : totales.USD.general.importeCosto)}</td>
+                <td>{formatNum(totales.USD.general.tne)} TN</td>
+                <td>${formatNum(type === 'venta' ? totales.USD.general.importeVenta : totales.USD.general.importeCosto)}</td>
                 {empresas.map(emp => {
                   const d = totales.USD[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
                   return [
-                    <td key={`usd-${emp}-tne`}>{formatNum(d.tne)}</td>,
-                    <td key={`usd-${emp}-imp`}>{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
+                    <td key={`usd-${emp}-tne`}>{formatNum(d.tne)} TN</td>,
+                    <td key={`usd-${emp}-imp`}>${formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
                   ];
                 })}
               </tr>
               {/* Total Soles */}
               <tr className="fila-total">
                 <td className="col-cliente">Total Soles (PEN)</td>
-                <td>{formatNum(totales.PEN.general.tne)}</td>
-                <td>{formatNum(type === 'venta' ? totales.PEN.general.importeVenta : totales.PEN.general.importeCosto)}</td>
+                <td>{formatNum(totales.PEN.general.tne)} TN</td>
+                <td>S/{formatNum(type === 'venta' ? totales.PEN.general.importeVenta : totales.PEN.general.importeCosto)}</td>
                 {empresas.map(emp => {
                   const d = totales.PEN[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
                   return [
-                    <td key={`pen-${emp}-tne`}>{formatNum(d.tne)}</td>,
-                    <td key={`pen-${emp}-imp`}>{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
+                    <td key={`pen-${emp}-tne`}>{formatNum(d.tne)} TN</td>,
+                    <td key={`pen-${emp}-imp`}>S/{formatNum(type === 'venta' ? d.importeVenta : d.importeCosto)}</td>,
                   ];
                 })}
               </tr>
@@ -166,33 +178,54 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
 
   const renderMargen = () => {
     if (!data) return null;
-    const { margen } = data;
+    const { margen, empresas } = data;
 
     return (
       <div className="tabla-detallada-section margen-section">
         <h2>Margen de Ganancia</h2>
-        <table className="tabla-detallada margen-table">
-          <thead>
-            <tr>
-              <th className="col-cliente">Concepto</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="col-cliente">Dólares (USD)</td>
-              <td>{formatNum(margen.USD.margen)}</td>
-            </tr>
-            <tr>
-              <td className="col-cliente">Soles (PEN)</td>
-              <td>{formatNum(margen.PEN.margen)}</td>
-            </tr>
-            <tr className="fila-total">
-              <td className="col-cliente">TOTAL</td>
-              <td>{formatNum(margen.total)}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="tabla-scroll-container">
+          <table className="tabla-detallada margen-table">
+            <colgroup>
+              <col style={{ minWidth: '140px' }} />
+              {empresas.concat(['general']).map((_, i) => [
+                <col key={`m1-${i}`} style={{ minWidth: '80px' }} />,
+                <col key={`m2-${i}`} style={{ minWidth: '90px' }} />,
+              ])}
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="col-cliente">Concepto</th>
+                <th className="col-general" colSpan={2}>General</th>
+                {empresas.map((emp, idx) => (
+                  <th key={emp} className={`col-empresa-${idx % 4}`} colSpan={2}>{emp}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="col-cliente">Dólares (USD)</td>
+                <td colSpan={2}>${formatNum(margen.USD.general.margen)}</td>
+                {empresas.map(emp => (
+                  <td key={`usd-${emp}`} colSpan={2}>${formatNum((margen.USD[emp] || { margen: 0 }).margen)}</td>
+                ))}
+              </tr>
+              <tr>
+                <td className="col-cliente">Soles (PEN)</td>
+                <td colSpan={2}>S/{formatNum(margen.PEN.general.margen)}</td>
+                {empresas.map(emp => (
+                  <td key={`pen-${emp}`} colSpan={2}>S/{formatNum((margen.PEN[emp] || { margen: 0 }).margen)}</td>
+                ))}
+              </tr>
+              <tr className="fila-total">
+                <td className="col-cliente">TOTAL</td>
+                <td colSpan={2}>{formatNum(margen.total.general)}</td>
+                {empresas.map(emp => (
+                  <td key={`total-${emp}`} colSpan={2}>{formatNum(margen.total[emp] || 0)}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   };
@@ -232,8 +265,8 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
             <>
               <div ref={printRef}>
                 <h3 style={{ textAlign: 'center', marginBottom: 10 }}>Reporte Detallado - {mes}</h3>
-                {renderTable('Tabla de Venta (Precio Unitario × TN Recibida)', 'venta')}
-                {renderTable('Tabla de Costo (Precio Costo × TN Recibida)', 'costo')}
+                {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta')}
+                {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo')}
                 {renderMargen()}
               </div>
             </>

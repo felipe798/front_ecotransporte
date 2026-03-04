@@ -170,7 +170,7 @@
 
 .tabla-detallada-section h2 {
   font-size: 0.75rem;
-  color: #1a1a1a;
+  color: #0F172A;
   margin-bottom: 3px;
   padding-bottom: 2px;
   border-bottom: 2px solid #1B7430;
@@ -178,7 +178,7 @@
 
 .tabla-scroll-container {
   overflow-x: auto;
-  border: 1px solid #ddd;
+  border: 1px solid #E2E8F0;
   border-radius: 6px;
 }
 
@@ -187,6 +187,7 @@
   border-collapse: collapse;
   font-size: 0.62rem;
   white-space: nowrap;
+  table-layout: fixed;
 }
 
 .tabla-detallada thead th {
@@ -195,7 +196,7 @@
   padding: 3px 4px;
   font-weight: 600;
   text-align: center;
-  border: 1px solid #158a35;
+  border: 1px solid #16652a;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -211,11 +212,36 @@
   min-width: 120px;
 }
 
+.tabla-detallada thead th.col-general {
+  background: #2563EB;
+  border-color: #1D4ED8;
+}
+
+.tabla-detallada thead th.col-empresa-0 {
+  background: #5B21B6;
+  border-color: #4C1D95;
+}
+
+.tabla-detallada thead th.col-empresa-1 {
+  background: #B45309;
+  border-color: #92400E;
+}
+
+.tabla-detallada thead th.col-empresa-2 {
+  background: #7F1D1D;
+  border-color: #691B1B;
+}
+
+.tabla-detallada thead th.col-empresa-3 {
+  background: #374151;
+  border-color: #1F2937;
+}
+
 .tabla-detallada tbody td {
   padding: 2px 4px;
   text-align: right;
-  border: 1px solid #e0e0e0;
-  color: #333;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
 }
 
 .tabla-detallada tbody td.col-cliente {
@@ -225,34 +251,34 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  border-right: 2px solid #ccc;
+  border-right: 2px solid #CBD5E1;
 }
 
 .tabla-detallada tbody tr:nth-child(even) td {
-  background-color: #fafafa;
+  background-color: #F8FAFC;
 }
 
 .tabla-detallada tbody tr:nth-child(even) td.col-cliente {
-  background-color: #fafafa;
+  background-color: #F8FAFC;
 }
 
 .tabla-detallada tbody tr:hover td {
-  background-color: #e8f5e9;
+  background-color: #EFF6FF;
 }
 
 .tabla-detallada tbody tr:hover td.col-cliente {
-  background-color: #e8f5e9;
+  background-color: #EFF6FF;
 }
 
 /* Client header rows */
 .tabla-detallada tbody tr.fila-cliente-header td {
-  background: #1B7430;
+  background: #374151;
   color: white;
   font-weight: 700;
   font-size: 0.85em;
   padding: 4px 8px;
   text-align: left;
-  border: 1px solid #145524;
+  border: 1px solid #1F2937;
 }
 
 /* Material sub-rows */
@@ -264,32 +290,31 @@
 
 /* Total rows */
 .tabla-detallada tbody tr.fila-total td {
-  background: #e8f5e9;
+  background: #F1F5F9;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #0F172A;
   border-top: 2px solid #1B7430;
 }
 
 .tabla-detallada tbody tr.fila-total td.col-cliente {
-  background: #e8f5e9;
+  background: #F1F5F9;
 }
 
 /* Margen Table */
 .margen-section {
-  max-width: 380px;
 }
 
 .margen-section h2 {
-  border-bottom-color: #0d47a1;
+  border-bottom-color: #2563EB;
 }
 
 .margen-table thead th {
-  background: #0d47a1;
-  border-color: #0a3a81;
+  background: #2563EB;
+  border-color: #1D4ED8;
 }
 
 .margen-table thead th.col-cliente {
-  background: #082e6b;
+  background: #1E40AF;
 }
 
 .margen-table tbody td {
@@ -297,7 +322,7 @@
   font-size: 0.72rem;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 900px) {
   .tablas-modal-overlay {
     padding: 4px;
@@ -341,5 +366,170 @@
 
   .tabla-detallada tbody td {
     padding: 1px 3px;
+  }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 600px) {
+  .tablas-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .tablas-modal-content {
+    border-radius: 0;
+    max-height: 100vh;
+    max-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .tablas-modal-header {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+    padding: 8px 10px;
+  }
+
+  .tablas-modal-title {
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .tablas-modal-title h1 {
+    font-size: 0.8rem;
+    white-space: normal;
+  }
+
+  .tablas-modal-filter {
+    width: 100%;
+  }
+
+  .tablas-modal-filter select {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    min-height: 34px;
+  }
+
+  .tablas-modal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn-download-pdf {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    min-height: 36px;
+  }
+
+  .btn-close-modal {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  .tablas-modal-body {
+    padding: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabla-detallada-section {
+    margin-bottom: 10px;
+  }
+
+  .tabla-detallada-section h2 {
+    font-size: 0.7rem;
+    padding: 2px 4px;
+  }
+
+  .tabla-scroll-container {
+    border-radius: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabla-detallada {
+    font-size: 0.5rem;
+    table-layout: auto;
+  }
+
+  .tabla-detallada thead th {
+    font-size: 0.48rem;
+    padding: 3px 2px;
+  }
+
+  .tabla-detallada thead th.col-cliente,
+  .tabla-detallada tbody td.col-cliente {
+    min-width: 80px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tabla-detallada tbody td {
+    padding: 2px 2px;
+    font-size: 0.48rem;
+  }
+
+  .tabla-detallada tbody td.col-material {
+    padding-left: 10px;
+    font-size: 0.46rem;
+  }
+
+  .tabla-detallada tbody tr.fila-cliente-header td {
+    font-size: 0.5rem;
+    padding: 3px 6px;
+  }
+
+  .margen-table tbody td {
+    font-size: 0.5rem;
+  }
+
+  .loading-section,
+  .empty-section {
+    min-height: 80px;
+    font-size: 0.75rem;
+  }
+
+  .spinner {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Responsive - Very small phones */
+@media (max-width: 380px) {
+  .tablas-modal-header {
+    padding: 6px 8px;
+  }
+
+  .tablas-modal-title h1 {
+    font-size: 0.72rem;
+  }
+
+  .tablas-modal-filter label {
+    font-size: 0.65rem;
+  }
+
+  .tabla-detallada {
+    font-size: 0.44rem;
+  }
+
+  .tabla-detallada thead th {
+    font-size: 0.42rem;
+    padding: 2px 1px;
+  }
+
+  .tabla-detallada tbody td {
+    padding: 1px 1px;
+    font-size: 0.42rem;
+  }
+
+  .tabla-detallada thead th.col-cliente,
+  .tabla-detallada tbody td.col-cliente {
+    min-width: 65px;
+    max-width: 80px;
   }
 }

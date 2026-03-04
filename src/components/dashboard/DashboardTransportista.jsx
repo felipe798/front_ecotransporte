@@ -177,7 +177,7 @@ const DashboardTransportista = () => {
 
       {/* Detalle por Transportista */}
       <div className="section-card full-width">
-        <h2>Detalle por Transportista</h2>
+        <h2>📋 Detalle por Transportista</h2>
         {detalleTransportista.length === 0 ? (
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (
@@ -192,7 +192,7 @@ const DashboardTransportista = () => {
                 </tr>
               </thead>
               <tbody>
-                {detalleTransportista.map((item, index) => (
+                {[...detalleTransportista].sort((a, b) => (parseInt(b.cantidad_traslados) || 0) - (parseInt(a.cantidad_traslados) || 0)).map((item, index) => (
                   <tr key={index}>
                     <td>{item.transportista || 'Sin asignar'}</td>
                     <td>{item.cantidad_traslados}</td>
@@ -214,7 +214,7 @@ const DashboardTransportista = () => {
         <>
         {/* TN por Unidad (Placa) */}
         <div className="section-card">
-          <h2>TN por Unidad</h2>
+          <h2>🚚 TN por Unidad</h2>
           <div className="chart-container">
             {tnPorUnidad.length === 0 ? (
               <p className="empty-message">No hay datos para mostrar</p>
@@ -222,11 +222,11 @@ const DashboardTransportista = () => {
               <>
               <ResponsiveContainer width="100%" height={chartHeight}>
                 <BarChart data={tnPorUnidad} layout="vertical" margin={{ left: 10, right: 80, top: 5, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis type="number" hide />
                   <YAxis dataKey="placa" type="category" width={110} tick={{ fontSize: 12 }} />
-                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} />
-                  <Bar dataKey="total" name="TN">
+                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                  <Bar dataKey="total" name="TN" radius={[0, 6, 6, 0]}>
                     {tnPorUnidad.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -250,7 +250,7 @@ const DashboardTransportista = () => {
 
         {/* TN por Cliente */}
         <div className="section-card">
-          <h2>TN por Cliente</h2>
+          <h2>🧑‍💼 TN por Cliente</h2>
           <div className="chart-container pie-chart">
             {tnPorCliente.length === 0 ? (
               <p className="empty-message">No hay datos para mostrar</p>
@@ -268,6 +268,8 @@ const DashboardTransportista = () => {
                     fill="#8884d8"
                     dataKey="total"
                     nameKey="cliente"
+                    stroke="#fff"
+                    strokeWidth={2}
                   >
                     {tnPorCliente.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -275,6 +277,7 @@ const DashboardTransportista = () => {
                   </Pie>
                   <Tooltip
                     formatter={(value, name, props) => [`${parseFloat(value).toFixed(2)} TN`, props.payload.cliente || 'Sin cliente']}
+                    contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -301,19 +304,19 @@ const DashboardTransportista = () => {
 
       {/* Traslados por Unidad */}
       <div className="section-card">
-        <h2>Traslados por Unidad</h2>
+        <h2>📦 Traslados por Unidad</h2>
         {trasladosPorUnidad.length === 0 ? (
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (
           <div className="chart-container">
 <ResponsiveContainer width="100%" height={Math.max(300, trasladosPorUnidad.length * 28)}>
               <BarChart data={trasladosPorUnidad} margin={{ top: 35, right: 20, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis dataKey="placa" tick={{ fontSize: 11 }} interval={0} angle={0} textAnchor="middle" />
                 <YAxis />
-                <Tooltip formatter={(value, name) => name === 'Traslados' ? [value, 'Traslados'] : [`${parseFloat(value).toFixed(2)} TN`, 'TN Recibido']} />
+                <Tooltip formatter={(value, name) => name === 'Traslados' ? [value, 'Traslados'] : [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 <Legend />
-                <Bar dataKey="cantidad" name="Traslados">
+                <Bar dataKey="cantidad" name="Traslados" radius={[4, 4, 0, 0]}>
                   {trasladosPorUnidad.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -339,7 +342,7 @@ const DashboardTransportista = () => {
 
       {/* Lista detallada de TN por Cliente */}
       <div className="section-card">
-        <h2>Detalle TN por Cliente</h2>
+        <h2>📝 Detalle TN por Cliente</h2>
         {tnPorCliente.length === 0 ? (
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (

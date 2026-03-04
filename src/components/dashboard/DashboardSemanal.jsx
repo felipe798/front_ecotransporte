@@ -3,8 +3,14 @@ import { Link } from 'react-router-dom';
 import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList,
-  LineChart, Line
+  LineChart, Line, Cell
 } from 'recharts';
+
+const CHART_COLORS = [
+  '#1B7430', '#4A86B8', '#E8913A', '#8E6BAD',
+  '#5BA3C9', '#C4883A', '#9E6575', '#6882A8',
+  '#3A9E9E', '#B87840'
+];
 
 const CustomSemanaTick = ({ x, y, payload, data }) => {
   const item = data?.find(d => d.semana === payload.value);
@@ -43,7 +49,7 @@ const Modal = ({ title, items, onClose }) => (
                 <th>Cliente</th>
                 <th>Unidad</th>
                 <th>Ticket</th>
-                <th>TN Recibida</th>
+                <th>Peso Ticket (TN Recibida)</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -305,23 +311,27 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
         <>
           {/* Gráfico TN Recibido por Semana */}
           <div className="chart-section">
-        <h2>TN Recibido por Semana</h2>
+        <h2>📦 Peso Ticket por Semana</h2>
         <div className="chart-container">
           {tnRecibidoPorSemana.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
           ) : (
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={tnRecibidoPorSemana} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis
                   dataKey="semana"
                   height={55}
                   tick={<CustomSemanaTick data={tnRecibidoPorSemana} />}
                 />
                 <YAxis />
-                <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'TN Recibido']} />
+                <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 <Legend />
-                <Bar dataKey="total" name="TN Recibido" fill="#2E9D4A" />
+                <Bar dataKey="total" name="Peso Ticket" radius={[4, 4, 0, 0]}>
+                  {tnRecibidoPorSemana.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -330,7 +340,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
 
       {/* TN Recibido por Tipo de Concentrado */}
       <div className="chart-section">
-        <h2>TN Recibido por Tipo de Concentrado</h2>
+        <h2>⛏️ Peso Ticket por Tipo de Concentrado</h2>
         <div className="chart-container">
           {tnRecibidoPorConcentrado.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
@@ -342,7 +352,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
                 margin={{ top: 10, right: 70, left: 10, bottom: 10 }}
                 barSize={25}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis 
                   dataKey="tipo_concentrado" 
@@ -351,8 +361,11 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
                   tick={{ fontSize: 11, fill: '#333' }}
                   tickMargin={8}
                 />
-                <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'TN Recibido']} />
-                <Bar dataKey="total" name="TN Recibido" fill="#2E9D4A" radius={[0, 4, 4, 0]}>
+                <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                <Bar dataKey="total" name="Peso Ticket" radius={[0, 6, 6, 0]}>
+                  {tnRecibidoPorConcentrado.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
+                  ))}
                   <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: 11, fill: '#333', fontWeight: 600 }} />
                 </Bar>
               </BarChart>

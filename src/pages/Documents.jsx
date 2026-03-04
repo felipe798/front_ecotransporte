@@ -106,7 +106,7 @@ const Documents = () => {
       <div className="documents-header">
         <div className="header-title">
           <img src={logoEmpresa} alt="Logo Empresa" className="page-logo" />
-          <h1>Documentos</h1>
+          <h1>📄 Documentos</h1>
         </div>
         <div className="documents-actions">
           <input
@@ -173,7 +173,7 @@ const Documents = () => {
                 <th>GRT</th>
                 <th>GRR</th>
                 <th>Conductor</th>
-                <th>TN Recibido</th>
+                <th>Peso Ticket (TN Recibida)</th>
                 <th>Cliente</th>
                 <th>Factura</th>
                 <th>Acciones</th>

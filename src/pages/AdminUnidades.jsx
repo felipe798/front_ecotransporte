@@ -131,7 +131,7 @@ const AdminUnidades = () => {
   return (
     <div className="admin-page">
       <div className="admin-header">
-        <h1>Unidades (Placas)</h1>
+        <h1>🚛 Unidades (Placas)</h1>
         <div className="admin-actions">
           <button className="btn-primary" onClick={openCreateModal}>
             + Nueva Unidad

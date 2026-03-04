@@ -224,7 +224,7 @@ const DashboardResumen = () => {
         <div className="indicator-card highlight">
           <div className="indicator-icon">⛏️</div>
           <div className="indicator-content">
-            <h3>TN Recibidas (Filtrado)</h3>
+            <h3>Peso Ticket (TN Recibida) - Filtrado</h3>
             <p className="indicator-value">{data.indicadores.tnRecibidaFiltrado?.toFixed(2) || '0.00'}</p>
             <span className="indicator-label">Con filtros aplicados</span>
           </div>
@@ -233,7 +233,7 @@ const DashboardResumen = () => {
 
       {/* Control de Peso */}
       <div className="section-card">
-        <h2>Control de Peso</h2>
+        <h2>⚖️ Control de Peso</h2>
         <div className="control-peso-grid single">
           <div className="peso-item">
             <label>Peso Guía (TN Enviado)</label>
@@ -256,7 +256,7 @@ const DashboardResumen = () => {
 
       {/* Gráfico Peso Guía vs Peso Ticket */}
       <div className="section-card">
-        <h2>Peso Guía vs Peso Ticket</h2>
+        <h2>📊 Peso Guía vs Peso Ticket</h2>
         <div className="chart-container">
           {(() => {
             const pesoGuia = data.controlPeso.tn_enviado_total || 0;
@@ -270,11 +270,11 @@ const DashboardResumen = () => {
             return (
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 80, left: 10, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis type="number" tick={{ fontSize: 12 }} hide />
                   <YAxis dataKey="nombre" type="category" width={100} tick={{ fontSize: 13, fontWeight: 600 }} />
-                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} />
-                  <Bar dataKey="valor" name="TN">
+                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                  <Bar dataKey="valor" name="TN" radius={[0, 6, 6, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell key={index} fill={COLORS[index]} />
                     ))}

@@ -68,8 +68,8 @@
   align-items: flex-end;
   gap: 8px;
   padding: 5px 12px;
-  background: #f0f7f1;
-  border-bottom: 1px solid #ddd;
+  background: #F8FAFC;
+  border-bottom: 1px solid #E2E8F0;
   flex-wrap: wrap;
   flex-shrink: 0;
 }
@@ -135,9 +135,9 @@
 /* Bloques por placa */
 .rg-bloque {
   margin-bottom: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid #E2E8F0;
   border-radius: 5px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .rg-bloque h3 {
@@ -158,23 +158,52 @@
   border-collapse: collapse;
   font-size: 0.6rem;
   white-space: nowrap;
+  table-layout: fixed;
+  min-width: 1100px;
 }
 
 .rg-table thead th {
-  background: #2e7d32;
+  background: #1B7430;
   color: #fff;
   padding: 2px 3px;
   font-weight: 600;
   text-align: center;
-  border: 1px solid #1B7430;
+  border: 1px solid #16652a;
   font-size: 0.58rem;
+  white-space: normal;
+}
+
+/* Column group colors */
+.rg-table thead th.col-info {
+  background: #2563EB;
+  border-color: #1D4ED8;
+}
+
+.rg-table thead th.col-peso {
+  background: #5B21B6;
+  border-color: #4C1D95;
+}
+
+.rg-table thead th.col-ref {
+  background: #B45309;
+  border-color: #92400E;
+}
+
+.rg-table thead th.col-cliente {
+  background: #145524;
+  border-color: #0D3D19;
+}
+
+.rg-table thead th.col-money {
+  background: #7F1D1D;
+  border-color: #691B1B;
 }
 
 .rg-table tbody td {
   padding: 2px 3px;
   text-align: right;
-  border: 1px solid #e0e0e0;
-  color: #333;
+  border: 1px solid #E2E8F0;
+  color: #0F172A;
 }
 
 .rg-table tbody td.col-left {
@@ -182,35 +211,37 @@
 }
 
 .rg-table tbody tr:nth-child(even) td {
-  background-color: #fafafa;
+  background-color: #F8FAFC;
 }
 
 .rg-table tbody tr:hover td {
-  background-color: #e8f5e9;
+  background-color: #EFF6FF;
 }
 
 /* Subtotal semana */
 .rg-table tbody tr.fila-subtotal td {
-  background: #e8f5e9;
+  background: #F1F5F9;
   font-weight: 700;
-  color: #1a1a1a;
+  color: #0F172A;
   border-top: 2px solid #1B7430;
   font-size: 0.62rem;
 }
 
 /* Total placa */
 .rg-table tbody tr.fila-total td {
-  background: #c8e6c9;
+  background: #E2E8F0;
   font-weight: 700;
-  color: #1a1a1a;
-  border-top: 2px solid #145524;
+  color: #0F172A;
+  border-top: 2px solid #374151;
   font-size: 0.64rem;
 }
 
 .rg-bloque-totales {
   padding: 4px 10px;
-  background: #f5f5f5;
-  border-top: 1px solid #ddd;
+  background: #F8FAFC;
+  border-top: 1px solid #E2E8F0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .totales-moneda {
@@ -229,20 +260,20 @@
 .rg-totales-generales {
   margin-top: 8px;
   padding: 6px 8px;
-  background: #e8f5e9;
+  background: #F8FAFC;
   border-radius: 5px;
   border: 2px solid #1B7430;
 }
 
 .rg-totales-generales h3 {
   font-size: 0.75rem;
-  color: #145524;
+  color: #0F172A;
   margin-bottom: 3px;
 }
 
 .rg-totales-generales p {
   font-size: 0.68rem;
-  color: #333;
+  color: #0F172A;
   margin: 1px 0;
 }
 
@@ -250,7 +281,7 @@
   color: #1B7430;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 900px) {
   .rg-filters-bar {
     flex-direction: column;
@@ -289,5 +320,162 @@
 
   .rg-table tbody td {
     padding: 1px 2px;
+  }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 600px) {
+  .rg-modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .rg-modal-content {
+    border-radius: 0;
+    max-height: 100vh;
+    max-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .rg-modal-header {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+    padding: 8px 10px;
+  }
+
+  .rg-modal-title h1 {
+    font-size: 0.75rem;
+    white-space: normal;
+  }
+
+  .rg-modal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .rg-filters-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .rg-filter-item label {
+    font-size: 0.65rem;
+  }
+
+  .rg-filter-item select {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    min-height: 34px;
+    min-width: 100%;
+  }
+
+  .rg-btn-generar {
+    width: 100%;
+    padding: 8px 14px;
+    font-size: 0.78rem;
+    min-height: 36px;
+  }
+
+  .rg-modal-body {
+    padding: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rg-bloque {
+    margin-bottom: 10px;
+  }
+
+  .rg-bloque h3 {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+
+  .rg-semana-block {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .rg-table {
+    font-size: 0.46rem;
+  }
+
+  .rg-table thead th {
+    font-size: 0.44rem;
+    padding: 2px 2px;
+  }
+
+  .rg-table tbody td {
+    padding: 2px 2px;
+    font-size: 0.44rem;
+  }
+
+  .rg-bloque-totales {
+    padding: 4px 8px;
+  }
+
+  .totales-moneda {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .moneda-tag {
+    font-size: 0.65rem;
+  }
+
+  .rg-totales-generales {
+    padding: 6px;
+  }
+
+  .rg-totales-generales h3 {
+    font-size: 0.68rem;
+  }
+
+  .rg-totales-generales p {
+    font-size: 0.62rem;
+  }
+
+  .btn-download-pdf {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    min-height: 36px;
+  }
+
+  .btn-close-modal {
+    width: 36px;
+    height: 36px;
+    font-size: 1.1rem;
+  }
+
+  .loading-section,
+  .empty-section {
+    min-height: 80px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Responsive - Very small phones */
+@media (max-width: 380px) {
+  .rg-modal-header {
+    padding: 6px 8px;
+  }
+
+  .rg-modal-title h1 {
+    font-size: 0.68rem;
+  }
+
+  .rg-table {
+    font-size: 0.4rem;
+  }
+
+  .rg-table thead th {
+    font-size: 0.38rem;
+    padding: 1px 1px;
+  }
+
+  .rg-table tbody td {
+    padding: 1px 1px;
+    font-size: 0.38rem;
   }
 }

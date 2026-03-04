@@ -11,10 +11,10 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('resumen');
 
   const tabs = [
-    { id: 'resumen', label: 'Resumen General' },
-    { id: 'semanal', label: 'Variación de TN' },
-    { id: 'transportista', label: 'Detalle Transportista' },
-    { id: 'financiero', label: 'Financiero' },
+    { id: 'resumen', label: '📊 Resumen General' },
+    { id: 'semanal', label: '⚖️ Variación de TN' },
+    { id: 'transportista', label: '🚚 Detalle Transportista' },
+    { id: 'financiero', label: '💰 Financiero' },
   ];
 
   return (
@@ -22,8 +22,8 @@ const Dashboard = () => {
       <div className="dashboard-header">
         <div>
           <img src={logoEmpresa} alt="Logo Empresa" className="page-logo" />
-          <h1>Dashboard</h1>
-          <p>Panel de control y análisis de operaciones</p>
+          <h1>🏭 Dashboard</h1>
+          <p>⛏️ Panel de control y análisis de operaciones</p>
         </div>
         <Link to="/upload" className="btn-upload">
           + Subir PDF

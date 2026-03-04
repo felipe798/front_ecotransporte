@@ -99,6 +99,16 @@ const DocumentDetail = () => {
           DOCUMENTO ANULADO
         </div>
       )}
+
+      {document.motivo && (
+        <div className="motivo-detail-banner">
+          <div className="motivo-detail-icon">&#9888;</div>
+          <div className="motivo-detail-body">
+            <strong>Documento incompleto — Motivo registrado</strong>
+            <p className="motivo-detail-text">{document.motivo}</p>
+          </div>
+        </div>
+      )}
       <div className="detail-header">
         <div className="header-info">
           <Link to="/documents" className="back-link">← Volver</Link>

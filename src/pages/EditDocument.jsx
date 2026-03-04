@@ -327,7 +327,7 @@ const EditDocument = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="deposito">Depósito</label>
-                  <input type="text" id="deposito" name="deposito" value={formData.deposito} onChange={handleChange} placeholder="IMPALA / LOGIMINSA" />
+                  <input type="text" id="deposito" name="deposito" value={formData.deposito} onChange={handleChange} placeholder="IMPALA / LOGIMINSA / CONCESION" />
                 </div>
               </div>
             </div>

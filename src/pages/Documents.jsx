@@ -176,7 +176,6 @@ const Documents = () => {
                 <th>TN Recibido</th>
                 <th>Cliente</th>
                 <th>Factura</th>
-                <th>Motivo</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -207,11 +206,6 @@ const Documents = () => {
                   <td className="number">{doc.tn_recibida}</td>
                   <td>{doc.cliente}</td>
                   <td className="code factura-cell">{doc.factura || <span className="no-factura">—</span>}</td>
-                  <td className="motivo-cell">
-                    {doc.motivo ? (
-                      <span className="motivo-badge" title={doc.motivo}>!</span>
-                    ) : null}
-                  </td>
                   <td className="actions">
                     <Link to={`/documents/${doc.id}`} className="btn-action btn-view" title="Ver detalle">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

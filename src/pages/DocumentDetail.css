@@ -130,6 +130,42 @@
   margin-bottom: 1rem;
 }
 
+/* Aviso de motivo en la vista de detalle */
+.motivo-detail-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.motivo-detail-icon {
+  font-size: 1.4rem;
+  color: #ef4444;
+  flex-shrink: 0;
+  line-height: 1;
+  padding-top: 2px;
+}
+
+.motivo-detail-body strong {
+  display: block;
+  color: #ef4444;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.motivo-detail-text {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;  /* respeta saltos, no corta el texto */
+  word-break: break-word;
+}
+
 .document-detail.anulado .detail-section {
   opacity: 0.6;
 }

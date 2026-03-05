@@ -200,12 +200,13 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
 }
 
 .tabla-detallada thead th.col-cliente {
   background: #145524;
-  text-align: left;
+  text-align: center;
+  font-size: 0.75rem;
   position: sticky;
   left: 0;
   z-index: 3;
@@ -239,14 +240,15 @@
 
 .tabla-detallada tbody td {
   padding: 2px 4px;
-  text-align: right;
+  text-align: center;
   border: 1px solid #E2E8F0;
   color: #0F172A;
 }
 
 .tabla-detallada tbody td.col-cliente {
-  text-align: left;
-  font-weight: 500;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.75rem;
   background: #fff;
   position: sticky;
   left: 0;
@@ -276,17 +278,17 @@
   background: #374151 !important;
   color: white !important;
   font-weight: 700;
-  font-size: 0.85em;
+  font-size: 0.8rem;
   padding: 4px 8px;
-  text-align: left;
+  text-align: center;
   border: 1px solid #1F2937;
 }
 
 /* Material sub-rows */
 .tabla-detallada tbody td.col-material {
   padding-left: 20px;
-  font-weight: 400;
-  font-size: 0.82em;
+  font-weight: 500;
+  font-size: 0.7rem;
 }
 
 /* Total rows */

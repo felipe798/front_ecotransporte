@@ -257,7 +257,9 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
           ) : (
             <>
               <div ref={printRef}>
-                <h3 style={{ textAlign: 'center', marginBottom: 10 }}>Reporte Detallado - {mes}</h3>
+                <h3 style={{ textAlign: 'center', marginBottom: 14, fontSize: '1.1rem', fontWeight: 700, color: '#1a2332', letterSpacing: '0.02em' }}>
+                  Reporte Detallado — <span style={{ textTransform: 'uppercase', color: '#1B7430', fontWeight: 800 }}>{mes}</span>
+                </h3>
                 {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta')}
                 {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo')}
                 {renderMargen()}

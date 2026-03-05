@@ -201,13 +201,13 @@
 
 .rg-table tbody td {
   padding: 2px 3px;
-  text-align: right;
+  text-align: center;
   border: 1px solid #E2E8F0;
   color: #0F172A;
 }
 
 .rg-table tbody td.col-left {
-  text-align: left;
+  text-align: center;
 }
 
 .rg-table tbody tr:nth-child(even) td {

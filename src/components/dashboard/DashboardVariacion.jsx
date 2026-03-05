@@ -3,9 +3,11 @@ import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import './DashboardComponents.css';
 
 const DashboardVariacion = ({ filters }) => {
+  const isMobile = useIsMobile();
   const [tablaPivot, setTablaPivot] = useState([]);
   const [tnPorUnidadMes, setTnPorUnidadMes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,14 +128,14 @@ const DashboardVariacion = ({ filters }) => {
           {datosGrafico.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
           ) : (
-            <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={datosGrafico}>
+            <ResponsiveContainer width="100%" height={isMobile ? 300 : 400}>
+              <BarChart data={datosGrafico} margin={isMobile ? { top: 5, right: 5, left: 0, bottom: 5 } : undefined}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="mes" />
-                <YAxis />
+                <XAxis dataKey="mes" tick={{ fontSize: isMobile ? 9 : 12 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 50 : 30} />
+                <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 35 : 60} />
                 <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                <Legend />
-                {placasUnicas.slice(0, 8).map((placa, index) => (
+                {!isMobile && <Legend />}
+                {placasUnicas.slice(0, isMobile ? 6 : 8).map((placa, index) => (
                   <Bar 
                     key={placa} 
                     dataKey={placa} 

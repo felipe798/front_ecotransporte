@@ -172,7 +172,7 @@
 
 .detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
@@ -413,4 +413,74 @@
 .factura-remove:hover {
   background: rgba(239, 83, 80, 0.15);
   color: #ef5350;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-info h1 {
+    font-size: 1.35rem;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .btn-edit,
+  .btn-delete,
+  .btn-anular,
+  .btn-restore {
+    padding: 0.6rem 1rem;
+    font-size: 0.8rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .detail-section {
+    padding: 1rem;
+  }
+
+  .factura-input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-info h1 {
+    font-size: 1.15rem;
+  }
+
+  .document-code {
+    font-size: 0.9rem;
+  }
+
+  .detail-section {
+    padding: 0.75rem;
+  }
+
+  .detail-section h2 {
+    font-size: 0.9rem;
+  }
+
+  .info-item span {
+    font-size: 0.9rem;
+  }
+
+  .value-large {
+    font-size: 1.2rem !important;
+  }
+
+  .anulado-banner {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
 }

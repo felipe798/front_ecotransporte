@@ -710,3 +710,111 @@
   padding: 0.45rem 0.6rem;
   font-size: 0.85rem;
 }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .upload-container {
+    padding: 1.25rem;
+  }
+
+  .upload-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .drop-zone {
+    padding: 2rem 1rem;
+  }
+
+  .drop-text {
+    font-size: 1rem;
+  }
+
+  .upload-actions {
+    flex-direction: column;
+  }
+
+  .upload-actions .btn-primary,
+  .upload-actions .btn-secondary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .wizard-modal {
+    padding: 1.25rem;
+    max-width: 100%;
+  }
+
+  .wizard-modal-wide {
+    max-width: 100%;
+  }
+
+  .wizard-tariff-info {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .wizard-tariff-prices {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-create-row {
+    flex-wrap: wrap;
+  }
+
+  .wizard-input-ruc {
+    max-width: 100%;
+  }
+
+  .wizard-actions {
+    flex-direction: column;
+  }
+
+  .wizard-actions .btn-primary,
+  .wizard-actions .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .result-actions .btn-primary,
+  .result-actions .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .files-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .upload-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .upload-header .page-logo {
+    height: 60px;
+    max-width: 180px;
+  }
+
+  .upload-container {
+    padding: 1rem;
+  }
+
+  .drop-icon {
+    font-size: 2.5rem;
+  }
+
+  .data-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-input-price,
+  .wizard-select-small {
+    max-width: 100%;
+  }
+}

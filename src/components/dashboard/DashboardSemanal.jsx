@@ -5,6 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList,
   LineChart, Line, Cell
 } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 
 const CHART_COLORS = [
   '#1B7430', '#4A86B8', '#E8913A', '#8E6BAD',
@@ -12,16 +13,16 @@ const CHART_COLORS = [
   '#3A9E9E', '#B87840'
 ];
 
-const CustomSemanaTick = ({ x, y, payload, data }) => {
+const CustomSemanaTick = ({ x, y, payload, data, isMobile }) => {
   const item = data?.find(d => d.semana === payload.value);
   const tn = item ? parseFloat(item.total).toFixed(1) : '';
   return (
     <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={14} textAnchor="middle" fill="#555" fontSize={12}>
+      <text x={0} y={0} dy={14} textAnchor="middle" fill="#555" fontSize={isMobile ? 10 : 12}>
         {payload.value}
       </text>
       {tn && (
-        <text x={0} y={0} dy={28} textAnchor="middle" fill="#1B7430" fontSize={11} fontWeight={600}>
+        <text x={0} y={0} dy={28} textAnchor="middle" fill="#1B7430" fontSize={isMobile ? 9 : 11} fontWeight={600}>
           {tn} TN
         </text>
       )}
@@ -78,6 +79,7 @@ const Modal = ({ title, items, onClose }) => (
 );
 
 const DashboardSemanal = ({ filters: globalFilters }) => {
+  const isMobile = useIsMobile();
   const [tnEnviadoPorSemana, setTnEnviadoPorSemana] = useState([]);
   const [tnRecibidoPorSemana, setTnRecibidoPorSemana] = useState([]);
   const [tnRecibidoPorConcentrado, setTnRecibidoPorConcentrado] = useState([]);
@@ -316,17 +318,18 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
           {tnRecibidoPorSemana.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
           ) : (
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={tnRecibidoPorSemana} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
+            <ResponsiveContainer width="100%" height={isMobile ? 250 : 320}>
+              <BarChart data={tnRecibidoPorSemana} margin={{ top: 10, right: isMobile ? 10 : 20, left: 0, bottom: isMobile ? 30 : 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis
                   dataKey="semana"
-                  height={55}
-                  tick={<CustomSemanaTick data={tnRecibidoPorSemana} />}
+                  height={isMobile ? 45 : 55}
+                  tick={<CustomSemanaTick data={tnRecibidoPorSemana} isMobile={isMobile} />}
+                  interval={isMobile ? 'preserveStartEnd' : 0}
                 />
-                <YAxis />
+                <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 35 : 60} />
                 <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                <Legend />
+                {!isMobile && <Legend />}
                 <Bar dataKey="total" name="Peso Ticket" radius={[4, 4, 0, 0]}>
                   {tnRecibidoPorSemana.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
@@ -345,28 +348,28 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
           {tnRecibidoPorConcentrado.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
           ) : (
-            <ResponsiveContainer width="100%" height={Math.max(150, tnRecibidoPorConcentrado.length * 45)}>
+            <ResponsiveContainer width="100%" height={Math.max(150, tnRecibidoPorConcentrado.length * (isMobile ? 40 : 45))}>
               <BarChart
                 data={tnRecibidoPorConcentrado}
                 layout="vertical"
-                margin={{ top: 10, right: 70, left: 10, bottom: 10 }}
-                barSize={25}
+                margin={{ top: 10, right: isMobile ? 45 : 70, left: isMobile ? 5 : 10, bottom: 10 }}
+                barSize={isMobile ? 20 : 25}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
+                <XAxis type="number" tick={{ fontSize: isMobile ? 9 : 11 }} />
                 <YAxis 
                   dataKey="tipo_concentrado" 
                   type="category" 
-                  width={120}
-                  tick={{ fontSize: 11, fill: '#333' }}
-                  tickMargin={8}
+                  width={isMobile ? 70 : 120}
+                  tick={{ fontSize: isMobile ? 9 : 11, fill: '#333' }}
+                  tickMargin={isMobile ? 4 : 8}
                 />
                 <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 <Bar dataKey="total" name="Peso Ticket" radius={[0, 6, 6, 0]}>
                   {tnRecibidoPorConcentrado.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
                   ))}
-                  <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: 11, fill: '#333', fontWeight: 600 }} />
+                  <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: isMobile ? 9 : 11, fill: '#333', fontWeight: 600 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

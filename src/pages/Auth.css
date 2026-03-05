@@ -160,3 +160,19 @@
   margin-top: 0.75rem;
   font-size: 0.9rem;
 }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .auth-logo {
+    height: 60px;
+  }
+
+  .auth-header h1 {
+    font-size: 1.4rem;
+  }
+}

@@ -423,3 +423,82 @@
   font-weight: 700;
   cursor: help;
 }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .documents-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .documents-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .documents-actions {
+    flex-direction: column;
+  }
+
+  .search-input {
+    width: 100%;
+  }
+
+  .date-filter-group {
+    flex-wrap: wrap;
+  }
+
+  .btn-filter-incomplete {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .documents-table th,
+  .documents-table td {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+  }
+
+  .page-btn {
+    min-width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .documents-page {
+    padding: 0.5rem 0;
+  }
+
+  .documents-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .documents-header .page-logo {
+    height: 45px;
+    max-width: 150px;
+  }
+
+  .search-input {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .date-filter-input {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .btn-action {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+}

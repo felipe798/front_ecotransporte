@@ -3,6 +3,7 @@ import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell
 } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import './DashboardComponents.css';
 import TablasDetalladasModal from './TablasDetalladasModal';
 import ReporteGuiasModal from './ReporteGuiasModal';
@@ -10,6 +11,7 @@ import ReporteGuiasModal from './ReporteGuiasModal';
 const FILTER_FIELDS = ['mes', 'semana', 'cliente', 'transportista', 'unidad', 'transportado'];
 
 const DashboardResumen = () => {
+  const isMobile = useIsMobile();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filtersLoading, setFiltersLoading] = useState(false);
@@ -268,17 +270,17 @@ const DashboardResumen = () => {
             ];
             const COLORS = ['#1B7430', '#E8913A'];
             return (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: 80, left: 10, bottom: 5 }}>
+              <ResponsiveContainer width="100%" height={isMobile ? 160 : 200}>
+                <BarChart data={chartData} layout="vertical" margin={{ top: 10, right: isMobile ? 45 : 80, left: isMobile ? 5 : 10, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis type="number" tick={{ fontSize: 12 }} hide />
-                  <YAxis dataKey="nombre" type="category" width={100} tick={{ fontSize: 13, fontWeight: 600 }} />
+                  <YAxis dataKey="nombre" type="category" width={isMobile ? 70 : 100} tick={{ fontSize: isMobile ? 11 : 13, fontWeight: 600 }} />
                   <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                   <Bar dataKey="valor" name="TN" radius={[0, 6, 6, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell key={index} fill={COLORS[index]} />
                     ))}
-                    <LabelList dataKey="valor" position="right" formatter={(v) => `${parseFloat(v).toFixed(2)} TN`} style={{ fontSize: 12, fontWeight: 600 }} />
+                    <LabelList dataKey="valor" position="right" formatter={(v) => `${parseFloat(v).toFixed(2)} TN`} style={{ fontSize: isMobile ? 10 : 12, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

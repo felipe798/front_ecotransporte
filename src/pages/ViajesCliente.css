@@ -214,3 +214,85 @@
   padding: 40px;
   font-style: italic;
 }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .viajes-cliente-container {
+    padding: 10px;
+  }
+
+  .viajes-cliente-container h1 {
+    font-size: 1.4rem;
+  }
+
+  .filtros-viajes {
+    flex-direction: column;
+    gap: 12px;
+    padding: 15px;
+  }
+
+  .filtro-group {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .filtro-group select {
+    width: 100%;
+  }
+
+  .btn-limpiar {
+    width: 100%;
+  }
+
+  .indicadores-viajes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .indicador-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .indicador-icon {
+    font-size: 1.8rem;
+  }
+
+  .indicador-value {
+    font-size: 1.5rem;
+  }
+
+  .seccion-dias,
+  .seccion-grafico {
+    padding: 15px;
+  }
+
+  .tabla-dias th,
+  .tabla-dias td {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .viajes-cliente-container h1 {
+    font-size: 1.2rem;
+  }
+
+  .indicadores-viajes {
+    grid-template-columns: 1fr;
+  }
+
+  .indicador-card {
+    padding: 12px;
+  }
+
+  .indicador-value {
+    font-size: 1.3rem;
+  }
+
+  .seccion-dias,
+  .seccion-grafico {
+    padding: 10px;
+  }
+}

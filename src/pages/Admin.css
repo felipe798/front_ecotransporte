@@ -442,3 +442,38 @@
 .confirm-dialog .form-actions {
   justify-content: center;
 }
+
+/* Responsive - Small phones */
+@media (max-width: 480px) {
+  .admin-page {
+    padding: 10px;
+  }
+
+  .admin-page h1 {
+    font-size: 1.3rem;
+  }
+
+  .admin-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-tab {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-card .value {
+    font-size: 1.4rem;
+  }
+
+  .modal-content {
+    width: 98%;
+    padding: 12px;
+  }
+}

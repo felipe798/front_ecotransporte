@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LabelList
 } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import './DashboardComponents.css';
 
 // Paleta de colores equilibrada para gráficos
@@ -14,6 +15,7 @@ const COLORS = [
 ];
 
 const DashboardTransportista = () => {
+  const isMobile = useIsMobile();
   const [tnPorUnidad, setTnPorUnidad] = useState([]);
   const [tnPorCliente, setTnPorCliente] = useState([]);
   const [trasladosPorUnidad, setTrasladosPorUnidad] = useState([]);
@@ -208,8 +210,8 @@ const DashboardTransportista = () => {
 
       {/* Charts row */}
       {(() => {
-        const chartHeight = Math.max(300, tnPorUnidad.length * 50);
-        const pieRadius = Math.min(200, Math.floor((chartHeight - 20) / 2));
+        const chartHeight = Math.max(300, tnPorUnidad.length * (isMobile ? 40 : 50));
+        const pieRadius = Math.min(isMobile ? 110 : 200, Math.floor((chartHeight - 20) / 2));
         return (
         <>
         {/* TN por Unidad (Placa) */}
@@ -221,16 +223,16 @@ const DashboardTransportista = () => {
             ) : (
               <>
               <ResponsiveContainer width="100%" height={chartHeight}>
-                <BarChart data={tnPorUnidad} layout="vertical" margin={{ left: 10, right: 80, top: 5, bottom: 5 }}>
+                <BarChart data={tnPorUnidad} layout="vertical" margin={{ left: isMobile ? 5 : 10, right: isMobile ? 45 : 80, top: 5, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis type="number" hide />
-                  <YAxis dataKey="placa" type="category" width={110} tick={{ fontSize: 12 }} />
+                  <YAxis dataKey="placa" type="category" width={isMobile ? 60 : 110} tick={{ fontSize: isMobile ? 10 : 12 }} />
                   <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                   <Bar dataKey="total" name="TN" radius={[0, 6, 6, 0]}>
                     {tnPorUnidad.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
-                    <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: 12, fill: '#333' }} />
+                    <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: isMobile ? 9 : 12, fill: '#333' }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -256,14 +258,14 @@ const DashboardTransportista = () => {
               <p className="empty-message">No hay datos para mostrar</p>
             ) : (
               <>
-              <ResponsiveContainer width="100%" height={chartHeight}>
+              <ResponsiveContainer width="100%" height={isMobile ? Math.max(250, chartHeight * 0.7) : chartHeight}>
                 <PieChart>
                   <Pie
                     data={tnPorCliente}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={isMobile ? false : ({ percent }) => `${(percent * 100).toFixed(0)}%`}
                     outerRadius={pieRadius}
                     fill="#8884d8"
                     dataKey="total"
@@ -309,13 +311,13 @@ const DashboardTransportista = () => {
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (
           <div className="chart-container">
-<ResponsiveContainer width="100%" height={Math.max(300, trasladosPorUnidad.length * 28)}>
-              <BarChart data={trasladosPorUnidad} margin={{ top: 35, right: 20, left: 0, bottom: 20 }}>
+<ResponsiveContainer width="100%" height={Math.max(isMobile ? 250 : 300, trasladosPorUnidad.length * (isMobile ? 22 : 28))}>
+              <BarChart data={trasladosPorUnidad} margin={{ top: isMobile ? 25 : 35, right: isMobile ? 10 : 20, left: 0, bottom: isMobile ? 10 : 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                <XAxis dataKey="placa" tick={{ fontSize: 11 }} interval={0} angle={0} textAnchor="middle" />
-                <YAxis />
+                <XAxis dataKey="placa" tick={{ fontSize: isMobile ? 9 : 11 }} interval={0} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 50 : 30} />
+                <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 30 : 60} />
                 <Tooltip formatter={(value, name) => name === 'Traslados' ? [value, 'Traslados'] : [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                <Legend />
+                {!isMobile && <Legend />}
                 <Bar dataKey="cantidad" name="Traslados" radius={[4, 4, 0, 0]}>
                   {trasladosPorUnidad.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -325,10 +327,11 @@ const DashboardTransportista = () => {
                       const item = trasladosPorUnidad[index];
                       const tnRaw = item ? parseFloat(item.tn_recibido) : NaN;
                       const tn = !isNaN(tnRaw) && tnRaw > 0 ? `${tnRaw.toFixed(1)} TN` : null;
+                      const fs = isMobile ? 8 : 10;
                       return (
                         <g>
-                          {tn && <text x={x + width / 2} y={y - 18} textAnchor="middle" fontSize={10} fill="#1B7430" fontWeight={600}>{tn}</text>}
-                          <text x={x + width / 2} y={tn ? y - 6 : y - 6} textAnchor="middle" fontSize={10} fill="#555">{value} trasl.</text>
+                          {tn && !isMobile && <text x={x + width / 2} y={y - 18} textAnchor="middle" fontSize={fs} fill="#1B7430" fontWeight={600}>{tn}</text>}
+                          <text x={x + width / 2} y={tn && !isMobile ? y - 6 : y - 6} textAnchor="middle" fontSize={fs} fill="#555">{value}</text>
                         </g>
                       );
                     }}

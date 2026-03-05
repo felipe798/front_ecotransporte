@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ComposedChart, Line, LabelList
 } from 'recharts';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import './DashboardComponents.css';
 
 // Colores para divisas - contrastantes
@@ -29,6 +30,7 @@ const CHART_COLORS = [
 ];
 
 const DashboardFinanciero = ({ filters }) => {
+  const isMobile = useIsMobile();
   const [porCobrar, setPorCobrar] = useState([]);
   const [porPagar, setPorPagar] = useState([]);
   const [margenOperativo, setMargenOperativo] = useState([]);
@@ -519,18 +521,18 @@ const DashboardFinanciero = ({ filters }) => {
               {cobrarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, cobrarChart.length * 50)}>
-                  <BarChart data={cobrarChart} layout="vertical" margin={{ right: 110, left: 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(300, cobrarChart.length * (isMobile ? 40 : 50))}>
+                  <BarChart data={cobrarChart} layout="vertical" margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
-                    <YAxis dataKey="label" type="category" width={180} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                    <Legend />
+                    {!isMobile && <Legend />}
                     <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                     <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#4A86B8' }} />
+                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -632,18 +634,18 @@ const DashboardFinanciero = ({ filters }) => {
               {pagarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, pagarChart.length * 50)}>
-                  <BarChart data={pagarChart} layout="vertical" margin={{ right: 110, left: 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(300, pagarChart.length * (isMobile ? 40 : 50))}>
+                  <BarChart data={pagarChart} layout="vertical" margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
-                    <YAxis dataKey="label" type="category" width={180} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                    <Legend />
+                    {!isMobile && <Legend />}
                     <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                     <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#4A86B8' }} />
+                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -750,18 +752,18 @@ const DashboardFinanciero = ({ filters }) => {
               {margenChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, margenChart.length * 50)}>
-                  <BarChart data={margenChart} layout="vertical" margin={{ right: 110, left: 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(300, margenChart.length * (isMobile ? 40 : 50))}>
+                  <BarChart data={margenChart} layout="vertical" margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
-                    <YAxis dataKey="label" type="category" width={180} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                    <Legend />
+                    {!isMobile && <Legend />}
                     <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                     <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: 11, fill: '#4A86B8' }} />
+                      <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${parseFloat(v).toFixed(0)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -861,15 +863,15 @@ const DashboardFinanciero = ({ filters }) => {
               {tnChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, tnChart.length * 50)}>
-                  <BarChart data={tnChart} layout="vertical" margin={{ right: 90, left: 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(300, tnChart.length * (isMobile ? 40 : 50))}>
+                  <BarChart data={tnChart} layout="vertical" margin={{ right: isMobile ? 50 : 90, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
-                    <YAxis dataKey="label" type="category" width={200} tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="label" type="category" width={isMobile ? 80 : 200} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Tonelaje']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                    <Legend />
+                    {!isMobile && <Legend />}
                     <Bar dataKey="total" name="Peso Ticket" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="total" position="right" formatter={(v) => v > 0 ? `${parseFloat(v).toFixed(1)} TN` : ''} style={{ fontSize: 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="total" position="right" formatter={(v) => v > 0 ? `${parseFloat(v).toFixed(1)} TN` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>

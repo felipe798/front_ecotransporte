@@ -53,7 +53,7 @@ const Documents = () => {
   };
 
   const isIncomplete = (doc) =>
-    (doc.precio_unitario === null || doc.precio_unitario === undefined) && !doc.anulado;
+    !!doc.motivo && !doc.anulado;
 
   const incompleteCount = documents.filter(isIncomplete).length;
 

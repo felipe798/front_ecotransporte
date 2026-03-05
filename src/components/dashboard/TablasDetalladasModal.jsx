@@ -216,13 +216,6 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   <td key={`pen-${emp}`} colSpan={2}>S/{formatNum((margen.PEN[emp] || { margen: 0 }).margen)}</td>
                 ))}
               </tr>
-              <tr className="fila-total">
-                <td className="col-cliente">TOTAL</td>
-                <td colSpan={2}>{formatNum(margen.total.general)}</td>
-                {empresas.map(emp => (
-                  <td key={`total-${emp}`} colSpan={2}>{formatNum(margen.total[emp] || 0)}</td>
-                ))}
-              </tr>
             </tbody>
           </table>
         </div>

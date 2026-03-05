@@ -120,16 +120,28 @@ const Upload = () => {
           placasNuevas.add(response.placaNoRegistrada);
         }
         if (response.tarifaNoEncontrada && response.document?.id) {
+          const tnf = response.tarifaNoEncontrada;
+          const camposFaltantes = [];
+          if (!tnf.cliente) camposFaltantes.push('cliente');
+          if (!tnf.partida) camposFaltantes.push('partida');
+          if (!tnf.llegada) camposFaltantes.push('llegada');
+          if (!tnf.transportado) camposFaltantes.push('material');
+          const motivoTarifa = camposFaltantes.length === 0
+            ? 'Ruta completa detectada pero sin tarifa registrada'
+            : camposFaltantes.length === 1
+              ? `No se identificó el ${camposFaltantes[0]}`
+              : `No se identificaron: ${camposFaltantes.join(', ')}`;
           tarifasFaltantes.push({
             docId: response.document.id,
-            cliente: response.tarifaNoEncontrada.cliente || '',
-            partida: response.tarifaNoEncontrada.partida || '',
-            llegada: response.tarifaNoEncontrada.llegada || '',
-            transportado: response.tarifaNoEncontrada.transportado || '',
+            cliente: tnf.cliente || '',
+            partida: tnf.partida || '',
+            llegada: tnf.llegada || '',
+            transportado: tnf.transportado || '',
             precioVentaSinIgv: '',
             precioCostoSinIgv: '',
             moneda: 'USD',
             divisa: 'USD',
+            motivo: motivoTarifa,
           });
         }
       } catch (err) {
@@ -567,12 +579,22 @@ const Upload = () => {
               <div className="wizard-modal wizard-modal-wide">
                 <div className="wizard-header">
                   <h2>💰 Tarifas No Encontradas</h2>
-                  <p>Se detectaron <strong>{missingTariffs.length}</strong> documento(s) sin tarifa. Completa los precios para crear las tarifas automáticamente.</p>
+                  <p>
+                    Se detectaron <strong>{missingTariffs.length}</strong> documento(s) que requieren atención.
+                    {' '}Corrige los campos resaltados y completa los precios para registrar las tarifas.
+                  </p>
                 </div>
 
                 <div className="wizard-tariff-list">
                   {missingTariffs.map((t, idx) => (
                     <div key={idx} className="wizard-tariff-card">
+                      {t.motivo && (
+                        <div className={`wizard-tariff-motivo ${
+                          t.motivo.startsWith('Ruta completa') ? 'motivo-sin-tarifa' : 'motivo-sin-datos'
+                        }`}>
+                          ⚠️ {t.motivo}
+                        </div>
+                      )}
                       <div className="wizard-tariff-info">
                         {/* Cliente: editable siempre (select si hay catalogo, sino input) */}
                         <div className="wizard-tariff-field">

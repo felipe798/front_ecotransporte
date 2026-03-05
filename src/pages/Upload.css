@@ -601,6 +601,27 @@
   padding: 1rem 1.25rem;
 }
 
+.wizard-tariff-motivo {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  display: inline-block;
+}
+
+.motivo-sin-datos {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.motivo-sin-tarifa {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
 .wizard-tariff-info {
   display: grid;
   grid-template-columns: 1fr 1fr;

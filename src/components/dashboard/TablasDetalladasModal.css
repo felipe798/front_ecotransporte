@@ -271,9 +271,10 @@
 }
 
 /* Client header rows */
-.tabla-detallada tbody tr.fila-cliente-header td {
-  background: #374151;
-  color: white;
+.tabla-detallada tbody tr.fila-cliente-header td,
+.tabla-detallada tbody tr.fila-cliente-header td.col-cliente {
+  background: #374151 !important;
+  color: white !important;
   font-weight: 700;
   font-size: 0.85em;
   padding: 4px 8px;

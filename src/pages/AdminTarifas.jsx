@@ -264,7 +264,7 @@ const AdminTarifas = () => {
                   <input
                     type="text"
                     value={formData.material}
-                    onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, material: e.target.value.toUpperCase() })}
                     placeholder="Tipo de material"
                   />
                 </div>
@@ -275,7 +275,7 @@ const AdminTarifas = () => {
                   <input
                     type="text"
                     value={formData.partida}
-                    onChange={(e) => setFormData({ ...formData, partida: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, partida: e.target.value.toUpperCase() })}
                     required
                     placeholder="Lugar de partida"
                   />
@@ -285,7 +285,7 @@ const AdminTarifas = () => {
                   <input
                     type="text"
                     value={formData.llegada}
-                    onChange={(e) => setFormData({ ...formData, llegada: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, llegada: e.target.value.toUpperCase() })}
                     required
                     placeholder="Lugar de llegada"
                   />

@@ -77,11 +77,23 @@ const EditDocument = () => {
     }
   };
 
-  // Valores únicos para selects de tarifa
-  const clientesUnicos = [...new Set((tarifas).map(t => t.cliente))].filter(Boolean).sort();
-  const partidasUnicas = [...new Set((tarifas).map(t => t.partida))].filter(Boolean).sort();
-  const llegadasUnicas = [...new Set((tarifas).map(t => t.llegada))].filter(Boolean).sort();
-  const materialesUnicos = [...new Set((tarifas).map(t => t.material))].filter(Boolean).sort();
+  // Valores únicos para selects de tarifa (filtrados en cascada)
+  const clientesUnicos = [...new Set(tarifas.map(t => t.cliente))].filter(Boolean).sort();
+
+  const tarifasFiltradas1 = formData.cliente
+    ? tarifas.filter(t => t.cliente === formData.cliente)
+    : tarifas;
+  const partidasUnicas = [...new Set(tarifasFiltradas1.map(t => t.partida))].filter(Boolean).sort();
+
+  const tarifasFiltradas2 = formData.partida
+    ? tarifasFiltradas1.filter(t => t.partida === formData.partida)
+    : tarifasFiltradas1;
+  const llegadasUnicas = [...new Set(tarifasFiltradas2.map(t => t.llegada))].filter(Boolean).sort();
+
+  const tarifasFiltradas3 = formData.llegada
+    ? tarifasFiltradas2.filter(t => t.llegada === formData.llegada)
+    : tarifasFiltradas2;
+  const materialesUnicos = [...new Set(tarifasFiltradas3.map(t => t.material))].filter(Boolean).sort();
 
   const loadDocument = async () => {
     try {
@@ -389,8 +401,12 @@ const EditDocument = () => {
               <div className="form-grid">
                 <div className="form-group">
                   <label htmlFor="cliente">Cliente</label>
+                  <div className="campo-actual">Actual: <strong>{document?.cliente || '—'}</strong></div>
                   <select id="cliente" name="cliente" value={formData.cliente} onChange={handleChange}>
                     <option value="">-- Seleccionar cliente --</option>
+                    {formData.cliente && !clientesUnicos.includes(formData.cliente) && (
+                      <option value={formData.cliente}>{formData.cliente} (actual)</option>
+                    )}
                     {clientesUnicos.map(c => (
                       <option key={c} value={c}>{c}</option>
                     ))}
@@ -398,8 +414,12 @@ const EditDocument = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="partida">Punto de Partida</label>
+                  <div className="campo-actual">Actual: <strong>{document?.partida || '—'}</strong></div>
                   <select id="partida" name="partida" value={formData.partida} onChange={handleChange}>
                     <option value="">-- Seleccionar partida --</option>
+                    {formData.partida && !partidasUnicas.includes(formData.partida) && (
+                      <option value={formData.partida}>{formData.partida} (actual)</option>
+                    )}
                     {partidasUnicas.map(p => (
                       <option key={p} value={p}>{p}</option>
                     ))}
@@ -407,8 +427,12 @@ const EditDocument = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="llegada">Punto de Llegada</label>
+                  <div className="campo-actual">Actual: <strong>{document?.llegada || '—'}</strong></div>
                   <select id="llegada" name="llegada" value={formData.llegada} onChange={handleChange}>
                     <option value="">-- Seleccionar llegada --</option>
+                    {formData.llegada && !llegadasUnicas.includes(formData.llegada) && (
+                      <option value={formData.llegada}>{formData.llegada} (actual)</option>
+                    )}
                     {llegadasUnicas.map(l => (
                       <option key={l} value={l}>{l}</option>
                     ))}
@@ -416,8 +440,12 @@ const EditDocument = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="transportado">Material Transportado</label>
+                  <div className="campo-actual">Actual: <strong>{document?.transportado || '—'}</strong></div>
                   <select id="transportado" name="transportado" value={formData.transportado} onChange={handleChange}>
                     <option value="">-- Seleccionar material --</option>
+                    {formData.transportado && !materialesUnicos.includes(formData.transportado) && (
+                      <option value={formData.transportado}>{formData.transportado} (actual)</option>
+                    )}
                     {materialesUnicos.map(m => (
                       <option key={m} value={m}>{m}</option>
                     ))}

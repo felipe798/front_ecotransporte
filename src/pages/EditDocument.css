@@ -422,6 +422,22 @@
   border-color: var(--accent-color);
 }
 
+/* Valor actual del documento encima del select */
+.campo-actual {
+  font-size: 0.75rem;
+  color: #64748B;
+  background: #F8FAFC;
+  border: 1px dashed #CBD5E1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.campo-actual strong {
+  color: #0F172A;
+}
+
 /* ========== TARIFA SELECTOR ========== */
 .tarifa-selector-bar {
   display: flex;

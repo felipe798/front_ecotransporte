@@ -791,6 +791,18 @@ export const clientTariffService = {
     return handleResponse(response);
   },
 
+  searchMatch: async ({ cliente, partida, llegada, material }) => {
+    const params = new URLSearchParams();
+    if (cliente) params.append('cliente', cliente);
+    if (partida) params.append('partida', partida);
+    if (llegada) params.append('llegada', llegada);
+    if (material) params.append('material', material);
+    const response = await fetch(`${API_URL}/client-tariff/search-match?${params.toString()}`, {
+      headers: authHeaders()
+    });
+    return handleResponse(response);
+  },
+
   create: async (data) => {
     const response = await fetch(`${API_URL}/client-tariff`, {
       method: 'POST',

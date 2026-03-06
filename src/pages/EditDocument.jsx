@@ -24,6 +24,11 @@ const EditDocument = () => {
   const [unidades, setUnidades] = useState([]);
   const [tarifas, setTarifas] = useState([]);
 
+  // Popup selector de tarifa
+  const [showTarifaPopup, setShowTarifaPopup] = useState(false);
+  const [tarifaResults, setTarifaResults] = useState([]);
+  const [tarifaLoading, setTarifaLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     ticket: '',
     factura: '',
@@ -131,6 +136,53 @@ const EditDocument = () => {
       unidad: placa,
       empresa: unidadEncontrada?.empresa?.nombre || prev.empresa,
     }));
+  };
+
+  // Buscar tarifas coincidentes según el documento actual
+  const handleBuscarTarifa = async () => {
+    setShowTarifaPopup(true);
+    setTarifaLoading(true);
+    setTarifaResults([]);
+    try {
+      const results = await clientTariffService.searchMatch({
+        cliente: formData.cliente || '',
+        partida: formData.partida || '',
+        llegada: formData.llegada || '',
+        material: formData.transportado || '',
+      });
+      setTarifaResults(Array.isArray(results) ? results : []);
+    } catch (err) {
+      console.error('Error buscando tarifas:', err);
+      setTarifaResults([]);
+    } finally {
+      setTarifaLoading(false);
+    }
+  };
+
+  // Al seleccionar una tarifa, llenar campos financieros y recalcular
+  const handleSelectTarifa = (tarifa) => {
+    const precioUnitario = Number(tarifa.precioVentaConIgv) || 0;
+    const pcosto = Number(tarifa.precioCostoConIgv) || 0;
+    const tnRecibida = Number(formData.tn_recibida) || 0;
+    const transportista = formData.transportista || '';
+
+    const precioFinal = tnRecibida ? Number((precioUnitario * tnRecibida).toFixed(2)) : '';
+    const esEcotransporte = transportista.toUpperCase().includes('ECOTRANSPORTE');
+    const costoFinal = esEcotransporte ? 0 : (tnRecibida ? Number((pcosto * tnRecibida).toFixed(2)) : '');
+    const margen = (precioFinal !== '' && costoFinal !== '') ? Number((precioFinal - costoFinal).toFixed(2)) : '';
+
+    setFormData(prev => ({
+      ...prev,
+      precio_unitario: precioUnitario || '',
+      divisa: tarifa.moneda || 'USD',
+      precio_final: precioFinal,
+      pcosto: pcosto || '',
+      divisa_cost: tarifa.divisa || 'USD',
+      costo_final: costoFinal,
+      margen_operativo: margen,
+    }));
+    setShowTarifaPopup(false);
+    notification.success('Tarifa aplicada correctamente');
   };
 
   const handleSubmit = async (e) => {
@@ -376,41 +428,84 @@ const EditDocument = () => {
 
             <div className="form-section admin-section">
               <h2>Datos Financieros <span className="admin-badge">Solo Admin</span></h2>
+              <div className="tarifa-selector-bar">
+                <button type="button" className="btn-buscar-tarifa" onClick={handleBuscarTarifa}>
+                  🔍 Buscar Tarifa
+                </button>
+                <span className="tarifa-hint">Selecciona una tarifa basada en cliente, partida, llegada y material</span>
+              </div>
               <div className="form-grid">
                 <div className="form-group">
-                  <label htmlFor="precio_unitario">Precio Unitario</label>
-                  <input type="number" step="0.01" id="precio_unitario" name="precio_unitario" value={formData.precio_unitario} onChange={handleChange} />
+                  <label>Precio Unitario</label>
+                  <div className="readonly-financial">{formData.precio_unitario !== '' ? formData.precio_unitario : '-'} {formData.divisa}</div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="divisa">Moneda Venta</label>
-                  <select id="divisa" name="divisa" value={formData.divisa} onChange={handleChange}>
-                    {DIVISAS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <label>Moneda Venta</label>
+                  <div className="readonly-financial">{formData.divisa || '-'}</div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="precio_final">Precio Final</label>
-                  <input type="number" step="0.01" id="precio_final" name="precio_final" value={formData.precio_final} onChange={handleChange} />
+                  <label>Precio Final</label>
+                  <div className="readonly-financial">{formData.precio_final !== '' ? formData.precio_final : '-'} {formData.divisa}</div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="pcosto">Costo Unitario</label>
-                  <input type="number" step="0.01" id="pcosto" name="pcosto" value={formData.pcosto} onChange={handleChange} />
+                  <label>Costo Unitario</label>
+                  <div className="readonly-financial">{formData.pcosto !== '' ? formData.pcosto : '-'} {formData.divisa_cost}</div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="divisa_cost">Moneda Costo</label>
-                  <select id="divisa_cost" name="divisa_cost" value={formData.divisa_cost} onChange={handleChange}>
-                    {DIVISAS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+                  <label>Moneda Costo</label>
+                  <div className="readonly-financial">{formData.divisa_cost || '-'}</div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="costo_final">Costo Final</label>
-                  <input type="number" step="0.01" id="costo_final" name="costo_final" value={formData.costo_final} onChange={handleChange} />
+                  <label>Costo Final</label>
+                  <div className="readonly-financial">{formData.costo_final !== '' ? formData.costo_final : '-'} {formData.divisa_cost}</div>
                 </div>
                 <div className="form-group">
-                  <label htmlFor="margen_operativo">Margen Operativo</label>
-                  <input type="number" step="0.01" id="margen_operativo" name="margen_operativo" value={formData.margen_operativo} onChange={handleChange} />
+                  <label>Margen Operativo</label>
+                  <div className="readonly-financial">{formData.margen_operativo !== '' ? formData.margen_operativo : '-'}</div>
                 </div>
               </div>
             </div>
+
+            {/* Popup selector de tarifa */}
+            {showTarifaPopup && (
+              <div className="tarifa-popup-overlay" onClick={() => setShowTarifaPopup(false)}>
+                <div className="tarifa-popup" onClick={(e) => e.stopPropagation()}>
+                  <div className="tarifa-popup-header">
+                    <h3>Seleccionar Tarifa</h3>
+                    <button type="button" className="tarifa-popup-close" onClick={() => setShowTarifaPopup(false)}>✕</button>
+                  </div>
+                  <div className="tarifa-popup-filters">
+                    <span><strong>Cliente:</strong> {formData.cliente || '—'}</span>
+                    <span><strong>Partida:</strong> {formData.partida || '—'}</span>
+                    <span><strong>Llegada:</strong> {formData.llegada || '—'}</span>
+                    <span><strong>Material:</strong> {formData.transportado || '—'}</span>
+                  </div>
+                  <div className="tarifa-popup-body">
+                    {tarifaLoading ? (
+                      <div className="tarifa-popup-loading"><div className="spinner"></div><p>Buscando tarifas...</p></div>
+                    ) : tarifaResults.length === 0 ? (
+                      <div className="tarifa-popup-empty">No se encontraron tarifas para esta combinación</div>
+                    ) : (
+                      <div className="tarifa-popup-list">
+                        {tarifaResults.map((t) => (
+                          <div key={t.id} className="tarifa-popup-item" onClick={() => handleSelectTarifa(t)}>
+                            <div className="tarifa-item-route">
+                              <strong>{t.cliente}</strong>
+                              <span>{t.partida} → {t.llegada}</span>
+                              <span className="tarifa-item-material">{t.material}</span>
+                            </div>
+                            <div className="tarifa-item-prices">
+                              <span className="tarifa-price-sell">Venta: {Number(t.precioVentaConIgv).toFixed(2)} {t.moneda}</span>
+                              <span className="tarifa-price-cost">Costo: {Number(t.precioCostoConIgv).toFixed(2)} {t.divisa}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
 

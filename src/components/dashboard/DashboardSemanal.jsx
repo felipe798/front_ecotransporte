@@ -15,7 +15,7 @@ const CHART_COLORS = [
 
 const CustomSemanaTick = ({ x, y, payload, data, isMobile }) => {
   const item = data?.find(d => d.semana === payload.value);
-  const tn = item ? parseFloat(item.total).toFixed(1) : '';
+  const tn = item ? parseFloat(item.total).toFixed(2) : '';
   return (
     <g transform={`translate(${x},${y})`}>
       <text x={0} y={0} dy={14} textAnchor="middle" fill="#555" fontSize={isMobile ? 10 : 12}>
@@ -369,7 +369,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
                   {tnRecibidoPorConcentrado.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
                   ))}
-                  <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: isMobile ? 9 : 11, fill: '#333', fontWeight: 600 }} />
+                  <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(2)} TN`} style={{ fontSize: isMobile ? 9 : 11, fill: '#333', fontWeight: 600 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

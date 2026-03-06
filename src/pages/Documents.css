@@ -108,9 +108,20 @@
 }
 
 .documents-table .actions {
-  display: flex;
-  gap: 0.5rem;
   white-space: nowrap;
+}
+
+.documents-table .actions .btn-action,
+.documents-table .actions button {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+.documents-table .actions .btn-action:last-child,
+.documents-table .actions button:last-child {
+  margin-right: 0;
 }
 
 .factura-cell {

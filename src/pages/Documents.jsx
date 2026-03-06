@@ -11,19 +11,26 @@ const Documents = () => {
   const { user } = useAuth();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const saved = JSON.parse(sessionStorage.getItem('docs_filters') || 'null');
+  const [searchTerm, setSearchTerm] = useState(saved?.searchTerm || '');
   const [deleteId, setDeleteId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(saved?.currentPage || 1);
   const [openFilesFor, setOpenFilesFor] = useState(null);
-  const [filterIncomplete, setFilterIncomplete] = useState(false);
-  const [filterDateFrom, setFilterDateFrom] = useState('');
-  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterIncomplete, setFilterIncomplete] = useState(saved?.filterIncomplete || false);
+  const [filterDateFrom, setFilterDateFrom] = useState(saved?.filterDateFrom || '');
+  const [filterDateTo, setFilterDateTo] = useState(saved?.filterDateTo || '');
   const PAGE_SIZE = 20;
   const notification = useNotification();
 
   useEffect(() => {
     loadDocuments();
   }, []);
+
+  useEffect(() => {
+    sessionStorage.setItem('docs_filters', JSON.stringify({
+      searchTerm, currentPage, filterIncomplete, filterDateFrom, filterDateTo
+    }));
+  }, [searchTerm, currentPage, filterIncomplete, filterDateFrom, filterDateTo]);
 
   const loadDocuments = async () => {
     try {
@@ -70,6 +77,15 @@ const Documents = () => {
     const matchesDateTo = filterDateTo ? docFecha <= filterDateTo : true;
     return matchesSearch && matchesIncomplete && matchesDateFrom && matchesDateTo;
   });
+
+  if (filterIncomplete) {
+    filteredDocuments.sort((a, b) => {
+      const dateA = a.fecha ? a.fecha.toString().substring(0, 10) : '';
+      const dateB = b.fecha ? b.fecha.toString().substring(0, 10) : '';
+      if (dateA !== dateB) return dateA.localeCompare(dateB);
+      return (a.grt || '').localeCompare(b.grt || '', undefined, { numeric: true });
+    });
+  }
 
   const totalPages = Math.ceil(filteredDocuments.length / PAGE_SIZE);
   const paginatedDocuments = filteredDocuments.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);

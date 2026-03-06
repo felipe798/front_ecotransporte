@@ -217,22 +217,22 @@ const DashboardTransportista = () => {
         {/* TN por Unidad (Placa) */}
         <div className="section-card">
           <h2>🚚 TN por Unidad</h2>
-          <div className="chart-container">
+          <div className="chart-container" style={{ overflowX: tnPorUnidad.length > (isMobile ? 6 : 12) ? 'auto' : 'hidden' }}>
             {tnPorUnidad.length === 0 ? (
               <p className="empty-message">No hay datos para mostrar</p>
             ) : (
               <>
-              <ResponsiveContainer width="100%" height={chartHeight}>
-                <BarChart data={tnPorUnidad} layout="vertical" margin={{ left: isMobile ? 5 : 10, right: isMobile ? 45 : 80, top: 5, bottom: 5 }}>
+              <ResponsiveContainer width={tnPorUnidad.length > (isMobile ? 6 : 12) ? Math.max(tnPorUnidad.length * (isMobile ? 60 : 80), 600) : '100%'} height={isMobile ? 300 : 400} debounce={50}>
+                <BarChart data={tnPorUnidad} margin={{ left: 10, right: 20, top: 20, bottom: isMobile ? 60 : 50 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="placa" type="category" width={isMobile ? 60 : 110} tick={{ fontSize: isMobile ? 10 : 12 }} />
+                  <XAxis dataKey="placa" tick={{ fontSize: isMobile ? 9 : 11, angle: -45, textAnchor: 'end' }} height={isMobile ? 70 : 60} interval={0} />
+                  <YAxis tick={{ fontSize: isMobile ? 9 : 11 }} width={isMobile ? 40 : 55} />
                   <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
-                  <Bar dataKey="total" name="TN" radius={[0, 6, 6, 0]}>
+                  <Bar dataKey="total" name="TN" radius={[6, 6, 0, 0]} maxBarSize={isMobile ? 40 : 60}>
                     {tnPorUnidad.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
-                    <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(1)} TN`} style={{ fontSize: isMobile ? 9 : 12, fill: '#333' }} />
+                    <LabelList dataKey="total" position="top" formatter={(v) => `${parseFloat(v).toFixed(2)}`} style={{ fontSize: isMobile ? 8 : 10, fill: '#333' }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -241,7 +241,7 @@ const DashboardTransportista = () => {
                 {tnPorUnidad.map((item, index) => (
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS[index % COLORS.length], flexShrink: 0, display: 'inline-block' }} />
-                    <span style={{ color: '#333' }}>{item.placa || 'Sin placa'} — {parseFloat(item.total).toFixed(1)} TN</span>
+                    <span style={{ color: '#333' }}>{item.placa || 'Sin placa'} — {parseFloat(item.total).toFixed(2)} TN</span>
                   </div>
                 ))}
               </div>
@@ -265,7 +265,7 @@ const DashboardTransportista = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={isMobile ? false : ({ percent }) => `${(percent * 100).toFixed(0)}%`}
+                    label={isMobile ? false : ({ percent }) => `${(percent * 100).toFixed(2)}%`}
                     outerRadius={pieRadius}
                     fill="#8884d8"
                     dataKey="total"
@@ -287,11 +287,11 @@ const DashboardTransportista = () => {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 10, fontSize: 12 }}>
                 {tnPorCliente.map((item, index) => {
                   const total = tnPorCliente.reduce((s, i) => s + i.total, 0);
-                  const pct = total > 0 ? ((item.total / total) * 100).toFixed(1) : '0.0';
+                  const pct = total > 0 ? ((item.total / total) * 100).toFixed(2) : '0.00';
                   return (
                     <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <span style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS[index % COLORS.length], flexShrink: 0, display: 'inline-block' }} />
-                      <span style={{ color: '#333' }}>{item.cliente || 'Sin cliente'} — {parseFloat(item.total).toFixed(1)} TN ({pct}%)</span>
+                      <span style={{ color: '#333' }}>{item.cliente || 'Sin cliente'} — {parseFloat(item.total).toFixed(2)} TN ({pct}%)</span>
                     </div>
                   );
                 })}
@@ -326,7 +326,7 @@ const DashboardTransportista = () => {
                     content={({ x, y, width, value, index }) => {
                       const item = trasladosPorUnidad[index];
                       const tnRaw = item ? parseFloat(item.tn_recibido) : NaN;
-                      const tn = !isNaN(tnRaw) && tnRaw > 0 ? `${tnRaw.toFixed(1)} TN` : null;
+                      const tn = !isNaN(tnRaw) && tnRaw > 0 ? `${tnRaw.toFixed(2)} TN` : null;
                       const fs = isMobile ? 8 : 10;
                       return (
                         <g>

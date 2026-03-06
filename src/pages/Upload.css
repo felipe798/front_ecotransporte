@@ -264,6 +264,13 @@
   gap: 1rem;
 }
 
+.result-actions .btn-primary,
+.result-actions .btn-secondary {
+  flex: 1;
+  justify-content: center;
+  text-align: center;
+}
+
 /* Files List (bulk upload) */
 .files-list {
   text-align: left;

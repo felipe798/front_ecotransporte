@@ -250,7 +250,7 @@ const AdminTarifas = () => {
                   <input
                     type="text"
                     value={formData.cliente}
-                    onChange={(e) => setFormData({ ...formData, cliente: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, cliente: e.target.value.toUpperCase() })}
                     required
                     placeholder="Nombre del cliente"
                     list="clientes-list"

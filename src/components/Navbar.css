@@ -128,7 +128,7 @@
   gap: 2rem;
   min-width: 0;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .navbar-menu {

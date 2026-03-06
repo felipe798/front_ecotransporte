@@ -311,6 +311,13 @@
   border-top: 1px solid #eee;
 }
 
+.form-actions .btn-primary,
+.form-actions .btn-secondary {
+  flex: 1;
+  justify-content: center;
+  text-align: center;
+}
+
 /* Loading y Empty States */
 .loading-container {
   display: flex;

@@ -183,11 +183,12 @@
 }
 
 .tabla-detallada {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.62rem;
   white-space: nowrap;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .tabla-detallada thead th {

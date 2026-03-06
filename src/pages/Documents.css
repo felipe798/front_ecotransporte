@@ -141,6 +141,13 @@
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
 }
 
 .btn-action.btn-view {

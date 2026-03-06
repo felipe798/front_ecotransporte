@@ -154,12 +154,12 @@
 
 /* Table */
 .rg-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.6rem;
   white-space: nowrap;
-  table-layout: fixed;
-  min-width: 1100px;
+  table-layout: auto;
 }
 
 .rg-table thead th {
@@ -246,8 +246,9 @@
 
 .totales-moneda {
   display: flex;
-  gap: 12px;
-  margin-top: 2px;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
 }
 
 .moneda-tag {

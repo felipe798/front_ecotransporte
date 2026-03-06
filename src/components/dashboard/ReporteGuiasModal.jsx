@@ -191,8 +191,8 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
           </tbody>
         </table>
         <div className="totales-moneda">
-          {bloque.totalDolares > 0 && <span className="moneda-tag">DOLARES ${formatNum(bloque.totalDolares)}</span>}
-          {bloque.totalSoles > 0 && <span className="moneda-tag">S/ {formatNum(bloque.totalSoles)}</span>}
+          {bloque.totalDolares > 0 && <span className="moneda-tag">Total Dólares: ${formatNum(bloque.totalDolares)}</span>}
+          {bloque.totalSoles > 0 && <span className="moneda-tag">Total Soles: S/ {formatNum(bloque.totalSoles)}</span>}
         </div>
       </div>
     </div>

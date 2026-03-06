@@ -314,8 +314,13 @@
 .form-actions .btn-primary,
 .form-actions .btn-secondary {
   flex: 1;
+  display: flex;
+  align-items: center;
   justify-content: center;
   text-align: center;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
 }
 
 /* Loading y Empty States */

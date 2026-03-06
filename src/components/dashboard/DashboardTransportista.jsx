@@ -258,15 +258,15 @@ const DashboardTransportista = () => {
               <p className="empty-message">No hay datos para mostrar</p>
             ) : (
               <>
-              <ResponsiveContainer width="100%" height={isMobile ? Math.max(250, chartHeight * 0.7) : chartHeight}>
-                <PieChart>
+              <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
+                <PieChart margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                   <Pie
                     data={tnPorCliente}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
                     label={isMobile ? false : ({ percent }) => `${(percent * 100).toFixed(2)}%`}
-                    outerRadius={pieRadius}
+                    outerRadius={isMobile ? 80 : 120}
                     fill="#8884d8"
                     dataKey="total"
                     nameKey="cliente"
@@ -284,7 +284,7 @@ const DashboardTransportista = () => {
                 </PieChart>
               </ResponsiveContainer>
               {/* Leyenda */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 10, fontSize: 12 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 14px', marginTop: 4, fontSize: 12 }}>
                 {tnPorCliente.map((item, index) => {
                   const total = tnPorCliente.reduce((s, i) => s + i.total, 0);
                   const pct = total > 0 ? ((item.total / total) * 100).toFixed(2) : '0.00';

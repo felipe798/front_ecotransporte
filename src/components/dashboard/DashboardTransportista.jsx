@@ -190,6 +190,7 @@ const DashboardTransportista = () => {
                   <th>Transportista</th>
                   <th>Traslados</th>
                   <th>Peso Ticket</th>
+                  <th>Divisa</th>
                   <th>Costo Total</th>
                 </tr>
               </thead>
@@ -199,7 +200,8 @@ const DashboardTransportista = () => {
                     <td>{item.transportista || 'Sin asignar'}</td>
                     <td>{item.cantidad_traslados}</td>
                     <td>{(parseFloat(item.tn_recibido) || 0).toFixed(2)}</td>
-                    <td>S/ {(parseFloat(item.costo_total) || 0).toFixed(2)}</td>
+                    <td>{(item.divisa_cost || 'PEN')}</td>
+                    <td>{(item.divisa_cost || 'PEN') === 'USD' ? '$' : 'S/'} {(parseFloat(item.costo_total) || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

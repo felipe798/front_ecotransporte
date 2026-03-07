@@ -265,7 +265,7 @@ const DashboardTransportista = () => {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={isMobile ? false : ({ percent }) => `${(percent * 100).toFixed(2)}%`}
+                    label={false}
                     outerRadius={isMobile ? 80 : 120}
                     fill="#8884d8"
                     dataKey="total"
@@ -278,7 +278,11 @@ const DashboardTransportista = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value, name, props) => [`${parseFloat(value).toFixed(2)} TN`, props.payload.cliente || 'Sin cliente']}
+                    formatter={(value, name, props) => {
+                      const total = tnPorCliente.reduce((s, i) => s + i.total, 0);
+                      const pct = total > 0 ? ((parseFloat(value) / total) * 100).toFixed(2) : '0.00';
+                      return [`${parseFloat(value).toFixed(2)} TN (${pct}%)`, props.payload.cliente || 'Sin cliente'];
+                    }}
                     contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }}
                   />
                 </PieChart>

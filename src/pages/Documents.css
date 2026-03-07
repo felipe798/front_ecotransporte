@@ -337,14 +337,14 @@
 }
 
 .page-btn:hover:not(:disabled) {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #fff;
 }
 
 .page-btn.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
+  background: var(--accent-color);
+  border-color: var(--accent-color);
   color: #fff;
   font-weight: 600;
 }

@@ -15,7 +15,7 @@
 
 /* ========== TEMA ADMIN (Rol 1) - Verde claro ========== */
 .layout-admin {
-  background: #E5F2DF;
+  background: #ffffff;
 }
 
 .layout-admin .main-content {
@@ -24,7 +24,7 @@
 
 /* ========== TEMA USUARIO (Rol 2) - Blanco ========== */
 .layout-user {
-  background: #E5F2DF;
+  background: #ffffff;
 }
 
 .layout-user .main-content {

@@ -34,7 +34,6 @@
   color: white;
   border: none;
   cursor: pointer;
-  gap: 8px;
   transition: background-color 0.2s;
 }
 

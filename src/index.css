@@ -96,6 +96,7 @@ a.btn-secondary {
   transition: all 0.2s ease;
   text-decoration: none;
   box-sizing: border-box !important;
+  margin: 0 !important;
 }
 
 .form-actions,
@@ -105,23 +106,36 @@ a.btn-secondary {
 .modal-actions,
 .confirm-actions {
   display: flex !important;
-  gap: 12px;
+  gap: 12px !important;
+  align-items: stretch !important;
 }
 
-.form-actions > *,
-.upload-actions > *,
-.result-actions > *,
-.wizard-actions > *,
-.modal-actions > *,
-.confirm-actions > * {
+.form-actions > button,
+.form-actions > a,
+.upload-actions > button,
+.upload-actions > a,
+.result-actions > button,
+.result-actions > a,
+.wizard-actions > button,
+.wizard-actions > a,
+.modal-actions > button,
+.modal-actions > a,
+.confirm-actions > button,
+.confirm-actions > a {
   flex: 1 1 0% !important;
+  height: 44px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   text-align: center !important;
-  padding: 0.65rem 0.5rem !important;
+  padding: 0 0.75rem !important;
   box-sizing: border-box !important;
   min-width: 0 !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
 h1, h2, h3, h4, h5, h6 {

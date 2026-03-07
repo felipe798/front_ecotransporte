@@ -91,7 +91,7 @@
 
 .btn-download-pdf {
   padding: 5px 12px;
-  background: #1B7430;
+  background: #7BC896;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -103,7 +103,7 @@
 }
 
 .btn-download-pdf:hover:not(:disabled) {
-  background: #145524;
+  background: #5EAD7A;
 }
 
 .btn-download-pdf:disabled {
@@ -154,7 +154,7 @@
   width: 28px;
   height: 28px;
   border: 3px solid #e0e0e0;
-  border-top: 3px solid #1B7430;
+  border-top: 3px solid #7BC896;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -170,10 +170,10 @@
 
 .tabla-detallada-section h2 {
   font-size: 0.75rem;
-  color: #0F172A;
+  color: #4A5568;
   margin-bottom: 3px;
   padding-bottom: 2px;
-  border-bottom: 2px solid #1B7430;
+  border-bottom: 2px solid #7BC896;
 }
 
 .tabla-scroll-container {
@@ -192,12 +192,12 @@
 }
 
 .tabla-detallada thead th {
-  background: #1B7430;
+  background: #7BC896;
   color: #fff;
   padding: 3px 4px;
   font-weight: 600;
   text-align: center;
-  border: 1px solid #16652a;
+  border: 1px solid #8FD4A8;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -205,7 +205,7 @@
 }
 
 .tabla-detallada thead th.col-cliente {
-  background: #145524;
+  background: #5EAD7A;
   text-align: center;
   font-size: 0.75rem;
   position: sticky;
@@ -215,35 +215,35 @@
 }
 
 .tabla-detallada thead th.col-general {
-  background: #2563EB;
-  border-color: #1D4ED8;
+  background: #7CAAF5;
+  border-color: #93B8F7;
 }
 
 .tabla-detallada thead th.col-empresa-0 {
-  background: #5B21B6;
-  border-color: #4C1D95;
+  background: #A78BDB;
+  border-color: #B99DE5;
 }
 
 .tabla-detallada thead th.col-empresa-1 {
-  background: #B45309;
-  border-color: #92400E;
+  background: #E8A95B;
+  border-color: #EDB97A;
 }
 
 .tabla-detallada thead th.col-empresa-2 {
-  background: #7F1D1D;
-  border-color: #691B1B;
+  background: #D48A8A;
+  border-color: #DF9E9E;
 }
 
 .tabla-detallada thead th.col-empresa-3 {
-  background: #374151;
-  border-color: #1F2937;
+  background: #8B95A5;
+  border-color: #7A8594;
 }
 
 .tabla-detallada tbody td {
   padding: 2px 4px;
   text-align: center;
   border: 1px solid #E2E8F0;
-  color: #0F172A;
+  color: #4A5568;
 }
 
 .tabla-detallada tbody td.col-cliente {
@@ -276,13 +276,13 @@
 /* Client header rows */
 .tabla-detallada tbody tr.fila-cliente-header td,
 .tabla-detallada tbody tr.fila-cliente-header td.col-cliente {
-  background: #374151 !important;
+  background: #8B95A5 !important;
   color: white !important;
   font-weight: 700;
   font-size: 0.8rem;
   padding: 4px 8px;
   text-align: center;
-  border: 1px solid #1F2937;
+  border: 1px solid #7A8594;
 }
 
 /* Material sub-rows */
@@ -296,8 +296,8 @@
 .tabla-detallada tbody tr.fila-total td {
   background: #F1F5F9;
   font-weight: 700;
-  color: #0F172A;
-  border-top: 2px solid #1B7430;
+  color: #4A5568;
+  border-top: 2px solid #7BC896;
 }
 
 .tabla-detallada tbody tr.fila-total td.col-cliente {
@@ -309,16 +309,16 @@
 }
 
 .margen-section h2 {
-  border-bottom-color: #2563EB;
+  border-bottom-color: #7CAAF5;
 }
 
 .margen-table thead th {
-  background: #2563EB;
-  border-color: #1D4ED8;
+  background: #7CAAF5;
+  border-color: #93B8F7;
 }
 
 .margen-table thead th.col-cliente {
-  background: #1E40AF;
+  background: #6B9AEF;
 }
 
 .margen-table tbody td {

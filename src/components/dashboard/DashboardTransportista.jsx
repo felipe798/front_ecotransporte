@@ -9,9 +9,9 @@ import './DashboardComponents.css';
 
 // Paleta de colores equilibrada para gráficos
 const COLORS = [
-  '#1B7430', '#4A86B8', '#C4883A', '#8E6BAD',
-  '#3A9E9E', '#C06050', '#5D8A5D', '#6882A8',
-  '#B87840', '#9E6575'
+  '#1B7430', '#4A86B8', '#E8913A', '#8E6BAD',
+  '#E05555', '#2BBBAD', '#F7C948', '#6C5CE7',
+  '#FF6B81', '#17A2B8'
 ];
 
 const DashboardTransportista = () => {

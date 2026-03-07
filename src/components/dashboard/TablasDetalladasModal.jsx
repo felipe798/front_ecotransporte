@@ -44,23 +44,23 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
-          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #1a1a1a; }
+          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #4A5568; }
           h3 { font-size: 13px; margin: 10px 0 5px 0; text-align: center; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
           th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; }
-          th { background: #1B7430; color: white; font-weight: 600; text-align: center; }
-          th.col-cliente { text-align: left; background: #145524; }
-          th.col-general { background: #2563EB; border-color: #1D4ED8; }
-          th.col-empresa-0 { background: #5B21B6; border-color: #4C1D95; }
-          th.col-empresa-1 { background: #B45309; border-color: #92400E; }
-          th.col-empresa-2 { background: #7F1D1D; border-color: #691B1B; }
-          th.col-empresa-3 { background: #374151; border-color: #1F2937; }
+          th { background: #7BC896; color: white; font-weight: 600; text-align: center; }
+          th.col-cliente { text-align: left; background: #5EAD7A; }
+          th.col-general { background: #7CAAF5; border-color: #93B8F7; }
+          th.col-empresa-0 { background: #A78BDB; border-color: #B99DE5; }
+          th.col-empresa-1 { background: #E8A95B; border-color: #EDB97A; }
+          th.col-empresa-2 { background: #D48A8A; border-color: #DF9E9E; }
+          th.col-empresa-3 { background: #8B95A5; border-color: #7A8594; }
           td.col-cliente { text-align: left; font-weight: 500; }
           td.col-material { padding-left: 20px; font-weight: 400; font-size: 9px; }
-          tr.fila-cliente-header td { background: #374151; color: white; font-weight: 700; text-align: left; }
+          tr.fila-cliente-header td { background: #8B95A5; color: white; font-weight: 700; text-align: left; }
           tr.fila-total { background: #F1F5F9; font-weight: 700; }
           .margen-table { margin: 10px 0; }
-          .margen-table th { background: #2563EB; }
+          .margen-table th { background: #7CAAF5; }
           .margen-table td { font-weight: 600; }
           @media print { body { padding: 10px; } }
         </style>
@@ -258,7 +258,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
             <>
               <div ref={printRef}>
                 <h3 style={{ textAlign: 'center', marginBottom: 14, fontSize: '1.1rem', fontWeight: 700, color: '#1a2332', letterSpacing: '0.02em' }}>
-                  Reporte Detallado — <span style={{ textTransform: 'uppercase', color: '#1B7430', fontWeight: 800 }}>{mes}</span>
+                  Reporte Detallado — <span style={{ textTransform: 'uppercase', color: '#7BC896', fontWeight: 800 }}>{mes}</span>
                 </h3>
                 {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta')}
                 {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo')}

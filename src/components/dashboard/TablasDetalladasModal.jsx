@@ -44,23 +44,23 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
-          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #2D3748; }
+          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #2F4F3E; }
           h3 { font-size: 13px; margin: 10px 0 5px 0; text-align: center; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
-          th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; color: #2D3748; }
-          th { background: #C6E9D2; color: #2D3748; font-weight: 600; text-align: center; }
-          th.col-cliente { text-align: left; background: #A8D5BA; }
-          th.col-general { background: #BDD4F7; border-color: #AECAF5; }
-          th.col-empresa-0 { background: #D5C4F0; border-color: #C9B5EB; }
-          th.col-empresa-1 { background: #FBDFBE; border-color: #F5D1A5; }
-          th.col-empresa-2 { background: #F5CACA; border-color: #EDBDBD; }
-          th.col-empresa-3 { background: #D3D8E0; border-color: #C5CBD4; }
+          th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; color: #3E4650; }
+          th { background: #DFF5E8; color: #2F4F3E; font-weight: 600; text-align: center; }
+          th.col-cliente { text-align: left; background: #E6F4EA; }
+          th.col-general { background: #E6F0FF; border-color: #D4E4FA; }
+          th.col-empresa-0 { background: #F0E6FA; border-color: #E2D6F0; }
+          th.col-empresa-1 { background: #FFF1E0; border-color: #F5E2CC; }
+          th.col-empresa-2 { background: #FFE7E7; border-color: #F5D5D5; }
+          th.col-empresa-3 { background: #EEF1F4; border-color: #DEE3E8; }
           td.col-cliente { text-align: left; font-weight: 500; }
           td.col-material { padding-left: 20px; font-weight: 400; font-size: 9px; }
-          tr.fila-cliente-header td { background: #E8ECF0; color: #1A202C; font-weight: 700; text-align: left; }
-          tr.fila-total { background: #F0F7F3; font-weight: 700; }
+          tr.fila-cliente-header td { background: #F5F7FA; color: #3E4650; font-weight: 700; text-align: left; }
+          tr.fila-total { background: #F3FBF6; font-weight: 700; }
           .margen-table { margin: 10px 0; }
-          .margen-table th { background: #BDD4F7; }
+          .margen-table th { background: #E6F0FF; }
           .margen-table td { font-weight: 600; }
           @media print { body { padding: 10px; } }
         </style>

@@ -223,7 +223,7 @@ const DashboardResumen = () => {
           </div>
         </div>
 
-        <div className="indicator-card highlight">
+        <div className="indicator-card">
           <div className="indicator-icon">⛏️</div>
           <div className="indicator-content">
             <h3>Peso Ticket (TN Recibida) - Filtrado</h3>
@@ -231,27 +231,30 @@ const DashboardResumen = () => {
             <span className="indicator-label">Con filtros aplicados</span>
           </div>
         </div>
-      </div>
 
-      {/* Control de Peso */}
-      <div className="section-card">
-        <h2>⚖️ Control de Peso</h2>
-        <div className="control-peso-grid single">
-          <div className="peso-item">
-            <label>Peso Guía (TN Enviado)</label>
-            <span className="peso-value recibido">
+        <div className="indicator-card">
+          <div className="indicator-icon">📦</div>
+          <div className="indicator-content">
+            <h3>Peso Guía (TN Enviado)</h3>
+            <p className="indicator-value">
               {data.controlPeso.tn_enviado_total > 0 
                 ? data.controlPeso.tn_enviado_total.toFixed(2) 
                 : 'Pendiente'}
-            </span>
+            </p>
+            <span className="indicator-label">Total enviado</span>
           </div>
-          <div className="peso-item">
-            <label>Peso Ticket (TN Recibido)</label>
-            <span className="peso-value recibido">
+        </div>
+
+        <div className="indicator-card">
+          <div className="indicator-icon">⚖️</div>
+          <div className="indicator-content">
+            <h3>Peso Ticket (TN Recibido)</h3>
+            <p className="indicator-value">
               {data.controlPeso.tn_recibida_total > 0 
                 ? data.controlPeso.tn_recibida_total.toFixed(2) 
                 : 'Pendiente'}
-            </span>
+            </p>
+            <span className="indicator-label">Total recibido</span>
           </div>
         </div>
       </div>

@@ -237,7 +237,7 @@ const DashboardTransportista = () => {
                 </BarChart>
               </ResponsiveContainer>
               {/* Leyenda unidades */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 10, fontSize: 12 }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 16px', marginTop: 10, fontSize: 12, minWidth: tnPorUnidad.length > (isMobile ? 6 : 12) ? Math.max(tnPorUnidad.length * (isMobile ? 60 : 80), 600) : undefined }}>
                 {tnPorUnidad.map((item, index) => (
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS[index % COLORS.length], flexShrink: 0, display: 'inline-block' }} />

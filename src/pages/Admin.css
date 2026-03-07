@@ -33,12 +33,7 @@
   background-color: #1B7430;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
   gap: 8px;
   transition: background-color 0.2s;
 }
@@ -51,10 +46,7 @@
   background-color: #6c757d;
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
   cursor: pointer;
-  font-size: 0.95rem;
   transition: background-color 0.2s;
 }
 
@@ -313,14 +305,7 @@
 
 .form-actions .btn-primary,
 .form-actions .btn-secondary {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 10px 20px;
-  font-size: 0.95rem;
-  box-sizing: border-box;
+  /* sizing handled by global index.css */
 }
 
 /* Loading y Empty States */

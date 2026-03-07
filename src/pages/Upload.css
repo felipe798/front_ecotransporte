@@ -114,10 +114,6 @@
 
 .btn-primary,
 .btn-secondary {
-  padding: 0.875rem 2rem;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   border: none;
@@ -266,14 +262,7 @@
 
 .result-actions .btn-primary,
 .result-actions .btn-secondary {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0.875rem 2rem;
-  font-size: 1rem;
-  box-sizing: border-box;
+  /* sizing handled by global index.css */
 }
 
 /* Files List (bulk upload) */

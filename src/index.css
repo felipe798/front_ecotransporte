@@ -84,8 +84,10 @@ button {
 }
 
 /* ========== BOTONES GLOBALES ========== */
-.btn-primary,
-.btn-secondary {
+button.btn-primary,
+button.btn-secondary,
+a.btn-primary,
+a.btn-secondary {
   padding: 0.65rem 1.5rem !important;
   font-size: 0.92rem !important;
   font-weight: 600 !important;
@@ -100,7 +102,7 @@ button {
   justify-content: center !important;
   text-align: center !important;
   line-height: 1.4 !important;
-  min-height: 40px !important;
+  height: 42px !important;
 }
 
 .form-actions,

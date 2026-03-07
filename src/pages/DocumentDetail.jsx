@@ -276,7 +276,7 @@ const DocumentDetail = () => {
           <h2>💰 Información Financiera</h2>
           <div className="info-grid">
             <div className="info-item">
-              <label>Precio Unitario</label>
+              <label>Precio Unitario con IGV</label>
               <span>{document.precio_unitario ? `${document.precio_unitario} ${document.divisa || ''}` : '-'}</span>
             </div>
             <div className="info-item">
@@ -284,7 +284,7 @@ const DocumentDetail = () => {
               <span>{document.precio_final ? `${document.precio_final} ${document.divisa || ''}` : '-'}</span>
             </div>
             <div className="info-item">
-              <label>Costo Unitario</label>
+              <label>Costo Unitario con IGV</label>
               <span>{document.pcosto ? `${document.pcosto} ${document.divisa_cost || ''}` : '-'}</span>
             </div>
             <div className="info-item">

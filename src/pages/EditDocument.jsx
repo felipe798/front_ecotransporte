@@ -464,7 +464,7 @@ const EditDocument = () => {
               </div>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Precio Unitario</label>
+                  <label>Precio Unitario con IGV</label>
                   <div className="readonly-financial">{formData.precio_unitario !== '' ? formData.precio_unitario : '-'} {formData.divisa}</div>
                 </div>
                 <div className="form-group">
@@ -476,7 +476,7 @@ const EditDocument = () => {
                   <div className="readonly-financial">{formData.precio_final !== '' ? formData.precio_final : '-'} {formData.divisa}</div>
                 </div>
                 <div className="form-group">
-                  <label>Costo Unitario</label>
+                  <label>Costo Unitario con IGV</label>
                   <div className="readonly-financial">{formData.pcosto !== '' ? formData.pcosto : '-'} {formData.divisa_cost}</div>
                 </div>
                 <div className="form-group">
@@ -547,7 +547,7 @@ const EditDocument = () => {
                 <span className="readonly-value">{document?.tn_enviado || '-'}</span>
               </div>
               <div className="readonly-item">
-                <span className="readonly-label">Precio Unitario:</span>
+                <span className="readonly-label">Precio Unitario con IGV:</span>
                 <span className="readonly-value">{document?.precio_unitario || '-'} {document?.divisa}</span>
               </div>
               <div className="readonly-item">
@@ -555,7 +555,7 @@ const EditDocument = () => {
                 <span className="readonly-value">{document?.precio_final || '-'}</span>
               </div>
               <div className="readonly-item">
-                <span className="readonly-label">Costo Unitario:</span>
+                <span className="readonly-label">Costo Unitario con IGV:</span>
                 <span className="readonly-value">{document?.pcosto || '-'} {document?.divisa_cost}</span>
               </div>
               <div className="readonly-item">

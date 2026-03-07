@@ -199,7 +199,7 @@ const AdminEmpresas = () => {
                 <input
                   type="text"
                   value={formData.nombre}
-                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
                   required
                   placeholder="Nombre de la empresa"
                 />

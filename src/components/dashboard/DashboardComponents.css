@@ -98,7 +98,7 @@
 
 /* Section Cards */
 .section-card {
-  background: linear-gradient(160deg, #f5f7fa 0%, #e8ecf1 60%, #dde3ea 100%);
+  background: linear-gradient(135deg, #F5F7FA 0%, #DFE3E8 100%);
   border-radius: 14px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -247,7 +247,7 @@
 
 /* Chart Sections */
 .chart-section {
-  background: linear-gradient(160deg, #f5f7fa 0%, #e8ecf1 60%, #dde3ea 100%);
+  background: linear-gradient(135deg, #F5F7FA 0%, #DFE3E8 100%);
   border-radius: 14px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -270,7 +270,7 @@
 
 .chart-container {
   min-height: 300px;
-  background: linear-gradient(180deg, #eaecf0 0%, #dfe2e8 100%);
+  background: linear-gradient(135deg, #F5F7FA 0%, #DFE3E8 100%);
   border-radius: 10px;
   padding: 0.75rem;
   border: 1px solid rgba(0, 0, 0, 0.06);

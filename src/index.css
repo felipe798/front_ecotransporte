@@ -43,7 +43,7 @@ input[type="number"] {
 
 /* TEMA ADMIN (Rol 1) - Verde claro */
 .layout-admin {
-  --bg-primary: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+  --bg-primary: #E1F1DC;
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f8e9;
   --text-primary: #1b5e20;
@@ -56,9 +56,9 @@ input[type="number"] {
 
 /* TEMA USUARIO (Rol 2) - Blanco */
 .layout-user {
-  --bg-primary: #ffffff;
+  --bg-primary: #E1F1DC;
   --bg-secondary: #fafafa;
-  --bg-tertiary: #f5f5f5;
+  --bg-tertiary: #F1F8E9;
   --text-primary: #333333;
   --text-secondary: #666666;
   --accent-color: #1B7430;
@@ -81,6 +81,51 @@ a {
 
 button {
   font-family: inherit;
+}
+
+/* ========== BOTONES GLOBALES ========== */
+.btn-primary,
+.btn-secondary {
+  padding: 0.65rem 1.5rem !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.4 !important;
+  min-height: 40px !important;
+}
+
+.form-actions,
+.upload-actions,
+.result-actions,
+.wizard-actions,
+.modal-actions,
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.form-actions .btn-primary,
+.form-actions .btn-secondary,
+.upload-actions .btn-primary,
+.upload-actions .btn-secondary,
+.result-actions .btn-primary,
+.result-actions .btn-secondary,
+.wizard-actions .btn-primary,
+.wizard-actions .btn-secondary,
+.modal-actions .btn-primary,
+.modal-actions .btn-secondary,
+.confirm-actions .btn-primary,
+.confirm-actions .btn-secondary {
+  flex: 1 !important;
 }
 
 h1, h2, h3, h4, h5, h6 {

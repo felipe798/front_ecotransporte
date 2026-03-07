@@ -88,7 +88,6 @@ button.btn-primary,
 button.btn-secondary,
 a.btn-primary,
 a.btn-secondary {
-  padding: 0.65rem 1.5rem !important;
   font-size: 0.92rem !important;
   font-weight: 600 !important;
   border-radius: 8px !important;
@@ -97,11 +96,6 @@ a.btn-secondary {
   transition: all 0.2s ease;
   text-decoration: none;
   box-sizing: border-box !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  line-height: 1 !important;
 }
 
 .form-actions,
@@ -110,24 +104,24 @@ a.btn-secondary {
 .wizard-actions,
 .modal-actions,
 .confirm-actions {
-  display: flex;
-  align-items: stretch !important;
+  display: flex !important;
   gap: 12px;
 }
 
-.form-actions .btn-primary,
-.form-actions .btn-secondary,
-.upload-actions .btn-primary,
-.upload-actions .btn-secondary,
-.result-actions .btn-primary,
-.result-actions .btn-secondary,
-.wizard-actions .btn-primary,
-.wizard-actions .btn-secondary,
-.modal-actions .btn-primary,
-.modal-actions .btn-secondary,
-.confirm-actions .btn-primary,
-.confirm-actions .btn-secondary {
-  flex: 1 !important;
+.form-actions > *,
+.upload-actions > *,
+.result-actions > *,
+.wizard-actions > *,
+.modal-actions > *,
+.confirm-actions > * {
+  flex: 1 1 0% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  padding: 0.65rem 0.5rem !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
 }
 
 h1, h2, h3, h4, h5, h6 {

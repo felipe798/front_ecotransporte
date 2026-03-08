@@ -44,23 +44,23 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
-          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #2F4F3E; }
+          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #1E3D2C; }
           h3 { font-size: 13px; margin: 10px 0 5px 0; text-align: center; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
-          th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; color: #3E4650; }
-          th { background: #DFF5E8; color: #2F4F3E; font-weight: 600; text-align: center; }
-          th.col-cliente { text-align: left; background: #E6F4EA; }
-          th.col-general { background: #E6F0FF; border-color: #D4E4FA; }
-          th.col-empresa-0 { background: #F0E6FA; border-color: #E2D6F0; }
-          th.col-empresa-1 { background: #FFF1E0; border-color: #F5E2CC; }
-          th.col-empresa-2 { background: #FFE7E7; border-color: #F5D5D5; }
-          th.col-empresa-3 { background: #EEF1F4; border-color: #DEE3E8; }
+          th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; color: #1E2A3A; }
+          th { background: #A8DFC4; color: #1E3D2C; font-weight: 600; text-align: center; }
+          th.col-cliente { text-align: left; background: #96D9B8; color: #173324; }
+          th.col-general { background: #A3BFFA; border-color: #8DAFEF; color: #1E2F5C; }
+          th.col-empresa-0 { background: #C4A8F0; border-color: #B393E5; color: #2E2048; }
+          th.col-empresa-1 { background: #FAC98A; border-color: #EBB876; color: #3D2200; }
+          th.col-empresa-2 { background: #F5A3A8; border-color: #E89298; color: #3D1018; }
+          th.col-empresa-3 { background: #A8C8DC; border-color: #95BACE; color: #1A3040; }
           td.col-cliente { text-align: left; font-weight: 500; }
           td.col-material { padding-left: 20px; font-weight: 400; font-size: 9px; }
-          tr.fila-cliente-header td { background: #F5F7FA; color: #3E4650; font-weight: 700; text-align: left; }
-          tr.fila-total { background: #F3FBF6; font-weight: 700; }
+          tr.fila-cliente-header td { background: #C5D0E0; color: #1E2A3A; font-weight: 700; text-align: left; }
+          tr.fila-total { background: #A8DBC0; font-weight: 700; color: #1E3D2C; }
           .margen-table { margin: 10px 0; }
-          .margen-table th { background: #E6F0FF; }
+          .margen-table th { background: #A3BFFA; }
           .margen-table td { font-weight: 600; }
           @media print { body { padding: 10px; } }
         </style>

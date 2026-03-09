@@ -59,6 +59,7 @@ const EditDocument = () => {
   });
 
   const esEcotransporte = (formData.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
+  const esTarifaFija = ((formData.cliente || '').toUpperCase().includes('NUKLEO') || (formData.cliente || '').toUpperCase().includes('PAY METAL'));
 
   useEffect(() => {
     loadDocument();
@@ -179,10 +180,12 @@ const EditDocument = () => {
     const precioUnitario = Number(tarifa.precioVentaConIgv) || 0;
     const pcosto = Number(tarifa.precioCostoConIgv) || 0;
     const tnRecibida = Number(formData.tn_recibida) || 0;
+    const clienteUpper = (formData.cliente || '').toUpperCase();
+    const tarifaFija = clienteUpper.includes('NUKLEO') || clienteUpper.includes('PAY METAL');
 
-    const precioFinal = tnRecibida ? Number((precioUnitario * tnRecibida).toFixed(2)) : '';
+    const precioFinal = tarifaFija ? precioUnitario : (tnRecibida ? Number((precioUnitario * tnRecibida).toFixed(2)) : '');
     const esEco = (formData.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
-    const costoFinal = esEco ? 0 : (tnRecibida ? Number((pcosto * tnRecibida).toFixed(2)) : '');
+    const costoFinal = esEco ? 0 : (tarifaFija ? pcosto : (tnRecibida ? Number((pcosto * tnRecibida).toFixed(2)) : ''));
     const margen = (precioFinal !== '' && costoFinal !== '') ? Number((precioFinal - costoFinal).toFixed(2)) : '';
 
     setFormData(prev => ({
@@ -208,8 +211,10 @@ const EditDocument = () => {
       const pu = Number(next.precio_unitario) || 0;
       const pc = Number(next.pcosto) || 0;
       const esEco = (next.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
-      next.precio_final = tn ? Number((pu * tn).toFixed(2)) : '';
-      next.costo_final = esEco ? 0 : (tn ? Number((pc * tn).toFixed(2)) : '');
+      const clienteUpper = (next.cliente || '').toUpperCase();
+      const tarifaFija = clienteUpper.includes('NUKLEO') || clienteUpper.includes('PAY METAL');
+      next.precio_final = tarifaFija ? pu : (tn ? Number((pu * tn).toFixed(2)) : '');
+      next.costo_final = esEco ? 0 : (tarifaFija ? pc : (tn ? Number((pc * tn).toFixed(2)) : ''));
       next.margen_operativo = (next.precio_final !== '' && next.costo_final !== '') ? Number((next.precio_final - next.costo_final).toFixed(2)) : '';
       return next;
     });
@@ -523,7 +528,12 @@ const EditDocument = () => {
               </div>
               {esEcotransporte && (
                 <div className="ecotransporte-cost-notice">
-                  <span>&#9432;</span> Al ser Ecotransporte, los campos <strong>Costo Unitario con IGV</strong> y <strong>Costo Final</strong> se mostrarán como <strong>-</strong> en la vista del documento.
+                  <span>&#9432;</span> Al ser Ecotransporte, los campos <strong>Costo Unitario con IGV</strong>, <strong>Costo Final</strong> y <strong>Margen Operativo</strong> se guardan y muestran como <strong>0</strong>.
+                </div>
+              )}
+              {esTarifaFija && (
+                <div className="ecotransporte-cost-notice">
+                  <span>&#9432;</span> El cliente <strong>{formData.cliente}</strong> cobra por servicio, no por tonelada. El precio y costo son <strong>fijos por viaje</strong>, sin multiplicar por TN.
                 </div>
               )}
             </div>

@@ -287,15 +287,15 @@ const DocumentDetail = () => {
             </div>
             <div className="info-item">
               <label>Costo Unitario con IGV</label>
-              <span>{esEcotransporte ? '-' : (document.pcosto ? `${document.pcosto} ${document.divisa_cost || ''}` : '-')}</span>
+              <span>{esEcotransporte ? '0' : (document.pcosto ? `${document.pcosto} ${document.divisa_cost || ''}` : '-')}</span>
             </div>
             <div className="info-item">
               <label>Costo Final</label>
-              <span>{esEcotransporte ? '-' : (document.costo_final ? `${document.costo_final} ${document.divisa_cost || ''}` : '-')}</span>
+              <span>{esEcotransporte ? '0' : (document.costo_final ? `${document.costo_final} ${document.divisa_cost || ''}` : '-')}</span>
             </div>
             <div className="info-item">
               <label>Margen Operativo</label>
-              <span>{document.margen_operativo || '-'}</span>
+              <span>{esEcotransporte ? '0' : (document.margen_operativo || '-')}</span>
             </div>
           </div>
         </div>

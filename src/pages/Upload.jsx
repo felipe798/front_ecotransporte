@@ -34,11 +34,24 @@ const Upload = () => {
     }
   }, [wizardStep]);
 
-  // Valores únicos para selects del wizard de tarifas
-  const clientesUnicos = [...new Set(tarifasCatalogo.map(t => t.cliente))].filter(Boolean).sort();
-  const partidasUnicas = [...new Set(tarifasCatalogo.map(t => t.partida))].filter(Boolean).sort();
-  const llegadasUnicas = [...new Set(tarifasCatalogo.map(t => t.llegada))].filter(Boolean).sort();
-  const materialesUnicos = [...new Set(tarifasCatalogo.map(t => t.material))].filter(Boolean).sort();
+  // Filtro bidireccional: filtra opciones según los valores ya seleccionados en cada tarjeta
+  const getFilteredOptions = (card) => {
+    const filterCatalog = (excludeField) => {
+      return tarifasCatalogo.filter(t => {
+        if (excludeField !== 'cliente' && card.cliente && t.cliente !== card.cliente) return false;
+        if (excludeField !== 'partida' && card.partida && t.partida !== card.partida) return false;
+        if (excludeField !== 'llegada' && card.llegada && t.llegada !== card.llegada) return false;
+        if (excludeField !== 'material' && card.transportado && t.material !== card.transportado) return false;
+        return true;
+      });
+    };
+    return {
+      clientes: [...new Set(filterCatalog('cliente').map(t => t.cliente))].filter(Boolean).sort(),
+      partidas: [...new Set(filterCatalog('partida').map(t => t.partida))].filter(Boolean).sort(),
+      llegadas: [...new Set(filterCatalog('llegada').map(t => t.llegada))].filter(Boolean).sort(),
+      materiales: [...new Set(filterCatalog('material').map(t => t.material))].filter(Boolean).sort(),
+    };
+  };
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -586,7 +599,9 @@ const Upload = () => {
                 </div>
 
                 <div className="wizard-tariff-list">
-                  {missingTariffs.map((t, idx) => (
+                  {missingTariffs.map((t, idx) => {
+                    const opts = getFilteredOptions(t);
+                    return (
                     <div key={idx} className="wizard-tariff-card">
                       {t.motivo && (
                         <div className={`wizard-tariff-motivo ${
@@ -599,14 +614,14 @@ const Upload = () => {
                         {/* Cliente: editable siempre (select si hay catalogo, sino input) */}
                         <div className="wizard-tariff-field">
                           <label className="wizard-tariff-label">Cliente:</label>
-                          {clientesUnicos.length > 0 ? (
+                          {opts.clientes.length > 0 ? (
                             <select
                               value={t.cliente || ''}
                               onChange={e => handleTariffFieldChange(idx, 'cliente', e.target.value)}
                               className={`wizard-select wizard-select-route ${!t.cliente ? 'wizard-field-empty' : ''}`}
                             >
                               <option value="">-- Seleccionar cliente --</option>
-                              {clientesUnicos.map(c => <option key={c} value={c}>{c}</option>)}
+                              {opts.clientes.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                           ) : (
                             <input type="text" value={t.cliente || ''} onChange={e => handleTariffFieldChange(idx, 'cliente', e.target.value)} className="wizard-input" placeholder="Nombre cliente" />
@@ -616,14 +631,14 @@ const Upload = () => {
                         {/* Partida: editable siempre */}
                         <div className="wizard-tariff-field">
                           <label className="wizard-tariff-label">Partida:</label>
-                          {partidasUnicas.length > 0 ? (
+                          {opts.partidas.length > 0 ? (
                             <select
                               value={t.partida || ''}
                               onChange={e => handleTariffFieldChange(idx, 'partida', e.target.value)}
                               className={`wizard-select wizard-select-route ${!t.partida ? 'wizard-field-empty' : ''}`}
                             >
                               <option value="">-- Seleccionar partida --</option>
-                              {partidasUnicas.map(p => <option key={p} value={p}>{p}</option>)}
+                              {opts.partidas.map(p => <option key={p} value={p}>{p}</option>)}
                             </select>
                           ) : (
                             <input type="text" value={t.partida || ''} onChange={e => handleTariffFieldChange(idx, 'partida', e.target.value)} className="wizard-input" placeholder="REGION-PROVINCIA-DISTRITO" />
@@ -633,14 +648,14 @@ const Upload = () => {
                         {/* Llegada: editable siempre */}
                         <div className="wizard-tariff-field">
                           <label className="wizard-tariff-label">Llegada:</label>
-                          {llegadasUnicas.length > 0 ? (
+                          {opts.llegadas.length > 0 ? (
                             <select
                               value={t.llegada || ''}
                               onChange={e => handleTariffFieldChange(idx, 'llegada', e.target.value)}
                               className="wizard-select wizard-select-route"
                             >
                               <option value="">-- Seleccionar llegada --</option>
-                              {llegadasUnicas.map(l => <option key={l} value={l}>{l}</option>)}
+                              {opts.llegadas.map(l => <option key={l} value={l}>{l}</option>)}
                             </select>
                           ) : (
                             <input type="text" value={t.llegada || ''} onChange={e => handleTariffFieldChange(idx, 'llegada', e.target.value)} className="wizard-input" placeholder="REGION-PROVINCIA-DISTRITO" />
@@ -649,14 +664,14 @@ const Upload = () => {
                         {/* Material: editable siempre */}
                         <div className="wizard-tariff-field">
                           <label className="wizard-tariff-label">Material:</label>
-                          {materialesUnicos.length > 0 ? (
+                          {opts.materiales.length > 0 ? (
                             <select
                               value={t.transportado || ''}
                               onChange={e => handleTariffFieldChange(idx, 'transportado', e.target.value)}
                               className="wizard-select wizard-select-route"
                             >
                               <option value="">-- Seleccionar material --</option>
-                              {materialesUnicos.map(m => <option key={m} value={m}>{m}</option>)}
+                              {opts.materiales.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                           ) : (
                             <input type="text" value={t.transportado || ''} onChange={e => handleTariffFieldChange(idx, 'transportado', e.target.value)} className="wizard-input" placeholder="CONCENTRADO DE ZN..." />
@@ -710,7 +725,8 @@ const Upload = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="wizard-actions">

@@ -13,6 +13,7 @@ const EditDocument = () => {
   const notification = useNotification();
   const { user } = useAuth();
   const isAdmin = user?.role === 1;
+  const esEcotransporte = (formData.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -28,6 +29,7 @@ const EditDocument = () => {
   const [showTarifaPopup, setShowTarifaPopup] = useState(false);
   const [tarifaResults, setTarifaResults] = useState([]);
   const [tarifaLoading, setTarifaLoading] = useState(false);
+  const [modoEspecial, setModoEspecial] = useState(false);
 
   const [formData, setFormData] = useState({
     ticket: '',
@@ -176,11 +178,10 @@ const EditDocument = () => {
     const precioUnitario = Number(tarifa.precioVentaConIgv) || 0;
     const pcosto = Number(tarifa.precioCostoConIgv) || 0;
     const tnRecibida = Number(formData.tn_recibida) || 0;
-    const transportista = formData.transportista || '';
 
     const precioFinal = tnRecibida ? Number((precioUnitario * tnRecibida).toFixed(2)) : '';
-    const esEcotransporte = transportista.toUpperCase().includes('ECOTRANSPORTE');
-    const costoFinal = esEcotransporte ? 0 : (tnRecibida ? Number((pcosto * tnRecibida).toFixed(2)) : '');
+    const esEco = (formData.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
+    const costoFinal = esEco ? 0 : (tnRecibida ? Number((pcosto * tnRecibida).toFixed(2)) : '');
     const margen = (precioFinal !== '' && costoFinal !== '') ? Number((precioFinal - costoFinal).toFixed(2)) : '';
 
     setFormData(prev => ({
@@ -195,6 +196,21 @@ const EditDocument = () => {
     }));
     setShowTarifaPopup(false);
     notification.success('Tarifa aplicada correctamente');
+  };
+
+  // Recalcular campos derivados al editar precio/costo en modo especial
+  const handleEspecialChange = (field, value) => {
+    setFormData(prev => {
+      const next = { ...prev, [field]: value };
+      const tn = Number(next.tn_recibida) || 0;
+      const pu = Number(next.precio_unitario) || 0;
+      const pc = Number(next.pcosto) || 0;
+      const esEco = (next.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
+      next.precio_final = tn ? Number((pu * tn).toFixed(2)) : '';
+      next.costo_final = esEco ? 0 : (tn ? Number((pc * tn).toFixed(2)) : '');
+      next.margen_operativo = (next.precio_final !== '' && next.costo_final !== '') ? Number((next.precio_final - next.costo_final).toFixed(2)) : '';
+      return next;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -460,12 +476,19 @@ const EditDocument = () => {
                 <button type="button" className="btn-buscar-tarifa" onClick={handleBuscarTarifa}>
                   🔍 Buscar Tarifa
                 </button>
-                <span className="tarifa-hint">Selecciona una tarifa basada en cliente, partida, llegada y material</span>
+                <button type="button" className={`btn-modo-especial${modoEspecial ? ' active' : ''}`} onClick={() => setModoEspecial(prev => !prev)}>
+                  ✏️ {modoEspecial ? 'Salir de modo especial' : 'Precio y Costo Especial'}
+                </button>
+                <span className="tarifa-hint">{modoEspecial ? 'Edita precio y costo unitario manualmente' : 'Selecciona una tarifa basada en cliente, partida, llegada y material'}</span>
               </div>
               <div className="form-grid">
                 <div className="form-group">
                   <label>Precio Unitario con IGV</label>
-                  <div className="readonly-financial">{formData.precio_unitario !== '' ? formData.precio_unitario : '-'} {formData.divisa}</div>
+                  {modoEspecial ? (
+                    <input type="number" step="0.01" className="ticket-input" value={formData.precio_unitario} onChange={(e) => handleEspecialChange('precio_unitario', e.target.value)} placeholder="0.00" />
+                  ) : (
+                    <div className="readonly-financial">{formData.precio_unitario !== '' ? formData.precio_unitario : '-'} {formData.divisa}</div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Moneda Venta</label>
@@ -477,7 +500,11 @@ const EditDocument = () => {
                 </div>
                 <div className="form-group">
                   <label>Costo Unitario con IGV</label>
-                  <div className="readonly-financial">{formData.pcosto !== '' ? formData.pcosto : '-'} {formData.divisa_cost}</div>
+                  {modoEspecial ? (
+                    <input type="number" step="0.01" className="ticket-input" value={formData.pcosto} onChange={(e) => handleEspecialChange('pcosto', e.target.value)} placeholder="0.00" />
+                  ) : (
+                    <div className="readonly-financial">{formData.pcosto !== '' ? formData.pcosto : '-'} {formData.divisa_cost}</div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Moneda Costo</label>
@@ -492,6 +519,11 @@ const EditDocument = () => {
                   <div className="readonly-financial">{formData.margen_operativo !== '' ? formData.margen_operativo : '-'}</div>
                 </div>
               </div>
+              {esEcotransporte && (
+                <div className="ecotransporte-cost-notice">
+                  <span>&#9432;</span> Al ser Ecotransporte, los campos <strong>Costo Unitario con IGV</strong> y <strong>Costo Final</strong> se mostrarán como <strong>-</strong> en la vista del documento.
+                </div>
+              )}
             </div>
 
             {/* Popup selector de tarifa */}
@@ -518,7 +550,7 @@ const EditDocument = () => {
                         {tarifaResults.map((t) => (
                           <div key={t.id} className="tarifa-popup-item" onClick={() => handleSelectTarifa(t)}>
                             <div className="tarifa-item-route">
-                              <strong>{t.cliente}</strong>
+                              <strong>{t.cliente}{t.mes ? <span className="tarifa-item-mes"> — {t.mes}</span> : null}</strong>
                               <span>{t.partida} → {t.llegada}</span>
                               <span className="tarifa-item-material">{t.material}</span>
                             </div>

@@ -92,6 +92,8 @@ const DocumentDetail = () => {
     );
   }
 
+  const esEcotransporte = (document.unidadRelacion?.empresa?.nombre || document.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
+
   return (
     <div className={`document-detail${document.anulado ? ' anulado' : ''}`}>
       {document.anulado && (
@@ -285,11 +287,11 @@ const DocumentDetail = () => {
             </div>
             <div className="info-item">
               <label>Costo Unitario con IGV</label>
-              <span>{document.pcosto ? `${document.pcosto} ${document.divisa_cost || ''}` : '-'}</span>
+              <span>{esEcotransporte ? '-' : (document.pcosto ? `${document.pcosto} ${document.divisa_cost || ''}` : '-')}</span>
             </div>
             <div className="info-item">
               <label>Costo Final</label>
-              <span>{document.costo_final ? `${document.costo_final} ${document.divisa_cost || ''}` : '-'}</span>
+              <span>{esEcotransporte ? '-' : (document.costo_final ? `${document.costo_final} ${document.divisa_cost || ''}` : '-')}</span>
             </div>
             <div className="info-item">
               <label>Margen Operativo</label>

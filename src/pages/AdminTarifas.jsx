@@ -11,7 +11,10 @@ const AdminTarifas = () => {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCliente, setFilterCliente] = useState('todos');
+  const [filterMes, setFilterMes] = useState('todos');
   const { showNotification } = useNotification();
+
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
   const [formData, setFormData] = useState({
     cliente: '',
@@ -21,7 +24,8 @@ const AdminTarifas = () => {
     precioVentaSinIgv: '',
     moneda: 'PEN',
     precioCostoSinIgv: '',
-    divisa: 'PEN'
+    divisa: 'PEN',
+    mes: ''
   });
 
   useEffect(() => {
@@ -74,7 +78,8 @@ const AdminTarifas = () => {
       precioVentaSinIgv: tarifa.precioVentaSinIgv ? parseFloat(tarifa.precioVentaSinIgv).toFixed(2) : '',
       moneda: tarifa.moneda || 'PEN',
       precioCostoSinIgv: tarifa.precioCostoSinIgv ? parseFloat(tarifa.precioCostoSinIgv).toFixed(2) : '',
-      divisa: tarifa.divisa || 'PEN'
+      divisa: tarifa.divisa || 'PEN',
+      mes: tarifa.mes || ''
     });
     setShowModal(true);
   };
@@ -99,7 +104,8 @@ const AdminTarifas = () => {
       precioVentaSinIgv: '',
       moneda: 'PEN',
       precioCostoSinIgv: '',
-      divisa: 'PEN'
+      divisa: 'PEN',
+      mes: ''
     });
     setEditingTarifa(null);
   };
@@ -112,16 +118,25 @@ const AdminTarifas = () => {
   // Obtener clientes únicos
   const clientes = [...new Set(tarifas.map(t => t.cliente).filter(Boolean))].sort();
 
+  // Meses que existen en los datos (ordenados por índice del año)
+  const mesesExistentes = MESES.filter(m => tarifas.some(t => t.mes === m));
+  const hayTarifasSinMes = tarifas.some(t => !t.mes);
+
   // Filtrar tarifas
   const filteredTarifas = tarifas.filter(tarifa => {
     const matchesCliente = filterCliente === 'todos' || tarifa.cliente === filterCliente;
+    const matchesMes = filterMes === 'todos'
+      ? true
+      : filterMes === 'sin-mes'
+        ? !tarifa.mes
+        : tarifa.mes === filterMes;
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = 
+    const matchesSearch =
       tarifa.cliente?.toLowerCase().includes(searchLower) ||
       tarifa.partida?.toLowerCase().includes(searchLower) ||
       tarifa.llegada?.toLowerCase().includes(searchLower) ||
       tarifa.material?.toLowerCase().includes(searchLower);
-    return matchesCliente && matchesSearch;
+    return matchesCliente && matchesMes && matchesSearch;
   });
 
   // Calcular margen
@@ -186,6 +201,15 @@ const AdminTarifas = () => {
             <option key={cliente} value={cliente}>{cliente}</option>
           ))}
         </select>
+        {(mesesExistentes.length > 0 || hayTarifasSinMes) && (
+          <select value={filterMes} onChange={(e) => setFilterMes(e.target.value)}>
+            <option value="todos">Todos los meses</option>
+            {mesesExistentes.map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+            {hayTarifasSinMes && <option value="sin-mes">Sin mes</option>}
+          </select>
+        )}
       </div>
 
       {/* Tabla */}
@@ -202,6 +226,7 @@ const AdminTarifas = () => {
                 <th>Partida</th>
                 <th>Llegada</th>
                 <th>Material</th>
+                <th>Mes</th>
                 <th>P. Venta (sin IGV)</th>
                 <th>P. Venta (con IGV)</th>
                 <th>P. Costo (sin IGV)</th>
@@ -216,6 +241,7 @@ const AdminTarifas = () => {
                   <td title={tarifa.partida}>{tarifa.partida?.includes('-') ? tarifa.partida.split('-').pop().trim() : tarifa.partida}</td>
                   <td title={tarifa.llegada}>{tarifa.llegada?.includes('-') ? tarifa.llegada.split('-').pop().trim() : tarifa.llegada}</td>
                   <td>{tarifa.material || '-'}</td>
+                  <td>{tarifa.mes || '-'}</td>
                   <td>{formatMoney(tarifa.precioVentaSinIgv, tarifa.moneda)}</td>
                   <td>{formatMoney(tarifa.precioVentaConIgv || (parseFloat(tarifa.precioVentaSinIgv || 0) * 1.18).toFixed(2), tarifa.moneda)}</td>
                   <td>{formatMoney(tarifa.precioCostoSinIgv, tarifa.divisa)}</td>
@@ -291,8 +317,18 @@ const AdminTarifas = () => {
                   />
                 </div>
               </div>
-              <div className="form-row">
-                <div className="form-group">
+              <div className="form-row">                  <div className="form-group">
+                    <label>Mes</label>
+                    <select
+                      value={formData.mes}
+                      onChange={(e) => setFormData({ ...formData, mes: e.target.value })}
+                    >
+                      <option value="">-- Sin mes --</option>
+                      {MESES.map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="form-row">                <div className="form-group">
                   <label>Precio Venta (sin IGV) *</label>
                   <input
                     type="number"

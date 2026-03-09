@@ -13,7 +13,6 @@ const EditDocument = () => {
   const notification = useNotification();
   const { user } = useAuth();
   const isAdmin = user?.role === 1;
-  const esEcotransporte = (formData.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -58,6 +57,8 @@ const EditDocument = () => {
     costo_final: '',
     margen_operativo: '',
   });
+
+  const esEcotransporte = (formData.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
 
   useEffect(() => {
     loadDocument();

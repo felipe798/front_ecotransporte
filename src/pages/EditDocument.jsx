@@ -195,6 +195,7 @@ const EditDocument = () => {
       margen_operativo: margen,
     }));
     setShowTarifaPopup(false);
+    setModoEspecial(false);
     notification.success('Tarifa aplicada correctamente');
   };
 
@@ -476,8 +477,8 @@ const EditDocument = () => {
                 <button type="button" className="btn-buscar-tarifa" onClick={handleBuscarTarifa}>
                   🔍 Buscar Tarifa
                 </button>
-                <button type="button" className={`btn-modo-especial${modoEspecial ? ' active' : ''}`} onClick={() => setModoEspecial(prev => !prev)}>
-                  ✏️ {modoEspecial ? 'Salir de modo especial' : 'Precio y Costo Especial'}
+                <button type="button" className={`btn-modo-especial${modoEspecial ? ' active' : ''}`} onClick={() => setModoEspecial(true)} disabled={modoEspecial}>
+                  ✏️ {modoEspecial ? 'Modo especial activo' : 'Precio y Costo Especial'}
                 </button>
                 <span className="tarifa-hint">{modoEspecial ? 'Edita precio y costo unitario manualmente' : 'Selecciona una tarifa basada en cliente, partida, llegada y material'}</span>
               </div>

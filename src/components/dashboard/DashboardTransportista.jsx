@@ -191,7 +191,7 @@ const DashboardTransportista = () => {
                   <th>Traslados</th>
                   <th>Peso Ticket</th>
                   <th>Divisa</th>
-                  <th>Costo Total</th>
+                  <th>Costo IGV Total</th>
                 </tr>
               </thead>
               <tbody>

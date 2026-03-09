@@ -4,6 +4,7 @@ import './TablasDetalladasModal.css';
 
 const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
   const [mes, setMes] = useState('');
+  const [empresaFiltro, setEmpresaFiltro] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const printRef = useRef();
@@ -87,7 +88,10 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
 
   const renderTable = (title, type) => {
     if (!data) return null;
-    const { empresas, grupos, totales } = data;
+    const { grupos, totales } = data;
+    const empresas = empresaFiltro
+      ? data.empresas.filter(e => e === empresaFiltro)
+      : data.empresas;
 
     return (
       <div className="tabla-detallada-section">
@@ -178,7 +182,10 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
 
   const renderMargen = () => {
     if (!data) return null;
-    const { margen, empresas } = data;
+    const { margen } = data;
+    const empresas = empresaFiltro
+      ? data.empresas.filter(e => e === empresaFiltro)
+      : data.empresas;
 
     return (
       <div className="tabla-detallada-section margen-section">
@@ -237,6 +244,17 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
+              {data && data.empresas.length > 0 && (
+                <>
+                  <label>Empresa de Transporte:</label>
+                  <select value={empresaFiltro} onChange={(e) => setEmpresaFiltro(e.target.value)}>
+                    <option value="">Todas</option>
+                    {data.empresas.map(emp => (
+                      <option key={emp} value={emp}>{emp}</option>
+                    ))}
+                  </select>
+                </>
+              )}
             </div>
           </div>
           <div className="tablas-modal-actions">

@@ -1,16 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import './DashboardComponents.css';
+
+const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 const DashboardVariacion = ({ filters }) => {
   const isMobile = useIsMobile();
+  const contentRef = useRef(null);
   const [tablaPivot, setTablaPivot] = useState([]);
   const [tnPorUnidadMes, setTnPorUnidadMes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const descargarPDF = async () => {
+    if (!contentRef.current) return;
+    setExportingPdf(true);
+    try {
+      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Variacion_TN.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -77,6 +99,12 @@ const DashboardVariacion = ({ filters }) => {
 
   return (
     <div className="dashboard-variacion">
+      <div className="pdf-btn-wrapper">
+        <button className="btn-download-pdf" onClick={descargarPDF} disabled={exportingPdf}>
+          {exportingPdf ? 'Generando...' : '📥 Descargar PDF'}
+        </button>
+      </div>
+      <div ref={contentRef}>
       {/* Tabla Pivot TN Recibidas */}
       <div className="section-card full-width">
         <h2>📊 Tabla Pivot - Peso Ticket por Semana</h2>
@@ -104,10 +132,10 @@ const DashboardVariacion = ({ filters }) => {
                     <tr key={index} className={parseFloat(item.variacion) < 0 ? 'row-negative' : ''}>
                       <td>{item.semana}</td>
                       <td>{item.cliente || 'Sin cliente'}</td>
-                      <td>{parseFloat(item.tn_enviado).toFixed(2)}</td>
-                      <td>{parseFloat(item.tn_recibido).toFixed(2)}</td>
+                      <td>{fmtNum(item.tn_enviado)}</td>
+                      <td>{fmtNum(item.tn_recibido)}</td>
                       <td className={parseFloat(item.variacion) < 0 ? 'negative' : 'positive'}>
-                        {parseFloat(item.variacion).toFixed(2)}
+                        {fmtNum(item.variacion)}
                       </td>
                       <td className={parseFloat(porcVariacion) < 0 ? 'negative' : 'positive'}>
                         {porcVariacion}%
@@ -133,7 +161,7 @@ const DashboardVariacion = ({ filters }) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis dataKey="mes" tick={{ fontSize: isMobile ? 9 : 12 }} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 50 : 30} />
                 <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 35 : 60} />
-                <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                <Tooltip formatter={(value) => `${fmtNum(value)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 {!isMobile && <Legend />}
                 {placasUnicas.slice(0, isMobile ? 6 : 8).map((placa, index) => (
                   <Bar 
@@ -164,16 +192,16 @@ const DashboardVariacion = ({ filters }) => {
               <>
                 <div className="summary-item">
                   <label>Total Peso Guía (TN Enviada)</label>
-                  <span className="summary-value">{totalEnviado.toFixed(2)}</span>
+                  <span className="summary-value">{fmtNum(totalEnviado)}</span>
                 </div>
                 <div className="summary-item">
                   <label>Total Peso Ticket (TN Recibida)</label>
-                  <span className="summary-value">{totalRecibido.toFixed(2)}</span>
+                  <span className="summary-value">{fmtNum(totalRecibido)}</span>
                 </div>
                 <div className="summary-item">
                   <label>Variación Total</label>
                   <span className={`summary-value ${variacionTotal < 0 ? 'negative' : 'positive'}`}>
-                    {variacionTotal.toFixed(2)} TN ({porcVariacion.toFixed(2)}%)
+                    {fmtNum(variacionTotal)} TN ({fmtNum(porcVariacion)}%)
                   </span>
                 </div>
               </>
@@ -202,13 +230,14 @@ const DashboardVariacion = ({ filters }) => {
                   <tr key={index}>
                     <td>{item.mes}</td>
                     <td>{item.placa}</td>
-                    <td>{parseFloat(item.total).toFixed(2)}</td>
+                    <td>{fmtNum(item.total)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

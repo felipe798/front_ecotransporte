@@ -567,8 +567,8 @@ const EditDocument = () => {
                               <span className="tarifa-item-material">{t.material}</span>
                             </div>
                             <div className="tarifa-item-prices">
-                              <span className="tarifa-price-sell">Venta: {Number(t.precioVentaConIgv).toFixed(2)} {t.moneda}</span>
-                              <span className="tarifa-price-cost">Costo: {Number(t.precioCostoConIgv).toFixed(2)} {t.divisa}</span>
+                              <span className="tarifa-price-sell">Venta: {Number(t.precioVentaConIgv).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t.moneda}</span>
+                              <span className="tarifa-price-cost">Costo: {Number(t.precioCostoConIgv).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {t.divisa}</span>
                             </div>
                           </div>
                         ))}

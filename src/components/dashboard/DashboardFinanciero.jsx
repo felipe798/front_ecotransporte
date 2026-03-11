@@ -7,6 +7,8 @@ import {
 import { useIsMobile } from '../../hooks/useIsMobile';
 import './DashboardComponents.css';
 
+const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 // Colores para divisas - contrastantes
 const COLORS = {
   PEN: '#1B7430',    // Verde principal para Soles
@@ -409,7 +411,7 @@ const DashboardFinanciero = ({ filters }) => {
   const formatCurrency = (value, divisa = 'PEN') => {
     const normalizedDivisa = normalizeDivisa(divisa);
     const symbol = normalizedDivisa === 'USD' ? '$' : 'S/';
-    return `${symbol} ${parseFloat(value || 0).toFixed(2)}`;
+    return `${symbol} ${fmtNum(value)}`;
   };
 
   return (
@@ -642,10 +644,10 @@ const DashboardFinanciero = ({ filters }) => {
                     <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     {!isMobile && <Legend />}
                     <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(2)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                     <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(2)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
+                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -760,10 +762,10 @@ const DashboardFinanciero = ({ filters }) => {
                     <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     {!isMobile && <Legend />}
                     <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${parseFloat(v).toFixed(2)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                     <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${parseFloat(v).toFixed(2)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
+                      <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -848,7 +850,7 @@ const DashboardFinanciero = ({ filters }) => {
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
                         <td>{item.empresa}</td>
-                        <td>{parseFloat(item.total).toFixed(2)} TN</td>
+                        <td>{fmtNum(item.total)} TN</td>
                       </tr>
                     ))}
                   </tbody>
@@ -868,10 +870,10 @@ const DashboardFinanciero = ({ filters }) => {
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 200} tick={{ fontSize: isMobile ? 9 : 11 }} />
-                    <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Tonelaje']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                    <Tooltip formatter={(value) => [`${fmtNum(value)} TN`, 'Tonelaje']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                     {!isMobile && <Legend />}
                     <Bar dataKey="total" name="Peso Ticket" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="total" position="right" formatter={(v) => v > 0 ? `${parseFloat(v).toFixed(2)} TN` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
+                      <LabelList dataKey="total" position="right" formatter={(v) => v > 0 ? `${fmtNum(v)} TN` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -914,10 +916,10 @@ const DashboardFinanciero = ({ filters }) => {
                           <td>{row.placa}</td>
                           {seguimientoData.semanas.map(semana => (
                             <td key={semana} className="number">
-                              {row[semana] ? row[semana].toFixed(2) : '-'}
+                              {row[semana] ? fmtNum(row[semana]) : '-'}
                             </td>
                           ))}
-                          <td className="total">{total.toFixed(2)}</td>
+                          <td className="total">{fmtNum(total)}</td>
                         </tr>
                       );
                     })}

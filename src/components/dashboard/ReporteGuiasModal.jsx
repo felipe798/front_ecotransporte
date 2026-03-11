@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { dashboardService } from '../../services/api';
 import './ReporteGuiasModal.css';
 
@@ -7,6 +8,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
   const [meses, setMeses] = useState([]);
   const [empresa, setEmpresa] = useState('');
   const [mes, setMes] = useState('');
+  const [semana, setSemana] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingOpciones, setLoadingOpciones] = useState(false);
@@ -33,11 +35,11 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
 
   const canGenerate = empresa && mes;
 
-  const handleGenerar = async () => {
+  const handleGenerar = async (semanaParam) => {
     if (!canGenerate) return;
     setLoading(true);
     try {
-      const result = await dashboardService.getReporteGuias({ empresa, mes });
+      const result = await dashboardService.getReporteGuias({ empresa, mes, semana: semanaParam });
       setData(result);
     } catch (error) {
       console.error('Error generando reporte:', error);
@@ -46,14 +48,20 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleSemanaChange = (nuevaSemana) => {
+    setSemana(nuevaSemana);
+    handleGenerar(nuevaSemana || undefined);
+  };
+
   const handleDownloadPDF = () => {
     const content = printRef.current;
     if (!content) return;
+    const semanaLabel = semana ? ` — Semana ${semana}` : '';
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
       <head>
-        <title>${empresa} - Guías Emitidas - ${mes}</title>
+        <title>${empresa} - Guías Emitidas - ${mes}${semanaLabel}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 12px; font-size: 8px; }
@@ -81,6 +89,49 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     printWindow.document.close();
     printWindow.focus();
     setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+  };
+
+  const handleDownloadExcel = () => {
+    if (!data || data.error) return;
+    const rows = [];
+    rows.push([`${data.empresa} — TRANSPORTE SEGÚN GUÍAS EMITIDAS`]);
+    rows.push(['Mes:', data.mes, semana ? `Semana: ${semana}` : 'Todo el mes']);
+    rows.push([]);
+    rows.push([
+      'Placa / Semana', 'Fecha', 'Guía (Transp.)', 'Conductor',
+      'TN Enviada', 'TN Recibida', 'N° Ticket', 'Guía (Remit.)',
+      'Cliente', 'Recorrido', 'Material', 'Precio', 'Divisa', 'B.I.', 'Importe Total',
+    ]);
+    for (const bloque of data.bloques) {
+      rows.push([`▶ UNIDAD: ${bloque.placa}`]);
+      for (const sem of bloque.semanas) {
+        rows.push([`  ${sem.semana}`]);
+        for (const v of sem.viajes) {
+          const fechaStr = v.fecha ? String(v.fecha).substring(0, 10) : '';
+          rows.push([
+            '', fechaStr, v.grt, v.conductor,
+            Number(v.peso), Number(v.pesoMina), v.ticket, v.grr,
+            v.cliente, v.recorrido, v.material,
+            Number(v.precio), v.divisa, Number(v.bi), Number(v.importeTotal),
+          ]);
+        }
+        rows.push(['', `Subtotal — ${sem.semana}`, '', '', '', Number(sem.totalTn)]);
+      }
+      rows.push([`TOTAL ${bloque.placa}`, '', '', '', '', Number(bloque.totalTn)]);
+      if (bloque.totalDolares > 0) rows.push(['', 'Total Dólares (USD):', Number(bloque.totalDolares)]);
+      if (bloque.totalSoles > 0)   rows.push(['', 'Total Soles (PEN):', Number(bloque.totalSoles)]);
+      rows.push([]);
+    }
+    rows.push(['TOTALES GENERALES']);
+    rows.push(['Total TN:', Number(data.totalesGenerales.totalTn)]);
+    if (data.totalesGenerales.totalDolares > 0) rows.push(['Total Dólares (USD):', Number(data.totalesGenerales.totalDolares)]);
+    if (data.totalesGenerales.totalSoles > 0)   rows.push(['Total Soles (PEN):', Number(data.totalesGenerales.totalSoles)]);
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Guías Emitidas');
+    const fileName = `Guias_${data.empresa}_${data.mes}${semana ? `_Sem${semana}` : ''}.xlsx`.replace(/\s+/g, '_');
+    XLSX.writeFile(wb, fileName);
   };
 
   if (!isOpen) return null;
@@ -208,9 +259,14 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
           </div>
           <div className="rg-modal-actions">
             {data && !data.error && (
-              <button className="btn-download-pdf" onClick={handleDownloadPDF}>
-                📥 Descargar PDF
-              </button>
+              <>
+                <button className="btn-download-excel" onClick={handleDownloadExcel}>
+                  📊 Descargar Excel
+                </button>
+                <button className="btn-download-pdf" onClick={handleDownloadPDF}>
+                  📥 Descargar PDF
+                </button>
+              </>
             )}
             <button className="btn-close-modal" onClick={onClose}>✕</button>
           </div>
@@ -222,7 +278,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
             <label>Empresa de Transporte:</label>
             <select
               value={empresa}
-              onChange={(e) => { setEmpresa(e.target.value); setData(null); }}
+              onChange={(e) => { setEmpresa(e.target.value); setSemana(''); setData(null); }}
               disabled={loadingOpciones}
             >
               <option value="">Seleccionar empresa</option>
@@ -234,7 +290,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
             <label>Mes:</label>
             <select
               value={mes}
-              onChange={(e) => { setMes(e.target.value); setData(null); }}
+              onChange={(e) => { setMes(e.target.value); setSemana(''); setData(null); }}
               disabled={!empresa}
             >
               <option value="">Seleccionar mes</option>
@@ -242,7 +298,19 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
             </select>
           </div>
 
-          <button className="rg-btn-generar" onClick={handleGenerar} disabled={!canGenerate || loading}>
+          {data && data.semanasDisponibles && data.semanasDisponibles.length > 0 && (
+            <div className="rg-filter-item">
+              <label>Semana:</label>
+              <select value={semana} onChange={(e) => handleSemanaChange(e.target.value)}>
+                <option value="">Todo el mes</option>
+                {data.semanasDisponibles.map(s => (
+                  <option key={s} value={s}>Semana {s}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <button className="rg-btn-generar" onClick={() => handleGenerar(semana || undefined)} disabled={!canGenerate || loading}>
             {loading ? 'Generando...' : 'Generar Reporte'}
           </button>
         </div>
@@ -258,7 +326,9 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
           ) : (
             <div ref={printRef}>
               <h2>{data.empresa} — TRANSPORTE SEGÚN GUÍAS EMITIDAS</h2>
-              <h4 style={{ textAlign: 'center', color: '#1B7430', marginBottom: 12, fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{data.mes}</h4>
+              <h4 style={{ textAlign: 'center', color: '#1B7430', marginBottom: 12, fontSize: '0.85rem', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                {data.mes}{semana && <span style={{ color: '#1a6fa8' }}> · Semana {semana}</span>}
+              </h4>
 
               {data.bloques.map((bloque, idx) => renderBloque(bloque, idx))}
 

@@ -692,6 +692,34 @@
   background: #5a6268;
 }
 
+/* Botón Descargar PDF */
+.pdf-btn-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.btn-download-pdf {
+  background: #1B7430;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-download-pdf:hover {
+  background: #145a25;
+}
+
+.btn-download-pdf:disabled {
+  background: #8fbb98;
+  cursor: not-allowed;
+}
+
 @media (max-width: 768px) {
   .filter-row {
     flex-direction: column;

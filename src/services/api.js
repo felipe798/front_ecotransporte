@@ -610,8 +610,8 @@ export const dashboardService = {
   },
 
   // Tablas Detalladas (Venta / Costo / Margen)
-  getTablasDetalladas: async (mes) => {
-    const params = new URLSearchParams({ mes }).toString();
+  getTablasDetalladas: async (mes, semana) => {
+    const params = new URLSearchParams({ mes, ...(semana ? { semana } : {}) }).toString();
     const response = await fetch(`${API_URL}/dashboard/tablas-detalladas?${params}`, {
       headers: authHeaders()
     });
@@ -627,8 +627,8 @@ export const dashboardService = {
   },
 
   // Reporte de guías emitidas por empresa y mes
-  getReporteGuias: async ({ empresa, mes }) => {
-    const params = new URLSearchParams({ empresa, mes }).toString();
+  getReporteGuias: async ({ empresa, mes, semana }) => {
+    const params = new URLSearchParams({ empresa, mes, ...(semana ? { semana } : {}) }).toString();
     const response = await fetch(`${API_URL}/dashboard/reporte-guias?${params}`, {
       headers: authHeaders()
     });

@@ -7,6 +7,8 @@ import {
 } from 'recharts';
 import { useIsMobile } from '../../hooks/useIsMobile';
 
+const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const CHART_COLORS = [
   '#1B7430', '#4A86B8', '#E8913A', '#8E6BAD',
   '#5BA3C9', '#C4883A', '#9E6575', '#6882A8',
@@ -15,7 +17,7 @@ const CHART_COLORS = [
 
 const CustomSemanaTick = ({ x, y, payload, data, isMobile }) => {
   const item = data?.find(d => d.semana === payload.value);
-  const tn = item ? parseFloat(item.total).toFixed(2) : '';
+  const tn = item ? fmtNum(item.total) : '';
   return (
     <g transform={`translate(${x},${y})`}>
       <text x={0} y={0} dy={14} textAnchor="middle" fill="#555" fontSize={isMobile ? 10 : 12}>
@@ -62,7 +64,7 @@ const Modal = ({ title, items, onClose }) => (
                   <td>{doc.cliente || '-'}</td>
                   <td>{doc.unidad || '-'}</td>
                   <td className="dm-code">{doc.ticket || '-'}</td>
-                  <td>{doc.tn_recibida ? Number(doc.tn_recibida).toFixed(2) : '-'}</td>
+                  <td>{doc.tn_recibida ? fmtNum(doc.tn_recibida) : '-'}</td>
                   <td>
                     <Link to={`/documents/${doc.id}/edit`} className="btn-action btn-edit" onClick={onClose}>
                       🔒 Ticket
@@ -328,7 +330,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
                   interval={isMobile ? 'preserveStartEnd' : 0}
                 />
                 <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 35 : 60} />
-                <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                <Tooltip formatter={(value) => [`${fmtNum(value)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 {!isMobile && <Legend />}
                 <Bar dataKey="total" name="Peso Ticket" radius={[4, 4, 0, 0]}>
                   {tnRecibidoPorSemana.map((entry, index) => (
@@ -364,12 +366,12 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
                   tick={{ fontSize: isMobile ? 9 : 11, fill: '#333' }}
                   tickMargin={isMobile ? 4 : 8}
                 />
-                <Tooltip formatter={(value) => [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                <Tooltip formatter={(value) => [`${fmtNum(value)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 <Bar dataKey="total" name="Peso Ticket" radius={[0, 6, 6, 0]}>
                   {tnRecibidoPorConcentrado.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
                   ))}
-                  <LabelList dataKey="total" position="right" formatter={(v) => `${parseFloat(v).toFixed(2)} TN`} style={{ fontSize: isMobile ? 9 : 11, fill: '#333', fontWeight: 600 }} />
+                  <LabelList dataKey="total" position="right" formatter={(v) => `${fmtNum(v)} TN`} style={{ fontSize: isMobile ? 9 : 11, fill: '#333', fontWeight: 600 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

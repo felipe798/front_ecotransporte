@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import { dashboardService } from '../../services/api';
 import './TablasDetalladasModal.css';
 
 const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
   const [mes, setMes] = useState('');
   const [empresaFiltro, setEmpresaFiltro] = useState('');
+  const [semana, setSemana] = useState('');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const printRef = useRef();
@@ -15,16 +17,23 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     }
   }, [isOpen, mesesDisponibles]);
 
+  // Cuando cambia el mes, resetear semana y recargar con mes nuevo
   useEffect(() => {
     if (mes) {
-      loadData();
+      setSemana('');
+      loadData(mes, '');
     }
   }, [mes]);
 
-  const loadData = async () => {
+  const handleSemanaChange = (nuevaSemana) => {
+    setSemana(nuevaSemana);
+    loadData(mes, nuevaSemana || undefined);
+  };
+
+  const loadData = async (mesParam, semanaParam) => {
     setLoading(true);
     try {
-      const result = await dashboardService.getTablasDetalladas(mes);
+      const result = await dashboardService.getTablasDetalladas(mesParam, semanaParam || undefined);
       setData(result);
     } catch (error) {
       console.error('Error cargando tablas detalladas:', error);
@@ -37,11 +46,12 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     const content = printRef.current;
     if (!content) return;
 
+    const semanaLabel = semana ? ` — Semana ${semana}` : '';
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
       <head>
-        <title>Tablas Detalladas - ${mes}</title>
+        <title>Tablas Detalladas - ${mes}${semanaLabel}</title>
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
@@ -77,6 +87,74 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
       printWindow.print();
       printWindow.close();
     }, 500);
+  };
+
+  const handleDownloadExcel = () => {
+    if (!data) return;
+    const empresas = empresaFiltro
+      ? data.empresas.filter(e => e === empresaFiltro)
+      : data.empresas;
+    const semanaLabel = semana ? `Semana ${semana}` : 'Todo el mes';
+    const titulo = `Reporte Detallado — ${mes.toUpperCase()}${semana ? ` · Semana ${semana}` : ''}`;
+    const infoFiltros = ['Mes:', mes, 'Semana:', semanaLabel, 'Empresa:', empresaFiltro || 'Todas'];
+
+    const buildSheet = (type) => {
+      const header = ['Cliente / Material', 'General TNE', 'General Importe'];
+      for (const emp of empresas) header.push(`${emp} TNE`, `${emp} Importe`);
+      const rows = [
+        [titulo],
+        infoFiltros,
+        [],
+        header,
+      ];
+      for (const grupo of data.grupos) {
+        rows.push([`▶ ${grupo.cliente}`]);
+        for (const mat of grupo.materiales) {
+          const row = [
+            `  ${mat.label}`,
+            Number(mat.data.general.tne),
+            Number(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto),
+          ];
+          for (const emp of empresas) {
+            const d = mat.data[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
+            row.push(Number(d.tne), Number(type === 'venta' ? d.importeVenta : d.importeCosto));
+          }
+          rows.push(row);
+        }
+      }
+      for (const [div, sym] of [['USD', '$'], ['PEN', 'S/']]) {
+        const tot = data.totales[div];
+        const row = [
+          `Total ${div === 'USD' ? 'Dólares (USD)' : 'Soles (PEN)'}`,
+          Number(tot.general.tne),
+          Number(type === 'venta' ? tot.general.importeVenta : tot.general.importeCosto),
+        ];
+        for (const emp of empresas) {
+          const d = tot[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
+          row.push(Number(d.tne), Number(type === 'venta' ? d.importeVenta : d.importeCosto));
+        }
+        rows.push(row);
+      }
+      return XLSX.utils.aoa_to_sheet(rows);
+    };
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, buildSheet('venta'), 'Venta');
+    XLSX.utils.book_append_sheet(wb, buildSheet('costo'), 'Costo');
+
+    // Hoja Margen
+    const margenHeader = ['Concepto', 'General'];
+    for (const emp of empresas) margenHeader.push(emp);
+    const margenRows = [[titulo], infoFiltros, [], ['Margen de Ganancia'], margenHeader];
+    for (const [div, label] of [['USD', 'Dólares (USD)'], ['PEN', 'Soles (PEN)']]) {
+      const row = [label, Number(data.margen[div].general.margen)];
+      for (const emp of empresas) row.push(Number((data.margen[div][emp] || { margen: 0 }).margen));
+      margenRows.push(row);
+    }
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(margenRows), 'Margen');
+
+    const fileName = `Tablas_Detalladas_${mes.toUpperCase()}${semana ? `_Sem${semana}` : ''}${empresaFiltro ? `_${empresaFiltro.replace(/\s+/g, '_')}` : ''}.xlsx`;
+    XLSX.writeFile(wb, fileName);
   };
 
   if (!isOpen) return null;
@@ -244,6 +322,17 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   <option key={m} value={m}>{m}</option>
                 ))}
               </select>
+              {data && data.semanasDisponibles && data.semanasDisponibles.length > 0 && (
+                <>
+                  <label>Semana:</label>
+                  <select value={semana} onChange={(e) => handleSemanaChange(e.target.value)}>
+                    <option value="">Todo el mes</option>
+                    {data.semanasDisponibles.map(s => (
+                      <option key={s} value={s}>Semana {s}</option>
+                    ))}
+                  </select>
+                </>
+              )}
               {data && data.empresas.length > 0 && (
                 <>
                   <label>Empresa de Transporte:</label>
@@ -258,7 +347,9 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
             </div>
           </div>
           <div className="tablas-modal-actions">
-
+            <button className="btn-download-excel" onClick={handleDownloadExcel} disabled={loading || !data}>
+              📊 Descargar Excel
+            </button>
             <button className="btn-download-pdf" onClick={handleDownloadPDF} disabled={loading || !data}>
               📥 Descargar PDF
             </button>
@@ -277,6 +368,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
               <div ref={printRef}>
                 <h3 style={{ textAlign: 'center', marginBottom: 14, fontSize: '1.1rem', fontWeight: 700, color: '#1a2332', letterSpacing: '0.02em' }}>
                   Reporte Detallado — <span style={{ textTransform: 'uppercase', color: '#2D8F4E', fontWeight: 800 }}>{mes}</span>
+                  {semana && <span style={{ color: '#1a6fa8', fontWeight: 700 }}> · Semana {semana}</span>}
                 </h3>
                 {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta')}
                 {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo')}

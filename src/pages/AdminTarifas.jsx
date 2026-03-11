@@ -149,7 +149,7 @@ const AdminTarifas = () => {
   const formatMoney = (value, currency) => {
     if (!value && value !== 0) return '-';
     const symbol = currency === 'USD' ? '$' : 'S/';
-    return `${symbol} ${parseFloat(value).toFixed(2)}`;
+    return `${symbol} ${parseFloat(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const stats = {

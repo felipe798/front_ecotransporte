@@ -8,6 +8,8 @@ import './DashboardComponents.css';
 import TablasDetalladasModal from './TablasDetalladasModal';
 import ReporteGuiasModal from './ReporteGuiasModal';
 
+const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const FILTER_FIELDS = ['mes', 'semana', 'cliente', 'transportista', 'unidad', 'transportado'];
 
 const DashboardResumen = () => {
@@ -227,7 +229,7 @@ const DashboardResumen = () => {
           <div className="indicator-icon">⛏️</div>
           <div className="indicator-content">
             <h3>Peso Ticket (TN Recibida) - Filtrado</h3>
-            <p className="indicator-value">{data.indicadores.tnRecibidaFiltrado?.toFixed(2) || '0.00'}</p>
+            <p className="indicator-value">{data.indicadores.tnRecibidaFiltrado ? fmtNum(data.indicadores.tnRecibidaFiltrado) : '0.00'}</p>
             <span className="indicator-label">Con filtros aplicados</span>
           </div>
         </div>
@@ -241,7 +243,7 @@ const DashboardResumen = () => {
             <label>Peso Guía (TN Enviado)</label>
             <span className="peso-value enviado">
               {data.controlPeso.tn_enviado_total > 0
-                ? data.controlPeso.tn_enviado_total.toFixed(2)
+                ? fmtNum(data.controlPeso.tn_enviado_total)
                 : 'Pendiente'}
             </span>
           </div>
@@ -249,7 +251,7 @@ const DashboardResumen = () => {
             <label>Peso Ticket (TN Recibido)</label>
             <span className="peso-value recibido">
               {data.controlPeso.tn_recibida_total > 0
-                ? data.controlPeso.tn_recibida_total.toFixed(2)
+                ? fmtNum(data.controlPeso.tn_recibida_total)
                 : 'Pendiente'}
             </span>
           </div>
@@ -275,12 +277,12 @@ const DashboardResumen = () => {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis type="number" tick={{ fontSize: 12 }} hide />
                   <YAxis dataKey="nombre" type="category" width={isMobile ? 70 : 100} tick={{ fontSize: isMobile ? 11 : 13, fontWeight: 600 }} />
-                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                  <Tooltip formatter={(value) => `${fmtNum(value)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                   <Bar dataKey="valor" name="TN" radius={[0, 6, 6, 0]}>
                     {chartData.map((entry, index) => (
                       <Cell key={index} fill={COLORS[index]} />
                     ))}
-                    <LabelList dataKey="valor" position="right" formatter={(v) => `${parseFloat(v).toFixed(2)} TN`} style={{ fontSize: isMobile ? 10 : 12, fontWeight: 600 }} />
+                    <LabelList dataKey="valor" position="right" formatter={(v) => `${fmtNum(v)} TN`} style={{ fontSize: isMobile ? 10 : 12, fontWeight: 600 }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

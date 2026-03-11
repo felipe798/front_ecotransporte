@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, LabelList
 } from 'recharts';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import './DashboardComponents.css';
+
+const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 // Paleta de colores equilibrada para gráficos
 const COLORS = [
@@ -16,12 +20,30 @@ const COLORS = [
 
 const DashboardTransportista = () => {
   const isMobile = useIsMobile();
+  const contentRef = useRef(null);
   const [tnPorUnidad, setTnPorUnidad] = useState([]);
   const [tnPorCliente, setTnPorCliente] = useState([]);
   const [trasladosPorUnidad, setTrasladosPorUnidad] = useState([]);
   const [detalleTransportista, setDetalleTransportista] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtersLoading, setFiltersLoading] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const descargarPDF = async () => {
+    if (!contentRef.current) return;
+    setExportingPdf(true);
+    try {
+      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Detalle_Transportista.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
 
   const [localFilters, setLocalFilters] = useState({
     mes: '', cliente: '', transportista: '', unidad: ''
@@ -139,7 +161,12 @@ const DashboardTransportista = () => {
 
   return (
     <div className="dashboard-transportista">
-
+      <div className="pdf-btn-wrapper">
+        <button className="btn-download-pdf" onClick={descargarPDF} disabled={exportingPdf}>
+          {exportingPdf ? 'Generando...' : '📥 Descargar PDF'}
+        </button>
+      </div>
+      <div ref={contentRef}>
       {/* Filtros en cascada */}
       <div className="section-filters">
         <div className="filter-row">
@@ -191,7 +218,7 @@ const DashboardTransportista = () => {
                   <th>Traslados</th>
                   <th>Peso Ticket</th>
                   <th>Divisa</th>
-                  <th>Costo IGV Total</th>
+                  <th>Precio con IGV</th>
                 </tr>
               </thead>
               <tbody>
@@ -199,9 +226,9 @@ const DashboardTransportista = () => {
                   <tr key={index}>
                     <td>{item.transportista || 'Sin asignar'}</td>
                     <td>{item.cantidad_traslados}</td>
-                    <td>{(parseFloat(item.tn_recibido) || 0).toFixed(2)}</td>
+                    <td>{fmtNum(item.tn_recibido)}</td>
                     <td>{(item.divisa_cost || 'PEN')}</td>
-                    <td>{(item.divisa_cost || 'PEN') === 'USD' ? '$' : 'S/'} {(parseFloat(item.costo_total) || 0).toFixed(2)}</td>
+                    <td>{(item.divisa_cost || 'PEN') === 'USD' ? '$' : 'S/'} {(parseFloat(item.precio_total) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                   </tr>
                 ))}
               </tbody>
@@ -229,12 +256,12 @@ const DashboardTransportista = () => {
                   <CartesianGrid strokeDasharray="4 4" stroke="#b0b0b0" strokeOpacity={0.7} />
                   <XAxis dataKey="placa" tick={{ fontSize: isMobile ? 9 : 11, angle: -45, textAnchor: 'end' }} height={isMobile ? 70 : 60} interval={0} />
                   <YAxis tick={{ fontSize: isMobile ? 9 : 11 }} width={isMobile ? 50 : 65} tickFormatter={(v) => `${v} TN`} />
-                  <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                  <Tooltip formatter={(value) => `${fmtNum(value)} TN`} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                   <Bar dataKey="total" name="TN" radius={[6, 6, 0, 0]} maxBarSize={isMobile ? 40 : 60}>
                     {tnPorUnidad.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
-                    <LabelList dataKey="total" position="top" formatter={(v) => `${parseFloat(v).toFixed(2)}`} style={{ fontSize: isMobile ? 8 : 10, fill: '#333' }} />
+                    <LabelList dataKey="total" position="top" formatter={(v) => `${fmtNum(v)}`} style={{ fontSize: isMobile ? 8 : 10, fill: '#333' }} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -243,7 +270,7 @@ const DashboardTransportista = () => {
                 {tnPorUnidad.map((item, index) => (
                   <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <span style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS[index % COLORS.length], flexShrink: 0, display: 'inline-block' }} />
-                    <span style={{ color: '#333' }}>{item.placa || 'Sin placa'} — {parseFloat(item.total).toFixed(2)} TN</span>
+                    <span style={{ color: '#333' }}>{item.placa || 'Sin placa'} — {fmtNum(item.total)} TN</span>
                   </div>
                 ))}
               </div>
@@ -283,7 +310,7 @@ const DashboardTransportista = () => {
                     formatter={(value, name, props) => {
                       const total = tnPorCliente.reduce((s, i) => s + i.total, 0);
                       const pct = total > 0 ? ((parseFloat(value) / total) * 100).toFixed(2) : '0.00';
-                      return [`${parseFloat(value).toFixed(2)} TN (${pct}%)`, props.payload.cliente || 'Sin cliente'];
+                      return [`${fmtNum(value)} TN (${pct}%)`, props.payload.cliente || 'Sin cliente'];
                     }}
                     contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }}
                   />
@@ -297,7 +324,7 @@ const DashboardTransportista = () => {
                   return (
                     <div key={index} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <span style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: COLORS[index % COLORS.length], flexShrink: 0, display: 'inline-block' }} />
-                      <span style={{ color: '#333' }}>{item.cliente || 'Sin cliente'} — {parseFloat(item.total).toFixed(2)} TN ({pct}%)</span>
+                      <span style={{ color: '#333' }}>{item.cliente || 'Sin cliente'} — {fmtNum(item.total)} TN ({pct}%)</span>
                     </div>
                   );
                 })}
@@ -322,7 +349,7 @@ const DashboardTransportista = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis dataKey="placa" tick={{ fontSize: isMobile ? 9 : 11 }} interval={0} angle={isMobile ? -45 : 0} textAnchor={isMobile ? 'end' : 'middle'} height={isMobile ? 50 : 30} />
                 <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 30 : 60} />
-                <Tooltip formatter={(value, name) => name === 'Traslados' ? [value, 'Traslados'] : [`${parseFloat(value).toFixed(2)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                <Tooltip formatter={(value, name) => name === 'Traslados' ? [value, 'Traslados'] : [`${fmtNum(value)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
                 {!isMobile && <Legend />}
                 <Bar dataKey="cantidad" name="Traslados" radius={[4, 4, 0, 0]}>
                   {trasladosPorUnidad.map((entry, index) => (
@@ -332,7 +359,7 @@ const DashboardTransportista = () => {
                     content={({ x, y, width, value, index }) => {
                       const item = trasladosPorUnidad[index];
                       const tnRaw = item ? parseFloat(item.tn_recibido) : NaN;
-                      const tn = !isNaN(tnRaw) && tnRaw > 0 ? `${tnRaw.toFixed(2)} TN` : null;
+                      const tn = !isNaN(tnRaw) && tnRaw > 0 ? `${fmtNum(tnRaw)} TN` : null;
                       const fs = isMobile ? 8 : 10;
                       return (
                         <g>
@@ -360,11 +387,12 @@ const DashboardTransportista = () => {
               <div className="detail-item" key={index}>
                 <span className="legend-color" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
                 <span className="detail-name">{item.cliente || 'Sin cliente'}</span>
-                <span className="detail-value">{parseFloat(item.total).toFixed(2)} TN</span>
+                <span className="detail-value">{fmtNum(item.total)} TN</span>
               </div>
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

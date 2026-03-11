@@ -8,8 +8,10 @@ import './ViajesCliente.css';
 const ViajesCliente = () => {
   const [clientes, setClientes] = useState([]);
   const [placas, setPlacas] = useState([]);
+  const [meses, setMeses] = useState([]);
   const [selectedCliente, setSelectedCliente] = useState('');
   const [selectedPlaca, setSelectedPlaca] = useState('');
+  const [selectedMes, setSelectedMes] = useState('');
   const [diasViajes, setDiasViajes] = useState([]);
   const [viajesPorPlaca, setViajesPorPlaca] = useState([]);
   const [resumen, setResumen] = useState({ viajes: 0, traslados: 0 });
@@ -29,13 +31,14 @@ const ViajesCliente = () => {
   // Cargar datos cuando cambian los filtros
   useEffect(() => {
     loadData();
-  }, [selectedCliente, selectedPlaca]);
+  }, [selectedCliente, selectedPlaca, selectedMes]);
 
   const loadFiltros = async () => {
     try {
       const segmentadores = await dashboardService.getSegmentadores();
       setClientes(segmentadores.clientes || []);
       setPlacas(segmentadores.unidades || []);
+      setMeses(segmentadores.meses || []);
     } catch (error) {
       console.error('Error cargando filtros:', error);
     }
@@ -47,6 +50,7 @@ const ViajesCliente = () => {
       const filters = {};
       if (selectedCliente) filters.cliente = selectedCliente;
       if (selectedPlaca) filters.unidad = selectedPlaca;
+      if (selectedMes) filters.mes = selectedMes;
 
       console.log('[ViajesCliente] Cargando datos con filtros:', filters);
 
@@ -96,6 +100,7 @@ const ViajesCliente = () => {
   const limpiarFiltros = () => {
     setSelectedCliente('');
     setSelectedPlaca('');
+    setSelectedMes('');
   };
 
   return (
@@ -104,6 +109,19 @@ const ViajesCliente = () => {
 
       {/* Filtros */}
       <div className="filtros-viajes">
+        <div className="filtro-group">
+          <label>Mes</label>
+          <select
+            value={selectedMes}
+            onChange={(e) => setSelectedMes(e.target.value)}
+          >
+            <option value="">-- Todos --</option>
+            {meses.map((mes, idx) => (
+              <option key={idx} value={mes}>{mes}</option>
+            ))}
+          </select>
+        </div>
+
         <div className="filtro-group">
           <label>Cliente</label>
           <select
@@ -184,7 +202,7 @@ const ViajesCliente = () => {
                           <td>{dia.traslados}</td>
                           <td>
                             {dia.tonelaje_recibido != null
-                              ? `${Number(dia.tonelaje_recibido).toFixed(2)} TN`
+                              ? `${Number(dia.tonelaje_recibido).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TN`
                               : '-'}
                           </td>
                         </tr>

@@ -100,7 +100,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     rows.push([
       'Placa / Semana', 'Fecha', 'Guía (Transp.)', 'Conductor',
       'TN Enviada', 'TN Recibida', 'N° Ticket', 'Guía (Remit.)',
-      'Cliente', 'Recorrido', 'Material', 'Precio', 'Divisa', 'B.I.', 'Importe Total',
+      'Cliente', 'Recorrido', 'Material', 'Precio IGV', 'Divisa', 'Importe Total',
     ]);
     for (const bloque of data.bloques) {
       rows.push([`▶ UNIDAD: ${bloque.placa}`]);
@@ -112,7 +112,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
             '', fechaStr, v.grt, v.conductor,
             Number(v.peso), Number(v.pesoMina), v.ticket, v.grr,
             v.cliente, v.recorrido, v.material,
-            Number(v.precio), v.divisa, Number(v.bi), Number(v.importeTotal),
+            Number(v.precio), v.divisa, Number(v.bi),
           ]);
         }
         rows.push(['', `Subtotal — ${sem.semana}`, '', '', '', Number(sem.totalTn)]);
@@ -166,8 +166,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
               <col style={{ width: '10%' }} />{/* Cliente */}
               <col style={{ width: '10%' }} />{/* Recorrido */}
               <col style={{ width: '8%' }} />{/* Material */}
-              <col style={{ width: '5%' }} />{/* Precio */}
-              <col style={{ width: '5%' }} />{/* B.I. */}
+              <col style={{ width: '5%' }} />{/* Precio IGV */}
               <col style={{ width: '5%' }} />{/* Importe Total */}
             </colgroup>
             {sIdx === 0 && (
@@ -183,8 +182,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
                   <th className="col-cliente">Cliente</th>
                   <th className="col-cliente">Recorrido</th>
                   <th className="col-cliente">Material</th>
-                  <th className="col-money">Precio</th>
-                  <th className="col-money">B.I.</th>
+                  <th className="col-money">Precio IGV</th>
                   <th className="col-money">Importe Total</th>
                 </tr>
               </thead>
@@ -204,13 +202,12 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
                   <td className="col-left">{v.material}</td>
                   <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.precio)}</td>
                   <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.bi)}</td>
-                  <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.importeTotal)}</td>
                 </tr>
               ))}
               <tr className="fila-subtotal">
                 <td colSpan={4} className="col-left">{sem.semana}</td>
                 <td>{formatNum(sem.totalTn)} TN</td>
-                <td colSpan={8}></td>
+                <td colSpan={3}></td>
               </tr>
             </tbody>
           </table>
@@ -231,13 +228,12 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
             <col style={{ width: '8%' }} />
             <col style={{ width: '5%' }} />
             <col style={{ width: '5%' }} />
-            <col style={{ width: '5%' }} />
           </colgroup>
           <tbody>
             <tr className="fila-total">
               <td colSpan={4} className="col-left">TOTAL</td>
               <td>{formatNum(bloque.totalTn)} TN</td>
-              <td colSpan={8}></td>
+              <td colSpan={7}></td>
             </tr>
           </tbody>
         </table>

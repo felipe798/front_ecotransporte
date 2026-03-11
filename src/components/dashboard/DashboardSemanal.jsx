@@ -17,22 +17,7 @@ const CHART_COLORS = [
   '#3A9E9E', '#B87840'
 ];
 
-const CustomSemanaTick = ({ x, y, payload, data, isMobile }) => {
-  const item = data?.find(d => d.semana === payload.value);
-  const tn = item ? fmtNum(item.total) : '';
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text x={0} y={0} dy={14} textAnchor="middle" fill="#555" fontSize={isMobile ? 10 : 12}>
-        {payload.value}
-      </text>
-      {tn && (
-        <text x={0} y={0} dy={28} textAnchor="middle" fill="#1B7430" fontSize={isMobile ? 9 : 11} fontWeight={600}>
-          {tn} TN
-        </text>
-      )}
-    </g>
-  );
-};
+
 import './DashboardComponents.css';
 
 const Modal = ({ title, items, onClose }) => (
@@ -347,13 +332,12 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
             <p className="empty-message">No hay datos para mostrar</p>
           ) : (
             <ResponsiveContainer width="100%" height={isMobile ? 250 : 320}>
-              <BarChart data={tnRecibidoPorSemana} margin={{ top: 10, right: isMobile ? 10 : 20, left: 0, bottom: isMobile ? 30 : 20 }}>
+              <BarChart data={tnRecibidoPorSemana} margin={{ top: 30, right: isMobile ? 10 : 20, left: 0, bottom: isMobile ? 10 : 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                 <XAxis
                   dataKey="semana"
-                  height={isMobile ? 45 : 55}
-                  tick={<CustomSemanaTick data={tnRecibidoPorSemana} isMobile={isMobile} />}
-                  interval={isMobile ? 'preserveStartEnd' : 0}
+                  tick={{ fontSize: isMobile ? 10 : 12, fill: '#555' }}
+                  interval={0}
                 />
                 <YAxis tick={{ fontSize: isMobile ? 10 : 12 }} width={isMobile ? 35 : 60} />
                 <Tooltip formatter={(value) => [`${fmtNum(value)} TN`, 'Peso Ticket']} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
@@ -362,6 +346,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
                   {tnRecibidoPorSemana.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke={CHART_COLORS[index % CHART_COLORS.length]} strokeOpacity={0.3} />
                   ))}
+                  <LabelList dataKey="total" position="top" formatter={(v) => `${fmtNum(v)} TN`} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430', fontWeight: 600 }} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

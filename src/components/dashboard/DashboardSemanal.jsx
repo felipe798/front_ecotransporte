@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { dashboardService } from '../../services/api';
 import {
@@ -6,6 +6,8 @@ import {
   LineChart, Line, Cell
 } from 'recharts';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -82,6 +84,7 @@ const Modal = ({ title, items, onClose }) => (
 
 const DashboardSemanal = ({ filters: globalFilters }) => {
   const isMobile = useIsMobile();
+  const contentRef = useRef(null);
   const [tnEnviadoPorSemana, setTnEnviadoPorSemana] = useState([]);
   const [tnRecibidoPorSemana, setTnRecibidoPorSemana] = useState([]);
   const [tnRecibidoPorConcentrado, setTnRecibidoPorConcentrado] = useState([]);
@@ -89,6 +92,23 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
   const [modal, setModal] = useState(null); // { title, items }
   const [loadingModal, setLoadingModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const descargarPDF = async () => {
+    if (!contentRef.current) return;
+    setExportingPdf(true);
+    try {
+      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Variacion_TN.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
   
   // Filtros locales exclusivos de esta sección
   const [localFilters, setLocalFilters] = useState({
@@ -237,6 +257,11 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
 
   return (
     <div className="dashboard-semanal">
+      <div className="pdf-btn-wrapper">
+        <button className="btn-download-pdf" onClick={descargarPDF} disabled={exportingPdf}>
+          {exportingPdf ? 'Generando...' : '📥 Descargar PDF'}
+        </button>
+      </div>
       {modal && (
         <Modal
           title={loadingModal ? 'Cargando...' : modal.title}
@@ -258,6 +283,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
 
       </div>
 
+      <div ref={contentRef}>
       {/* Filtros exclusivos de esta sección */}
       <div className="section-filters">
         <div className="filter-row">
@@ -380,6 +406,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
       </div>
         </>
       )}
+      </div>
     </div>
   );
 };

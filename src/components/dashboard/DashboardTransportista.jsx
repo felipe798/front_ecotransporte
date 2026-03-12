@@ -166,7 +166,6 @@ const DashboardTransportista = () => {
           {exportingPdf ? 'Generando...' : '📥 Descargar PDF'}
         </button>
       </div>
-      <div ref={contentRef}>
       {/* Filtros en cascada */}
       <div className="section-filters">
         <div className="filter-row">
@@ -204,6 +203,7 @@ const DashboardTransportista = () => {
         </div>
       </div>
 
+      <div ref={contentRef}>
       {/* Detalle por Transportista */}
       <div className="section-card full-width">
         <h2>📋 Detalle por Transportista</h2>

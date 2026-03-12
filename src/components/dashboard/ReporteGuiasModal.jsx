@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import { dashboardService } from '../../services/api';
 import './ReporteGuiasModal.css';
 
@@ -93,41 +93,137 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
 
   const handleDownloadExcel = () => {
     if (!data || data.error) return;
+
+    const white = { font: { sz: 10 }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const bold = { font: { bold: true, sz: 10 } };
+    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' } };
+    const hInfo = { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '2563EB' } }, alignment: { horizontal: 'center', wrapText: true }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const hPeso = { ...hInfo, fill: { fgColor: { rgb: '5B21B6' } } };
+    const hRef = { ...hInfo, fill: { fgColor: { rgb: 'B45309' } } };
+    const hCliente = { ...hInfo, fill: { fgColor: { rgb: '145524' } } };
+    const hMoney = { ...hInfo, fill: { fgColor: { rgb: '7F1D1D' } } };
+    const border = { border: { top: { style: 'thin', color: { rgb: 'E2E8F0' } }, bottom: { style: 'thin', color: { rgb: 'E2E8F0' } }, left: { style: 'thin', color: { rgb: 'E2E8F0' } }, right: { style: 'thin', color: { rgb: 'E2E8F0' } } } };
+    const cellLeft = { ...border, font: { sz: 9 }, alignment: { horizontal: 'left' } };
+    const cellRight = { ...border, font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
+    const cellMoney = { ...border, font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
+    const placaStyle = { font: { bold: true, sz: 10, color: { rgb: '1B7430' } }, fill: { fgColor: { rgb: 'E8F5E9' } }, alignment: { horizontal: 'left' } };
+    const semanaStyle = { font: { bold: true, sz: 9, color: { rgb: '555555' } }, fill: { fgColor: { rgb: 'F8F9FA' } }, alignment: { horizontal: 'left' } };
+    const subtotalStyle = { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'F1F5F9' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const totalStyle = { font: { bold: true, sz: 10 }, fill: { fgColor: { rgb: 'E2E8F0' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { top: { style: 'medium' }, bottom: { style: 'medium' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const totalLabelStyle = { ...totalStyle, alignment: { horizontal: 'left' } };
+
+    const COLS = 14;
     const rows = [];
-    rows.push([`${data.empresa} — TRANSPORTE SEGÚN GUÍAS EMITIDAS`]);
-    rows.push(['Mes:', data.mes, semana ? `Semana: ${semana}` : 'Todo el mes']);
-    rows.push([]);
-    rows.push([
-      'Placa / Semana', 'Fecha', 'Guía (Transp.)', 'Conductor',
-      'TN Enviada', 'TN Recibida', 'N° Ticket', 'Guía (Remit.)',
-      'Cliente', 'Recorrido', 'Material', 'Precio IGV', 'Divisa', 'Importe Total',
-    ]);
+
+    // Título
+    const titleRow = Array(COLS).fill({ v: '', s: titleStyle });
+    titleRow[0] = { v: `${data.empresa} — TRANSPORTE SEGÚN GUÍAS EMITIDAS`, s: titleStyle };
+    rows.push(titleRow);
+
+    // Info
+    const infoRow = Array(COLS).fill({ v: '', s: white });
+    infoRow[0] = { v: 'Mes:', s: bold };
+    infoRow[1] = { v: data.mes, s: white };
+    infoRow[2] = { v: semana ? `Semana: ${semana}` : 'Todo el mes', s: white };
+    rows.push(infoRow);
+    rows.push(Array(COLS).fill({ v: '', s: white }));
+
+    // Headers
+    const headerStyles = [hInfo, hInfo, hInfo, hPeso, hPeso, hRef, hRef, hCliente, hCliente, hCliente, hMoney, hInfo, hMoney];
+    const headerLabels = ['Fecha', 'Guía (Transp.)', 'Conductor', 'TN Enviada', 'TN Recibida', 'N° Ticket', 'Guía (Remit.)', 'Cliente', 'Recorrido', 'Material', 'Precio IGV', 'Divisa', 'Importe Total'];
+    rows.push(headerLabels.map((h, i) => ({ v: h, s: headerStyles[i] })));
+
     for (const bloque of data.bloques) {
-      rows.push([`▶ UNIDAD: ${bloque.placa}`]);
+      // Placa header
+      const placaRow = Array(COLS).fill({ v: '', s: placaStyle });
+      placaRow[0] = { v: `▶ UNIDAD: ${bloque.placa}`, s: placaStyle };
+      rows.push(placaRow);
+
       for (const sem of bloque.semanas) {
-        rows.push([`  ${sem.semana}`]);
+        // Semana label
+        const semRow = Array(COLS).fill({ v: '', s: semanaStyle });
+        semRow[0] = { v: `  ${sem.semana}`, s: semanaStyle };
+        rows.push(semRow);
+
         for (const v of sem.viajes) {
           const fechaStr = v.fecha ? String(v.fecha).substring(0, 10) : '';
           rows.push([
-            '', fechaStr, v.grt, v.conductor,
-            Number(v.peso), Number(v.pesoMina), v.ticket, v.grr,
-            v.cliente, v.recorrido, v.material,
-            Number(v.precio), v.divisa, Number(v.bi),
+            { v: fechaStr, s: cellLeft },
+            { v: v.grt || '', s: cellLeft },
+            { v: v.conductor || '', s: cellLeft },
+            { v: Number(v.peso) || 0, s: cellRight },
+            { v: Number(v.pesoMina) || 0, s: cellRight },
+            { v: v.ticket || '', s: cellLeft },
+            { v: v.grr || '', s: cellLeft },
+            { v: v.cliente || '', s: cellLeft },
+            { v: v.recorrido || '', s: cellLeft },
+            { v: v.material || '', s: cellLeft },
+            { v: Number(v.precio) || 0, s: cellMoney },
+            { v: v.divisa || '', s: cellLeft },
+            { v: Number(v.bi) || 0, s: cellMoney },
           ]);
         }
-        rows.push(['', `Subtotal — ${sem.semana}`, '', '', '', Number(sem.totalTn)]);
+        // Subtotal
+        const subRow = Array(COLS).fill({ v: '', s: subtotalStyle });
+        subRow[0] = { v: sem.semana, s: { ...subtotalStyle, alignment: { horizontal: 'left' } } };
+        subRow[4] = { v: Number(sem.totalTn) || 0, s: subtotalStyle };
+        rows.push(subRow);
       }
-      rows.push([`TOTAL ${bloque.placa}`, '', '', '', '', Number(bloque.totalTn)]);
-      if (bloque.totalDolares > 0) rows.push(['', 'Total Dólares (USD):', Number(bloque.totalDolares)]);
-      if (bloque.totalSoles > 0)   rows.push(['', 'Total Soles (PEN):', Number(bloque.totalSoles)]);
-      rows.push([]);
+
+      // Total placa
+      const totRow = Array(COLS).fill({ v: '', s: totalStyle });
+      totRow[0] = { v: `TOTAL ${bloque.placa}`, s: totalLabelStyle };
+      totRow[4] = { v: Number(bloque.totalTn) || 0, s: totalStyle };
+      rows.push(totRow);
+
+      if (bloque.totalDolares > 0) {
+        const dRow = Array(COLS).fill({ v: '', s: white });
+        dRow[0] = { v: 'Total Dólares (USD):', s: bold };
+        dRow[1] = { v: Number(bloque.totalDolares), s: cellMoney };
+        rows.push(dRow);
+      }
+      if (bloque.totalSoles > 0) {
+        const sRow = Array(COLS).fill({ v: '', s: white });
+        sRow[0] = { v: 'Total Soles (PEN):', s: bold };
+        sRow[1] = { v: Number(bloque.totalSoles), s: cellMoney };
+        rows.push(sRow);
+      }
+      rows.push(Array(COLS).fill({ v: '', s: white }));
     }
-    rows.push(['TOTALES GENERALES']);
-    rows.push(['Total TN:', Number(data.totalesGenerales.totalTn)]);
-    if (data.totalesGenerales.totalDolares > 0) rows.push(['Total Dólares (USD):', Number(data.totalesGenerales.totalDolares)]);
-    if (data.totalesGenerales.totalSoles > 0)   rows.push(['Total Soles (PEN):', Number(data.totalesGenerales.totalSoles)]);
+
+    // Totales generales
+    const genTitle = Array(COLS).fill({ v: '', s: { font: { bold: true, sz: 12, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } } } });
+    genTitle[0] = { v: 'TOTALES GENERALES', s: genTitle[0].s };
+    rows.push(genTitle);
+
+    const tnRow = Array(COLS).fill({ v: '', s: bold });
+    tnRow[0] = { v: 'Total TN:', s: bold };
+    tnRow[1] = { v: Number(data.totalesGenerales.totalTn), s: cellRight };
+    rows.push(tnRow);
+
+    if (data.totalesGenerales.totalDolares > 0) {
+      const r = Array(COLS).fill({ v: '', s: bold });
+      r[0] = { v: 'Total Dólares (USD):', s: bold };
+      r[1] = { v: Number(data.totalesGenerales.totalDolares), s: cellMoney };
+      rows.push(r);
+    }
+    if (data.totalesGenerales.totalSoles > 0) {
+      const r = Array(COLS).fill({ v: '', s: bold });
+      r[0] = { v: 'Total Soles (PEN):', s: bold };
+      r[1] = { v: Number(data.totalesGenerales.totalSoles), s: cellMoney };
+      rows.push(r);
+    }
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
+    // Anchos de columna
+    ws['!cols'] = [
+      { wch: 12 }, { wch: 16 }, { wch: 25 }, { wch: 12 }, { wch: 12 },
+      { wch: 12 }, { wch: 16 }, { wch: 20 }, { wch: 20 }, { wch: 16 },
+      { wch: 12 }, { wch: 8 }, { wch: 14 },
+    ];
+    // Merge título
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: COLS - 2 } }];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Guías Emitidas');
     const fileName = `Guias_${data.empresa}_${data.mes}${semana ? `_Sem${semana}` : ''}.xlsx`.replace(/\s+/g, '_');

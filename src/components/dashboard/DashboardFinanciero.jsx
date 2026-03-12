@@ -384,7 +384,7 @@ const DashboardFinanciero = ({ filters }) => {
         };
         semanas.forEach(s => grouped[key][s] = 0);
       }
-      grouped[key][item.semana] = parseFloat(item.tn_enviado || 0);
+      grouped[key][item.semana] = parseFloat(item.tn_recibida || 0);
     });
     
     return { rows: Object.values(grouped), semanas };
@@ -886,10 +886,10 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Seguimiento de Transporte */}
       {activeTab === 'seguimiento' && (
         <div className="financiero-section">
-          <h2>🚧 Seguimiento de Transporte - Peso Guía por Semana</h2>
+          <h2>🚧 Seguimiento de Transporte - Peso Ticket por Semana</h2>
           
           <div className="section-card full-width">
-            <h3>Tabla de Seguimiento (Cliente → Empresa → Unidad → Semana)</h3>
+            <h3>Tabla de Seguimiento - Tonelaje Recibido (Cliente → Empresa → Unidad → Semana)</h3>
             {seguimiento.length === 0 ? (
               <p className="empty-message">No hay datos de seguimiento</p>
             ) : (

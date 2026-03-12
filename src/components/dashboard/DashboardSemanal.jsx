@@ -268,7 +268,6 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
 
       </div>
 
-      <div ref={contentRef}>
       {/* Filtros exclusivos de esta sección */}
       <div className="section-filters">
         <div className="filter-row">
@@ -320,6 +319,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
         </div>
       </div>
 
+      <div ref={contentRef}>
       {loading ? (
         <div className="loading-section"><div className="spinner"></div></div>
       ) : (

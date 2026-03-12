@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import { dashboardService } from '../../services/api';
 import './TablasDetalladasModal.css';
 
@@ -96,46 +96,93 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
       : data.empresas;
     const semanaLabel = semana ? `Semana ${semana}` : 'Todo el mes';
     const titulo = `Reporte Detallado — ${mes.toUpperCase()}${semana ? ` · Semana ${semana}` : ''}`;
-    const infoFiltros = ['Mes:', mes, 'Semana:', semanaLabel, 'Empresa:', empresaFiltro || 'Todas'];
+
+    const border = { border: { top: { style: 'thin', color: { rgb: 'E2E8F0' } }, bottom: { style: 'thin', color: { rgb: 'E2E8F0' } }, left: { style: 'thin', color: { rgb: 'E2E8F0' } }, right: { style: 'thin', color: { rgb: 'E2E8F0' } } } };
+    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1E3D2C' } }, alignment: { horizontal: 'center' } };
+    const infoStyle = { font: { bold: true, sz: 10, color: { rgb: '333333' } } };
+    const hCliente = { font: { bold: true, sz: 9, color: { rgb: '173324' } }, fill: { fgColor: { rgb: '96D9B8' } }, alignment: { horizontal: 'left', wrapText: true }, ...border };
+    const hGeneral = { font: { bold: true, sz: 9, color: { rgb: '1E2F5C' } }, fill: { fgColor: { rgb: 'A3BFFA' } }, alignment: { horizontal: 'center', wrapText: true }, ...border };
+    const empColors = ['C4A8F0', 'FAC98A', 'F5A3A8', 'A8C8DC'];
+    const empFonts = ['2E2048', '3D2200', '3D1018', '1A3040'];
+    const cellLeft = { ...border, font: { sz: 9 }, alignment: { horizontal: 'left' } };
+    const cellRight = { ...border, font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
+    const clienteRowStyle = { font: { bold: true, sz: 10, color: { rgb: '1E2A3A' } }, fill: { fgColor: { rgb: 'C5D0E0' } }, alignment: { horizontal: 'left' }, ...border };
+    const materialStyle = { font: { sz: 9 }, alignment: { horizontal: 'left' }, ...border };
+    const totalRowStyle = { font: { bold: true, sz: 10, color: { rgb: '1E3D2C' } }, fill: { fgColor: { rgb: 'A8DBC0' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', ...border };
+    const totalLabelStyle = { ...totalRowStyle, alignment: { horizontal: 'left' } };
+    const white = { font: { sz: 9 } };
 
     const buildSheet = (type) => {
-      const header = ['Cliente / Material', 'General TNE', 'General Importe'];
-      for (const emp of empresas) header.push(`${emp} TNE`, `${emp} Importe`);
-      const rows = [
-        [titulo],
-        infoFiltros,
-        [],
-        header,
-      ];
+      const colCount = 3 + empresas.length * 2;
+      const rows = [];
+
+      // Título
+      const titleRow = Array(colCount).fill({ v: '', s: titleStyle });
+      titleRow[0] = { v: titulo, s: titleStyle };
+      rows.push(titleRow);
+
+      // Info
+      const info = Array(colCount).fill({ v: '', s: white });
+      info[0] = { v: `Mes: ${mes}`, s: infoStyle };
+      info[1] = { v: `${semanaLabel}`, s: infoStyle };
+      info[2] = { v: `Empresa: ${empresaFiltro || 'Todas'}`, s: infoStyle };
+      rows.push(info);
+      rows.push(Array(colCount).fill({ v: '', s: white }));
+
+      // Headers
+      const header = [];
+      header.push({ v: 'Cliente / Material', s: hCliente });
+      header.push({ v: 'General TNE', s: hGeneral });
+      header.push({ v: 'General Importe', s: hGeneral });
+      empresas.forEach((emp, i) => {
+        const empStyle = { font: { bold: true, sz: 9, color: { rgb: empFonts[i % empFonts.length] } }, fill: { fgColor: { rgb: empColors[i % empColors.length] } }, alignment: { horizontal: 'center', wrapText: true }, ...border };
+        header.push({ v: `${emp} TNE`, s: empStyle });
+        header.push({ v: `${emp} Importe`, s: empStyle });
+      });
+      rows.push(header);
+
+      // Data
       for (const grupo of data.grupos) {
-        rows.push([`▶ ${grupo.cliente}`]);
+        const cRow = Array(colCount).fill({ v: '', s: clienteRowStyle });
+        cRow[0] = { v: `▶ ${grupo.cliente}`, s: clienteRowStyle };
+        rows.push(cRow);
+
         for (const mat of grupo.materiales) {
-          const row = [
-            `  ${mat.label}`,
-            Number(mat.data.general.tne),
-            Number(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto),
-          ];
+          const row = [];
+          row.push({ v: `  ${mat.label}`, s: materialStyle });
+          row.push({ v: Number(mat.data.general.tne) || 0, s: cellRight });
+          row.push({ v: Number(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto) || 0, s: cellRight });
           for (const emp of empresas) {
             const d = mat.data[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
-            row.push(Number(d.tne), Number(type === 'venta' ? d.importeVenta : d.importeCosto));
+            row.push({ v: Number(d.tne) || 0, s: cellRight });
+            row.push({ v: Number(type === 'venta' ? d.importeVenta : d.importeCosto) || 0, s: cellRight });
           }
           rows.push(row);
         }
       }
-      for (const [div, sym] of [['USD', '$'], ['PEN', 'S/']]) {
+
+      // Totales
+      for (const [div, label] of [['USD', 'Total Dólares (USD)'], ['PEN', 'Total Soles (PEN)']]) {
         const tot = data.totales[div];
-        const row = [
-          `Total ${div === 'USD' ? 'Dólares (USD)' : 'Soles (PEN)'}`,
-          Number(tot.general.tne),
-          Number(type === 'venta' ? tot.general.importeVenta : tot.general.importeCosto),
-        ];
+        const row = [];
+        row.push({ v: label, s: totalLabelStyle });
+        row.push({ v: Number(tot.general.tne) || 0, s: totalRowStyle });
+        row.push({ v: Number(type === 'venta' ? tot.general.importeVenta : tot.general.importeCosto) || 0, s: totalRowStyle });
         for (const emp of empresas) {
           const d = tot[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
-          row.push(Number(d.tne), Number(type === 'venta' ? d.importeVenta : d.importeCosto));
+          row.push({ v: Number(d.tne) || 0, s: totalRowStyle });
+          row.push({ v: Number(type === 'venta' ? d.importeVenta : d.importeCosto) || 0, s: totalRowStyle });
         }
         rows.push(row);
       }
-      return XLSX.utils.aoa_to_sheet(rows);
+
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      // Anchos
+      const cols = [{ wch: 30 }, { wch: 14 }, { wch: 14 }];
+      empresas.forEach(() => { cols.push({ wch: 14 }, { wch: 14 }); });
+      ws['!cols'] = cols;
+      ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } }];
+      return ws;
     };
 
     const wb = XLSX.utils.book_new();
@@ -143,15 +190,41 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     XLSX.utils.book_append_sheet(wb, buildSheet('costo'), 'Costo');
 
     // Hoja Margen
-    const margenHeader = ['Concepto', 'General'];
-    for (const emp of empresas) margenHeader.push(emp);
-    const margenRows = [[titulo], infoFiltros, [], ['Margen de Ganancia'], margenHeader];
+    const colCount = 2 + empresas.length;
+    const margenRows = [];
+    const mTitleRow = Array(colCount).fill({ v: '', s: titleStyle });
+    mTitleRow[0] = { v: titulo, s: titleStyle };
+    margenRows.push(mTitleRow);
+
+    const mInfo = Array(colCount).fill({ v: '', s: white });
+    mInfo[0] = { v: `Mes: ${mes}`, s: infoStyle };
+    mInfo[1] = { v: `${semanaLabel}`, s: infoStyle };
+    margenRows.push(mInfo);
+    margenRows.push(Array(colCount).fill({ v: '', s: white }));
+
+    const mLabel = Array(colCount).fill({ v: '', s: { font: { bold: true, sz: 12, color: { rgb: '1E3D2C' } } } });
+    mLabel[0] = { v: 'Margen de Ganancia', s: mLabel[0].s };
+    margenRows.push(mLabel);
+
+    const mHeader = [{ v: 'Concepto', s: hCliente }, { v: 'General', s: hGeneral }];
+    empresas.forEach((emp, i) => {
+      const empStyle = { font: { bold: true, sz: 9, color: { rgb: empFonts[i % empFonts.length] } }, fill: { fgColor: { rgb: empColors[i % empColors.length] } }, alignment: { horizontal: 'center', wrapText: true }, ...border };
+      mHeader.push({ v: emp, s: empStyle });
+    });
+    margenRows.push(mHeader);
+
     for (const [div, label] of [['USD', 'Dólares (USD)'], ['PEN', 'Soles (PEN)']]) {
-      const row = [label, Number(data.margen[div].general.margen)];
-      for (const emp of empresas) row.push(Number((data.margen[div][emp] || { margen: 0 }).margen));
+      const row = [{ v: label, s: totalLabelStyle }, { v: Number(data.margen[div].general.margen) || 0, s: totalRowStyle }];
+      for (const emp of empresas) row.push({ v: Number((data.margen[div][emp] || { margen: 0 }).margen) || 0, s: totalRowStyle });
       margenRows.push(row);
     }
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(margenRows), 'Margen');
+
+    const margenWs = XLSX.utils.aoa_to_sheet(margenRows);
+    const mCols = [{ wch: 25 }, { wch: 14 }];
+    empresas.forEach(() => mCols.push({ wch: 14 }));
+    margenWs['!cols'] = mCols;
+    margenWs['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } }];
+    XLSX.utils.book_append_sheet(wb, margenWs, 'Margen');
 
     const fileName = `Tablas_Detalladas_${mes.toUpperCase()}${semana ? `_Sem${semana}` : ''}${empresaFiltro ? `_${empresaFiltro.replace(/\s+/g, '_')}` : ''}.xlsx`;
     XLSX.writeFile(wb, fileName);

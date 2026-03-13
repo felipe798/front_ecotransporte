@@ -237,7 +237,13 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     return val.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  const renderTable = (title, type) => {
+  const formatEmpresa = (empresa) => {
+    if (!empresa || empresa === 'SIN EMPRESA') return empresa || 'SIN EMPRESA';
+    if (empresa === 'ECOTRANSPORTE') return 'ECOTRANSPORTE';
+    return `ECOTRANSPORTE(${empresa})`;
+  };
+
+  const renderTable = (title, type, useFormatEmpresa = false) => {
     if (!data) return null;
     const { grupos, totales } = data;
     const empresas = empresaFiltro
@@ -261,7 +267,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                 <th className="col-cliente" rowSpan={2}>Cliente</th>
                 <th className="col-general" colSpan={2}>General</th>
                 {empresas.map((emp, idx) => (
-                  <th key={emp} className={`col-empresa-${idx % 4}`} colSpan={2}>{emp}</th>
+                  <th key={emp} className={`col-empresa-${idx % 4}`} colSpan={2}>{useFormatEmpresa ? formatEmpresa(emp) : emp}</th>
                 ))}
               </tr>
               <tr>
@@ -443,7 +449,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   Reporte Detallado — <span style={{ textTransform: 'uppercase', color: '#2D8F4E', fontWeight: 800 }}>{mes}</span>
                   {semana && <span style={{ color: '#1a6fa8', fontWeight: 700 }}> · Semana {semana}</span>}
                 </h3>
-                {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta')}
+                {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta', true)}
                 {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo')}
                 {renderMargen()}
               </div>

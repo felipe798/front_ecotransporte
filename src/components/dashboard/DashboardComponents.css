@@ -656,6 +656,20 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.required-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: #e53935;
+  color: white;
+  padding: 1px 5px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .filter-item select {

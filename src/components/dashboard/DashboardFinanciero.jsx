@@ -57,6 +57,10 @@ const DashboardFinanciero = ({ filters }) => {
   const [filterOptionsTn, setFilterOptionsTn] = useState({ meses: [], semanas: [], clientes: [], transportistas: [], unidades: [], divisas: [] });
   const [filtersLoadingTn, setFiltersLoadingTn] = useState(false);
 
+  const [localFiltersSeg, setLocalFiltersSeg] = useState({ mes: '', semana: '', cliente: '', unidad: '' });
+  const [filterOptionsSeg, setFilterOptionsSeg] = useState({ meses: [], semanas: [], clientes: [], unidades: [] });
+  const [filtersLoadingSeg, setFiltersLoadingSeg] = useState(false);
+
   const getActiveFilters = () => {
     const active = {};
     Object.entries(localFilters).forEach(([k, v]) => { if (v) active[k] = v; });
@@ -79,13 +83,10 @@ const DashboardFinanciero = ({ filters }) => {
         setFilterOptionsPagar(opts);
         setFilterOptionsMargen(opts);
         setFilterOptionsTn(opts);
+        setFilterOptionsSeg({ meses: data.meses || [], semanas: data.semanas || [], clientes: data.clientes || [], unidades: data.unidades || [] });
       } catch (e) { console.error(e); }
     };
     init();
-  }, []);
-
-  useEffect(() => {
-    loadStaticData();
   }, []);
 
   useEffect(() => {
@@ -103,6 +104,11 @@ const DashboardFinanciero = ({ filters }) => {
   useEffect(() => {
     loadTnClienteEmpresa();
   }, [localFiltersTn]);
+
+  useEffect(() => {
+    if (localFiltersSeg.mes) loadSeguimiento();
+    else setSeguimiento([]);
+  }, [localFiltersSeg]);
 
   const getActivePagarFilters = () => {
     const active = {};
@@ -174,18 +180,50 @@ const DashboardFinanciero = ({ filters }) => {
     }
   };
 
-  const loadStaticData = async () => {
+  const loadSeguimiento = async () => {
     setLoading(true);
     try {
-      const [seg] = await Promise.all([
-        dashboardService.getSeguimientoTransporte({}),
-      ]);
+      const active = {};
+      Object.entries(localFiltersSeg).forEach(([k, v]) => { if (v) active[k] = v; });
+      const seg = await dashboardService.getSeguimientoTransporte(active);
       setSeguimiento(seg || []);
     } catch (error) {
-      console.error('Error cargando datos financieros:', error);
+      console.error('Error cargando Seguimiento:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFilterChangeSeg = async (key, value) => {
+    const newFilters = { ...localFiltersSeg, [key]: value };
+    setFiltersLoadingSeg(true);
+    try {
+      const active = {};
+      Object.entries(newFilters).forEach(([k, v]) => { if (v) active[k] = v; });
+      const data = await dashboardService.getSegmentadoresFiltrados(active);
+      const newOptions = {
+        meses: data.meses || [],
+        semanas: data.semanas || [],
+        clientes: data.clientes || [],
+        unidades: data.unidades || [],
+      };
+      const validated = { ...newFilters };
+      if (validated.mes && !newOptions.meses.includes(validated.mes)) validated.mes = '';
+      if (validated.semana && !newOptions.semanas.includes(validated.semana)) validated.semana = '';
+      if (validated.cliente && !newOptions.clientes.includes(validated.cliente)) validated.cliente = '';
+      if (validated.unidad && !newOptions.unidades.includes(validated.unidad)) validated.unidad = '';
+      setFilterOptionsSeg(newOptions);
+      setLocalFiltersSeg(validated);
+    } catch (e) { console.error(e); } finally { setFiltersLoadingSeg(false); }
+  };
+
+  const clearFiltersSeg = async () => {
+    setFiltersLoadingSeg(true);
+    try {
+      const data = await dashboardService.getSegmentadoresFiltrados({});
+      setFilterOptionsSeg({ meses: data.meses || [], semanas: data.semanas || [], clientes: data.clientes || [], unidades: data.unidades || [] });
+    } catch (e) { console.error(e); } finally { setFiltersLoadingSeg(false); }
+    setLocalFiltersSeg({ mes: '', semana: '', cliente: '', unidad: '' });
   };
 
   const handleFilterChange = async (key, value) => {
@@ -341,6 +379,12 @@ const DashboardFinanciero = ({ filters }) => {
     return 'USD';
   };
 
+  const formatEmpresa = (empresa) => {
+    if (!empresa || empresa === 'SIN EMPRESA') return empresa || 'SIN EMPRESA';
+    if (empresa === 'ECOTRANSPORTE') return 'ECOTRANSPORTE';
+    return `ECOTRANSPORTE(${empresa})`;
+  };
+
   // Agrupar datos para gráficos jerárquicos (Cliente → Empresa)
   const prepareChartData = (data) => {
     const grouped = {};
@@ -348,7 +392,7 @@ const DashboardFinanciero = ({ filters }) => {
       const key = `${item.cliente}|${item.empresa}`;
       if (!grouped[key]) {
         grouped[key] = {
-          label: `${item.cliente} - ${item.empresa}`,
+          label: `${item.cliente} - ${formatEmpresa(item.empresa)}`,
           cliente: item.cliente,
           empresa: item.empresa,
           PEN: 0,
@@ -363,7 +407,7 @@ const DashboardFinanciero = ({ filters }) => {
 
   // Preparar datos para TN por Cliente/Empresa
   const prepareTnData = (data) => data.map(item => ({
-    label: `${item.cliente} - ${item.empresa}`,
+    label: `${item.cliente} - ${formatEmpresa(item.empresa)}`,
     cliente: item.cliente,
     empresa: item.empresa,
     total: parseFloat(item.total || 0),
@@ -505,7 +549,7 @@ const DashboardFinanciero = ({ filters }) => {
                     {porCobrar.map((item, index) => (
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
-                        <td>{item.empresa === 'ECOTRANSPORTE' ? 'ECOTRANSPORTE' : `ECOTRANSPORTE(${item.empresa})`}</td>
+                        <td>{formatEmpresa(item.empresa)}</td>
                         <td>{item.divisa || 'PEN'}</td>
                         <td className="amount">{formatCurrency(item.total, item.divisa)}</td>
                       </tr>
@@ -619,7 +663,7 @@ const DashboardFinanciero = ({ filters }) => {
                     {porPagar.filter(item => item.empresa !== 'ECOTRANSPORTE').map((item, index) => (
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
-                        <td>{item.empresa}</td>
+                        <td>{formatEmpresa(item.empresa)}</td>
                         <td>{item.divisa || 'PEN'}</td>
                         <td className="amount negative">{formatCurrency(item.total, item.divisa)}</td>
                       </tr>
@@ -734,7 +778,7 @@ const DashboardFinanciero = ({ filters }) => {
                       return (
                         <tr key={index}>
                           <td>{item.cliente || 'Sin cliente'}</td>
-                          <td>{item.empresa}</td>
+                          <td>{formatEmpresa(item.empresa)}</td>
                           <td>{item.divisa || 'PEN'}</td>
                           <td className={`amount ${margen >= 0 ? 'positive' : 'negative'}`}>
                             {formatCurrency(margen, item.divisa)}
@@ -849,7 +893,7 @@ const DashboardFinanciero = ({ filters }) => {
                     {tnClienteEmpresa.map((item, index) => (
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
-                        <td>{item.empresa}</td>
+                        <td>{formatEmpresa(item.empresa)}</td>
                         <td>{fmtNum(item.total)} TN</td>
                       </tr>
                     ))}
@@ -886,12 +930,51 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Seguimiento de Transporte */}
       {activeTab === 'seguimiento' && (
         <div className="financiero-section">
-          <h2>🚧 Seguimiento de Transporte - Peso Ticket por Semana</h2>
-          
+          <h2>🚧 Seguimiento de Transporte - Peso Ticket Recibido por Semana</h2>
+
+          {/* Filtros */}
+          <div className="section-filters">
+            <div className="filter-row">
+              <div className="filter-item">
+                <label>Mes <span className="required-badge">requerido</span></label>
+                <select value={localFiltersSeg.mes} onChange={e => handleFilterChangeSeg('mes', e.target.value)} disabled={filtersLoadingSeg}>
+                  <option value="">-- Selecciona un mes --</option>
+                  {filterOptionsSeg.meses.map(m => <option key={m} value={m}>{m}</option>)}
+                </select>
+              </div>
+              <div className="filter-item">
+                <label>Semana</label>
+                <select value={localFiltersSeg.semana} onChange={e => handleFilterChangeSeg('semana', e.target.value)} disabled={filtersLoadingSeg || !localFiltersSeg.mes}>
+                  <option value="">Todas</option>
+                  {filterOptionsSeg.semanas.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="filter-item">
+                <label>Cliente</label>
+                <select value={localFiltersSeg.cliente} onChange={e => handleFilterChangeSeg('cliente', e.target.value)} disabled={filtersLoadingSeg || !localFiltersSeg.mes}>
+                  <option value="">Todos</option>
+                  {filterOptionsSeg.clientes.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="filter-item">
+                <label>Unidad</label>
+                <select value={localFiltersSeg.unidad} onChange={e => handleFilterChangeSeg('unidad', e.target.value)} disabled={filtersLoadingSeg || !localFiltersSeg.mes}>
+                  <option value="">Todas</option>
+                  {filterOptionsSeg.unidades.map(u => <option key={u} value={u}>{u}</option>)}
+                </select>
+              </div>
+              <button className="btn-clear-local" onClick={clearFiltersSeg} disabled={filtersLoadingSeg}>
+                {filtersLoadingSeg ? '...' : 'Limpiar'}
+              </button>
+            </div>
+          </div>
+
           <div className="section-card full-width">
-            <h3>Tabla de Seguimiento - Tonelaje Recibido (Cliente → Empresa → Unidad → Semana)</h3>
-            {seguimiento.length === 0 ? (
-              <p className="empty-message">No hay datos de seguimiento</p>
+            <h3>Tabla de Seguimiento - Tonelaje <span style={{color:'#1B7430'}}>Recibido</span> (Cliente → Empresa → Unidad → Semana)</h3>
+            {!localFiltersSeg.mes ? (
+              <p className="empty-message">📅 Selecciona un <strong>mes</strong> para generar la tabla de seguimiento.</p>
+            ) : seguimiento.length === 0 ? (
+              <p className="empty-message">No hay datos de seguimiento para los filtros seleccionados</p>
             ) : (
               <div className="table-container seguimiento-table">
                 <table className="data-table">
@@ -901,9 +984,9 @@ const DashboardFinanciero = ({ filters }) => {
                       <th>Empresa</th>
                       <th>Placa</th>
                       {seguimientoData.semanas.map(semana => (
-                        <th key={semana}>{semana}</th>
+                        <th key={semana}>Sem. {semana} <span style={{fontWeight:400,fontSize:'0.75rem'}}>(TN Rec.)</span></th>
                       ))}
-                      <th>Total</th>
+                      <th>Total (TN)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -912,14 +995,14 @@ const DashboardFinanciero = ({ filters }) => {
                       return (
                         <tr key={index}>
                           <td>{row.cliente || 'Sin cliente'}</td>
-                          <td>{row.empresa}</td>
+                          <td>{formatEmpresa(row.empresa)}</td>
                           <td>{row.placa}</td>
                           {seguimientoData.semanas.map(semana => (
                             <td key={semana} className="number">
-                              {row[semana] ? fmtNum(row[semana]) : '-'}
+                              {row[semana] ? `${fmtNum(row[semana])} TN` : '-'}
                             </td>
                           ))}
-                          <td className="total">{fmtNum(total)}</td>
+                          <td className="total">{fmtNum(total)} TN</td>
                         </tr>
                       );
                     })}

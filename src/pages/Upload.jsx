@@ -140,10 +140,10 @@ const Upload = () => {
           if (!tnf.llegada) camposFaltantes.push('llegada');
           if (!tnf.transportado) camposFaltantes.push('material');
           const motivoTarifa = camposFaltantes.length === 0
-            ? 'Ruta completa detectada pero sin tarifa registrada'
+            ? 'Ruta completa detectada — sin tarifa registrada para esta ruta'
             : camposFaltantes.length === 1
-              ? `No se identificó el ${camposFaltantes[0]}`
-              : `No se identificaron: ${camposFaltantes.join(', ')}`;
+              ? `Ruta incompleta detectada: falta ${camposFaltantes[0]}`
+              : `Ruta incompleta detectada: faltan ${camposFaltantes.join(', ')}`;
           tarifasFaltantes.push({
             docId: response.document.id,
             cliente: tnf.cliente || '',

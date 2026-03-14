@@ -150,12 +150,12 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         for (const mat of grupo.materiales) {
           const row = [];
           row.push({ v: `  ${mat.label}`, s: materialStyle });
-          row.push({ v: Number(mat.data.general.tne) || 0, s: cellRight });
-          row.push({ v: Number(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto) || 0, s: cellRight });
+          row.push({ v: Math.round((Number(mat.data.general.tne) || 0) * 100) / 100, t: 'n', s: cellRight });
+          row.push({ v: Math.round((Number(type === 'venta' ? mat.data.general.importeVenta : mat.data.general.importeCosto) || 0) * 100) / 100, t: 'n', s: cellRight });
           for (const emp of empresas) {
             const d = mat.data[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
-            row.push({ v: Number(d.tne) || 0, s: cellRight });
-            row.push({ v: Number(type === 'venta' ? d.importeVenta : d.importeCosto) || 0, s: cellRight });
+            row.push({ v: Math.round((Number(d.tne) || 0) * 100) / 100, t: 'n', s: cellRight });
+            row.push({ v: Math.round((Number(type === 'venta' ? d.importeVenta : d.importeCosto) || 0) * 100) / 100, t: 'n', s: cellRight });
           }
           rows.push(row);
         }
@@ -166,12 +166,12 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         const tot = data.totales[div];
         const row = [];
         row.push({ v: label, s: totalLabelStyle });
-        row.push({ v: Number(tot.general.tne) || 0, s: totalRowStyle });
-        row.push({ v: Number(type === 'venta' ? tot.general.importeVenta : tot.general.importeCosto) || 0, s: totalRowStyle });
+        row.push({ v: Math.round((Number(tot.general.tne) || 0) * 100) / 100, t: 'n', s: totalRowStyle });
+        row.push({ v: Math.round((Number(type === 'venta' ? tot.general.importeVenta : tot.general.importeCosto) || 0) * 100) / 100, t: 'n', s: totalRowStyle });
         for (const emp of empresas) {
           const d = tot[emp] || { tne: 0, importeVenta: 0, importeCosto: 0 };
-          row.push({ v: Number(d.tne) || 0, s: totalRowStyle });
-          row.push({ v: Number(type === 'venta' ? d.importeVenta : d.importeCosto) || 0, s: totalRowStyle });
+          row.push({ v: Math.round((Number(d.tne) || 0) * 100) / 100, t: 'n', s: totalRowStyle });
+          row.push({ v: Math.round((Number(type === 'venta' ? d.importeVenta : d.importeCosto) || 0) * 100) / 100, t: 'n', s: totalRowStyle });
         }
         rows.push(row);
       }
@@ -214,8 +214,8 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     margenRows.push(mHeader);
 
     for (const [div, label] of [['USD', 'Dólares (USD)'], ['PEN', 'Soles (PEN)']]) {
-      const row = [{ v: label, s: totalLabelStyle }, { v: Number(data.margen[div].general.margen) || 0, s: totalRowStyle }];
-      for (const emp of empresas) row.push({ v: Number((data.margen[div][emp] || { margen: 0 }).margen) || 0, s: totalRowStyle });
+      const row = [{ v: label, s: totalLabelStyle }, { v: Math.round((Number(data.margen[div].general.margen) || 0) * 100) / 100, t: 'n', s: totalRowStyle }];
+      for (const emp of empresas) row.push({ v: Math.round((Number((data.margen[div][emp] || { margen: 0 }).margen) || 0) * 100) / 100, t: 'n', s: totalRowStyle });
       margenRows.push(row);
     }
 

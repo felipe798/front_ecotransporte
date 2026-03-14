@@ -734,6 +734,22 @@
   cursor: not-allowed;
 }
 
+.btn-download-excel {
+  background: #4A86B8;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-download-excel:hover {
+  background: #3a6e9a;
+}
+
 @media (max-width: 768px) {
   .filter-row {
     flex-direction: column;

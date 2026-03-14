@@ -1,10 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ComposedChart, Line, LabelList
 } from 'recharts';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import XLSX from 'xlsx-js-style';
 import './DashboardComponents.css';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -40,6 +43,10 @@ const DashboardFinanciero = ({ filters }) => {
   const [seguimiento, setSeguimiento] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('cobrar');
+  const tnSectionRef = useRef(null);
+  const pagarSectionRef = useRef(null);
+  const [exportingTnPdf, setExportingTnPdf] = useState(false);
+  const [exportingPagarPdf, setExportingPagarPdf] = useState(false);
 
   const [localFilters, setLocalFilters] = useState({ mes: '', semana: '', cliente: '', transportista: '', unidad: '', divisa: '' });
   const [filterOptions, setFilterOptions] = useState({ meses: [], semanas: [], clientes: [], transportistas: [], unidades: [], divisas: [] });
@@ -379,6 +386,80 @@ const DashboardFinanciero = ({ filters }) => {
     return 'USD';
   };
 
+  const descargarPagarPDF = async () => {
+    if (!pagarSectionRef.current) return;
+    setExportingPagarPdf(true);
+    try {
+      const canvas = await html2canvas(pagarSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Por_Pagar.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPagarPdf(false);
+    }
+  };
+
+  const descargarPagarExcel = () => {
+    if (porPagar.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const headerStyle = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' } };
+    const cellStyle = { alignment: { horizontal: 'left' } };
+    const numStyle = { alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
+    const filtered = porPagar.filter(item => item.empresa !== 'ECOTRANSPORTE');
+    const rows = [
+      [{ v: 'Cliente', s: headerStyle }, { v: 'Empresa', s: headerStyle }, { v: 'Divisa', s: headerStyle }, { v: 'Por Pagar', s: headerStyle }],
+      ...filtered.map(item => [
+        { v: item.cliente || 'Sin cliente', s: cellStyle },
+        { v: item.empresa || 'SIN EMPRESA', s: cellStyle },
+        { v: item.divisa || 'PEN', s: cellStyle },
+        { v: Math.round((Number(item.total) || 0) * 100) / 100, t: 'n', s: numStyle },
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 35 }, { wch: 20 }, { wch: 10 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Por Pagar');
+    XLSX.writeFile(wb, 'Por_Pagar.xlsx');
+  };
+
+  const descargarTnPDF = async () => {
+    if (!tnSectionRef.current) return;
+    setExportingTnPdf(true);
+    try {
+      const canvas = await html2canvas(tnSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('TN_Cliente_Empresa.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingTnPdf(false);
+    }
+  };
+
+  const descargarTnExcel = () => {
+    if (tnClienteEmpresa.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const headerStyle = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' } };
+    const cellStyle = { alignment: { horizontal: 'left' } };
+    const numStyle = { alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
+    const rows = [
+      [{ v: 'Cliente', s: headerStyle }, { v: 'Empresa', s: headerStyle }, { v: 'Peso Ticket (TN Recibida)', s: headerStyle }],
+      ...tnClienteEmpresa.map(item => [
+        { v: item.cliente || 'Sin cliente', s: cellStyle },
+        { v: formatEmpresa(item.empresa), s: cellStyle },
+        { v: Math.round((Number(item.total) || 0) * 100) / 100, t: 'n', s: numStyle },
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 25 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'TN Cliente Empresa');
+    XLSX.writeFile(wb, 'TN_Cliente_Empresa.xlsx');
+  };
+
   const formatEmpresa = (empresa) => {
     if (!empresa || empresa === 'SIN EMPRESA') return empresa || 'SIN EMPRESA';
     if (empresa === 'ECOTRANSPORTE') return 'ECOTRANSPORTE';
@@ -393,6 +474,27 @@ const DashboardFinanciero = ({ filters }) => {
       if (!grouped[key]) {
         grouped[key] = {
           label: `${item.cliente} - ${formatEmpresa(item.empresa)}`,
+          cliente: item.cliente,
+          empresa: item.empresa,
+          PEN: 0,
+          USD: 0,
+        };
+      }
+      const divisa = normalizeDivisa(item.divisa);
+      grouped[key][divisa] = (grouped[key][divisa] || 0) + parseFloat(item.total || 0);
+    });
+    return Object.values(grouped);
+  };
+
+  // Para Pagar: usar nombre directo de empresa (sin prefijo ECOTRANSPORTE)
+  const prepareChartDataPagar = (data) => {
+    const grouped = {};
+    data.forEach(item => {
+      if (item.empresa === 'ECOTRANSPORTE') return;
+      const key = `${item.cliente}|${item.empresa}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          label: `${item.cliente} - ${item.empresa || 'SIN EMPRESA'}`,
           cliente: item.cliente,
           empresa: item.empresa,
           PEN: 0,
@@ -439,7 +541,7 @@ const DashboardFinanciero = ({ filters }) => {
   }
 
   const cobrarChart = prepareChartData(porCobrar);
-  const pagarChart = prepareChartData(porPagar);
+  const pagarChart = prepareChartDataPagar(porPagar);
   const margenChart = prepareChartData(margenOperativo);
   const tnChart = prepareTnData(tnClienteEmpresa);
   const seguimientoData = prepareSeguimientoData(seguimiento);
@@ -591,7 +693,17 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Por Pagar */}
       {activeTab === 'pagar' && (
         <div className="financiero-section">
-          <h2>💸 Por Pagar por Cliente / Empresa</h2>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <h2 style={{margin:0}}>💸 Por Pagar por Cliente / Empresa</h2>
+            {porPagar.length > 0 && (
+              <div style={{display:'flex',gap:'8px'}}>
+                <button className="btn-download-excel" onClick={descargarPagarExcel}>📊 Excel</button>
+                <button className="btn-download-pdf" onClick={descargarPagarPDF} disabled={exportingPagarPdf}>
+                  {exportingPagarPdf ? 'Generando...' : '📥 PDF'}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -644,6 +756,7 @@ const DashboardFinanciero = ({ filters }) => {
             </div>
           </div>
 
+          <div ref={pagarSectionRef}>
           <div className="section-card">
             <h3>Tabla Dinámica - Por Pagar</h3>
             {porPagar.length === 0 ? (
@@ -663,7 +776,7 @@ const DashboardFinanciero = ({ filters }) => {
                     {porPagar.filter(item => item.empresa !== 'ECOTRANSPORTE').map((item, index) => (
                       <tr key={index}>
                         <td>{item.cliente || 'Sin cliente'}</td>
-                        <td>{formatEmpresa(item.empresa)}</td>
+                        <td>{item.empresa || 'SIN EMPRESA'}</td>
                         <td>{item.divisa || 'PEN'}</td>
                         <td className="amount negative">{formatCurrency(item.total, item.divisa)}</td>
                       </tr>
@@ -697,6 +810,7 @@ const DashboardFinanciero = ({ filters }) => {
                 </ResponsiveContainer>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}
@@ -822,7 +936,17 @@ const DashboardFinanciero = ({ filters }) => {
       {/* TN por Cliente/Empresa */}
       {activeTab === 'tonelaje' && (
         <div className="financiero-section">
-          <h2>⚖️ Tonelaje Recibido por Cliente / Empresa</h2>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <h2 style={{margin:0}}>⚖️ Tonelaje Recibido por Cliente / Empresa</h2>
+            {tnClienteEmpresa.length > 0 && (
+              <div style={{display:'flex',gap:'8px'}}>
+                <button className="btn-download-excel" onClick={descargarTnExcel}>📊 Excel</button>
+                <button className="btn-download-pdf" onClick={descargarTnPDF} disabled={exportingTnPdf}>
+                  {exportingTnPdf ? 'Generando...' : '📥 PDF'}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -875,7 +999,7 @@ const DashboardFinanciero = ({ filters }) => {
             </div>
           </div>
 
-          <div className="section-card">
+          <div className="section-card" ref={tnSectionRef}>
             <h3>Tabla Dinámica - Peso Ticket (TN Recibida)</h3>
             {tnClienteEmpresa.length === 0 ? (
               <p className="empty-message">No hay datos de tonelaje</p>
@@ -998,11 +1122,11 @@ const DashboardFinanciero = ({ filters }) => {
                           <td>{formatEmpresa(row.empresa)}</td>
                           <td>{row.placa}</td>
                           {seguimientoData.semanas.map(semana => (
-                            <td key={semana} className="number">
+                            <td key={semana} className="number" style={{whiteSpace:'nowrap'}}>
                               {row[semana] ? `${fmtNum(row[semana])} TN` : '-'}
                             </td>
                           ))}
-                          <td className="total">{fmtNum(total)} TN</td>
+                          <td className="total" style={{whiteSpace:'nowrap'}}>{fmtNum(total)} TN</td>
                         </tr>
                       );
                     })}

@@ -151,41 +151,41 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
             { v: fechaStr, s: cellLeft },
             { v: v.grt || '', s: cellLeft },
             { v: v.conductor || '', s: cellLeft },
-            { v: Number(v.peso) || 0, s: cellRight },
-            { v: Number(v.pesoMina) || 0, s: cellRight },
+            { v: Math.round((Number(v.peso) || 0) * 100) / 100, t: 'n', s: cellRight },
+            { v: Math.round((Number(v.pesoMina) || 0) * 100) / 100, t: 'n', s: cellRight },
             { v: v.ticket || '', s: cellLeft },
             { v: v.grr || '', s: cellLeft },
             { v: v.cliente || '', s: cellLeft },
             { v: v.recorrido || '', s: cellLeft },
             { v: v.material || '', s: cellLeft },
-            { v: Number(v.precio) || 0, s: cellMoney },
+            { v: Math.round((Number(v.precio) || 0) * 100) / 100, t: 'n', s: cellMoney },
             { v: v.divisa || '', s: cellLeft },
-            { v: Number(v.bi) || 0, s: cellMoney },
+            { v: Math.round((Number(v.importeTotal) || 0) * 100) / 100, t: 'n', s: cellMoney },
           ]);
         }
         // Subtotal
         const subRow = Array(COLS).fill({ v: '', s: subtotalStyle });
         subRow[0] = { v: sem.semana, s: { ...subtotalStyle, alignment: { horizontal: 'left' } } };
-        subRow[4] = { v: Number(sem.totalTn) || 0, s: subtotalStyle };
+        subRow[4] = { v: Math.round((Number(sem.totalTn) || 0) * 100) / 100, t: 'n', s: subtotalStyle };
         rows.push(subRow);
       }
 
       // Total placa
       const totRow = Array(COLS).fill({ v: '', s: totalStyle });
       totRow[0] = { v: `TOTAL ${bloque.placa}`, s: totalLabelStyle };
-      totRow[4] = { v: Number(bloque.totalTn) || 0, s: totalStyle };
+      totRow[4] = { v: Math.round((Number(bloque.totalTn) || 0) * 100) / 100, t: 'n', s: totalStyle };
       rows.push(totRow);
 
       if (bloque.totalDolares > 0) {
         const dRow = Array(COLS).fill({ v: '', s: white });
         dRow[0] = { v: 'Total Dólares (USD):', s: bold };
-        dRow[1] = { v: Number(bloque.totalDolares), s: cellMoney };
+        dRow[1] = { v: Math.round((Number(bloque.totalDolares)) * 100) / 100, t: 'n', s: cellMoney };
         rows.push(dRow);
       }
       if (bloque.totalSoles > 0) {
         const sRow = Array(COLS).fill({ v: '', s: white });
         sRow[0] = { v: 'Total Soles (PEN):', s: bold };
-        sRow[1] = { v: Number(bloque.totalSoles), s: cellMoney };
+        sRow[1] = { v: Math.round((Number(bloque.totalSoles)) * 100) / 100, t: 'n', s: cellMoney };
         rows.push(sRow);
       }
       rows.push(Array(COLS).fill({ v: '', s: white }));
@@ -198,19 +198,19 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
 
     const tnRow = Array(COLS).fill({ v: '', s: bold });
     tnRow[0] = { v: 'Total TN:', s: bold };
-    tnRow[1] = { v: Number(data.totalesGenerales.totalTn), s: cellRight };
+    tnRow[1] = { v: Math.round((Number(data.totalesGenerales.totalTn)) * 100) / 100, t: 'n', s: cellRight };
     rows.push(tnRow);
 
     if (data.totalesGenerales.totalDolares > 0) {
       const r = Array(COLS).fill({ v: '', s: bold });
       r[0] = { v: 'Total Dólares (USD):', s: bold };
-      r[1] = { v: Number(data.totalesGenerales.totalDolares), s: cellMoney };
+      r[1] = { v: Math.round((Number(data.totalesGenerales.totalDolares)) * 100) / 100, t: 'n', s: cellMoney };
       rows.push(r);
     }
     if (data.totalesGenerales.totalSoles > 0) {
       const r = Array(COLS).fill({ v: '', s: bold });
       r[0] = { v: 'Total Soles (PEN):', s: bold };
-      r[1] = { v: Number(data.totalesGenerales.totalSoles), s: cellMoney };
+      r[1] = { v: Math.round((Number(data.totalesGenerales.totalSoles)) * 100) / 100, t: 'n', s: cellMoney };
       rows.push(r);
     }
 
@@ -297,7 +297,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
                   <td className="col-left">{v.recorrido}</td>
                   <td className="col-left">{v.material}</td>
                   <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.precio)}</td>
-                  <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.bi)}</td>
+                  <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.importeTotal)}</td>
                 </tr>
               ))}
               <tr className="fila-subtotal">

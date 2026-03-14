@@ -92,7 +92,7 @@ const DocumentDetail = () => {
     );
   }
 
-  const esEcotransporte = (document.unidadRelacion?.empresa?.nombre || document.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
+  const esEcotransporte = (document.empresa || '').toUpperCase().includes('ECOTRANSPORTE');
 
   return (
     <div className={`document-detail${document.anulado ? ' anulado' : ''}`}>
@@ -173,11 +173,11 @@ const DocumentDetail = () => {
             </div>
             <div className="info-item full">
               <label>Empresa de Transporte</label>
-              <span>{document.unidadRelacion?.empresa?.nombre || '-'}</span>
-            </div>
-            <div className="info-item">
-              <label>Unidad</label>
-              <span>{document.unidad || document.unidadRelacion?.placa || '-'}</span>
+                <span>{document.empresa || '-'}</span>
+              </div>
+              <div className="info-item">
+                <label>Unidad</label>
+                <span>{document.unidad || '-'}</span>
             </div>
             <div className="info-item full">
               <label>Producto Transportado</label>

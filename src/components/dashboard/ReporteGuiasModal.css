@@ -188,12 +188,11 @@
 
 /* Table */
 .rg-table {
-  width: max-content;
-  min-width: 100%;
+  width: 100%;
   border-collapse: collapse;
   font-size: 0.6rem;
   white-space: nowrap;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .rg-table thead th {
@@ -238,10 +237,15 @@
   text-align: center;
   border: 1px solid #E2E8F0;
   color: #0F172A;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rg-table tbody td.col-left {
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rg-table tbody tr:nth-child(even) td {

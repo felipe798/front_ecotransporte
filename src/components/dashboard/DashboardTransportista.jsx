@@ -28,6 +28,7 @@ const DashboardTransportista = () => {
   const [loading, setLoading] = useState(true);
   const [filtersLoading, setFiltersLoading] = useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [divisaFiltro, setDivisaFiltro] = useState('');
 
   const descargarPDF = async () => {
     if (!contentRef.current) return;
@@ -206,7 +207,21 @@ const DashboardTransportista = () => {
       <div ref={contentRef}>
       {/* Detalle por Transportista */}
       <div className="section-card full-width">
-        <h2>📋 Detalle por Transportista</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '12px' }}>
+          <h2 style={{ margin: 0 }}>📋 Detalle por Transportista</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333', whiteSpace: 'nowrap' }}>Divisa:</label>
+            <select
+              value={divisaFiltro}
+              onChange={e => setDivisaFiltro(e.target.value)}
+              style={{ padding: '5px 10px', borderRadius: '6px', border: '1px solid #ddd', fontSize: '0.875rem', cursor: 'pointer' }}
+            >
+              <option value="">Todas</option>
+              <option value="USD">$ Dólares (USD)</option>
+              <option value="PEN">S/ Soles (PEN)</option>
+            </select>
+          </div>
+        </div>
         {detalleTransportista.length === 0 ? (
           <p className="empty-message">No hay datos para mostrar</p>
         ) : (
@@ -222,7 +237,9 @@ const DashboardTransportista = () => {
                 </tr>
               </thead>
               <tbody>
-                {[...detalleTransportista].sort((a, b) => (parseInt(b.cantidad_traslados) || 0) - (parseInt(a.cantidad_traslados) || 0)).map((item, index) => (
+                {[...detalleTransportista]
+                  .filter(item => !divisaFiltro || (item.divisa_cost || 'PEN') === divisaFiltro)
+                  .sort((a, b) => (parseInt(b.cantidad_traslados) || 0) - (parseInt(a.cantidad_traslados) || 0)).map((item, index) => (
                   <tr key={index}>
                     <td>{item.transportista || 'Sin asignar'}</td>
                     <td>{item.cantidad_traslados}</td>

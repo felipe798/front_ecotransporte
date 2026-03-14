@@ -253,17 +253,17 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
           <table className="rg-table">
             <colgroup>
               <col style={{ width: '7%' }} />{/* Fecha */}
-              <col style={{ width: '9%' }} />{/* Guía Transp */}
-              <col style={{ width: '12%' }} />{/* Conductor */}
+              <col style={{ width: '8%' }} />{/* Guía Transp */}
+              <col style={{ width: '13%' }} />{/* Conductor */}
               <col style={{ width: '7%' }} />{/* Peso Guía */}
               <col style={{ width: '7%' }} />{/* Peso Ticket */}
-              <col style={{ width: '6%' }} />{/* N° Ticket */}
-              <col style={{ width: '9%' }} />{/* Guía Remitente */}
-              <col style={{ width: '10%' }} />{/* Cliente */}
-              <col style={{ width: '10%' }} />{/* Recorrido */}
-              <col style={{ width: '8%' }} />{/* Material */}
-              <col style={{ width: '5%' }} />{/* Precio IGV */}
-              <col style={{ width: '5%' }} />{/* Importe Total */}
+              <col style={{ width: '5%' }} />{/* N° Ticket */}
+              <col style={{ width: '8%' }} />{/* Guía Remitente */}
+              <col style={{ width: '11%' }} />{/* Cliente */}
+              <col style={{ width: '12%' }} />{/* Recorrido */}
+              <col style={{ width: '10%' }} />{/* Material */}
+              <col style={{ width: '6%' }} />{/* Precio IGV */}
+              <col style={{ width: '6%' }} />{/* Importe Total */}
             </colgroup>
             {sIdx === 0 && (
               <thead>
@@ -303,7 +303,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
               <tr className="fila-subtotal">
                 <td colSpan={4} className="col-left">{sem.semana}</td>
                 <td>{formatNum(sem.totalTn)} TN</td>
-                <td colSpan={3}></td>
+                <td colSpan={7}></td>
               </tr>
             </tbody>
           </table>
@@ -313,17 +313,17 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
         <table className="rg-table">
           <colgroup>
             <col style={{ width: '7%' }} />
-            <col style={{ width: '9%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '7%' }} />
-            <col style={{ width: '7%' }} />
-            <col style={{ width: '6%' }} />
-            <col style={{ width: '9%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '10%' }} />
             <col style={{ width: '8%' }} />
+            <col style={{ width: '13%' }} />
+            <col style={{ width: '7%' }} />
+            <col style={{ width: '7%' }} />
             <col style={{ width: '5%' }} />
-            <col style={{ width: '5%' }} />
+            <col style={{ width: '8%' }} />
+            <col style={{ width: '11%' }} />
+            <col style={{ width: '12%' }} />
+            <col style={{ width: '10%' }} />
+            <col style={{ width: '6%' }} />
+            <col style={{ width: '6%' }} />
           </colgroup>
           <tbody>
             <tr className="fila-total">

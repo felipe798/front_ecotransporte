@@ -848,12 +848,8 @@ const DashboardFinanciero = ({ filters }) => {
                       </div>);
                     }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
-                    </Bar>
-                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
-                    </Bar>
+                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -984,12 +980,8 @@ const DashboardFinanciero = ({ filters }) => {
                       </div>);
                     }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
-                    </Bar>
-                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
-                    </Bar>
+                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -1125,12 +1117,8 @@ const DashboardFinanciero = ({ filters }) => {
                       </div>);
                     }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
-                    </Bar>
-                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
-                    </Bar>
+                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}

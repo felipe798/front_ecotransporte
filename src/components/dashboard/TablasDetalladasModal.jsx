@@ -263,12 +263,12 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
       <div className="tabla-detallada-section">
         <h2>{title}</h2>
         <div className="tabla-scroll-container">
-          <table className="tabla-detallada" style={{ tableLayout: 'fixed' }}>
+          <table className="tabla-detallada" style={{ tableLayout: 'fixed', width: `${140 + (1 + empresas.length) * 170}px` }}>
             <colgroup>
-              <col style={{ minWidth: '140px' }} />
-              {empresas.concat(['general']).map(() => [
-                <col key={Math.random()} style={{ minWidth: '80px' }} />,
-                <col key={Math.random()} style={{ minWidth: '90px' }} />,
+              <col style={{ width: '140px' }} />
+              {empresas.concat(['general']).map((_, i) => [
+                <col key={`tne-${i}`} style={{ width: '80px' }} />,
+                <col key={`imp-${i}`} style={{ width: '90px' }} />,
               ])}
             </colgroup>
             <thead>
@@ -357,12 +357,12 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
       <div className="tabla-detallada-section margen-section">
         <h2>Margen de Ganancia</h2>
         <div className="tabla-scroll-container">
-          <table className="tabla-detallada margen-table" style={{ tableLayout: 'fixed' }}>
+          <table className="tabla-detallada margen-table" style={{ tableLayout: 'fixed', width: `${140 + (1 + empresas.length) * 170}px` }}>
             <colgroup>
-              <col style={{ minWidth: '140px' }} />
-              {empresas.concat(['general']).map(() => [
-                <col key={Math.random()} style={{ minWidth: '80px' }} />,
-                <col key={Math.random()} style={{ minWidth: '90px' }} />,
+              <col style={{ width: '140px' }} />
+              {empresas.concat(['general']).map((_, i) => [
+                <col key={`tne-${i}`} style={{ width: '80px' }} />,
+                <col key={`imp-${i}`} style={{ width: '90px' }} />,
               ])}
             </colgroup>
             <thead>

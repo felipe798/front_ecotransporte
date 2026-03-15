@@ -27,14 +27,16 @@ const Dashboard = () => {
           <h1>🏭 Dashboard</h1>
           <p>⛏️ Panel de control y análisis de operaciones</p>
         </div>
-        <Link to="/upload" className="btn-upload">
-          + Subir PDF
-        </Link>
-        {user?.role === 1 && (
-          <Link to="/upload?manual=true" className="btn-upload" style={{ background: '#1B7430', marginLeft: '8px' }}>
-            ✏️ Agregar Registro
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Link to="/upload" className="btn-upload">
+            + Subir PDF
           </Link>
-        )}
+          {user?.role === 1 && (
+            <Link to="/upload?manual=true" className="btn-upload" style={{ background: '#1B7430' }}>
+              ✏️ Agregar Registro
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}

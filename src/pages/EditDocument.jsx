@@ -264,8 +264,12 @@ const EditDocument = () => {
         };
       }
 
-      await documentService.update(id, updateData);
-      notification.success('Datos guardados correctamente');
+      const result = await documentService.update(id, updateData);
+      if (result?.data?.motivo) {
+        notification.warning(`⚠️ Documento guardado pero incompleto: ${result.data.motivo}`);
+      } else {
+        notification.success('Datos guardados correctamente');
+      }
       navigate(`/documents/${id}`);
     } catch (err) {
       setError(err.message || 'Error al guardar los cambios');
@@ -352,10 +356,6 @@ const EditDocument = () => {
             <div className="form-group ticket-highlight">
               <label htmlFor="tn_recibida">Peso Ticket (TN Recibida) <span className="editable-badge">Editable</span></label>
               <input type="number" step="0.01" id="tn_recibida" name="tn_recibida" value={formData.tn_recibida} onChange={handleChange} placeholder="Tonelaje recibido" className="ticket-input" />
-            </div>
-            <div className="form-group ticket-highlight">
-              <label htmlFor="tn_recibida_data_cruda">Peso Ticket - Data Cruda <span className="editable-badge">Editable</span></label>
-              <input type="number" step="0.01" id="tn_recibida_data_cruda" name="tn_recibida_data_cruda" value={formData.tn_recibida_data_cruda} onChange={handleChange} placeholder="Tonelaje crudo del ticket" className="ticket-input" />
             </div>
           </div>
         </div>

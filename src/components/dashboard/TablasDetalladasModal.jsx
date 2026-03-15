@@ -47,6 +47,11 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     if (!content) return;
 
     const semanaLabel = semana ? ` — Semana ${semana}` : '';
+    const filterParts = [];
+    if (mes) filterParts.push(mes);
+    if (empresaFiltro) filterParts.push(empresaFiltro);
+    if (semana) filterParts.push(`Semana ${semana}`);
+    const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
@@ -55,6 +60,9 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
+          .pdf-title { text-align: center; padding: 16px 0 12px; border-bottom: 2px solid #1B7430; margin-bottom: 12px; }
+          .pdf-title h1 { font-size: 22px; font-weight: 800; color: #1B7430; margin: 0; }
+          .pdf-title p { font-size: 14px; color: #333; margin: 6px 0 0; }
           h2 { font-size: 16px; margin: 15px 0 8px 0; color: #1E3D2C; }
           h3 { font-size: 13px; margin: 10px 0 5px 0; text-align: center; }
           table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
@@ -77,6 +85,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
         </style>
       </head>
       <body>
+        <div class="pdf-title"><h1>Reporte Detallado</h1><p>${subtitle}</p></div>
         ${content.innerHTML}
       </body>
       </html>
@@ -254,7 +263,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
       <div className="tabla-detallada-section">
         <h2>{title}</h2>
         <div className="tabla-scroll-container">
-          <table className="tabla-detallada">
+          <table className="tabla-detallada" style={{ tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ minWidth: '140px' }} />
               {empresas.concat(['general']).map(() => [
@@ -348,36 +357,44 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
       <div className="tabla-detallada-section margen-section">
         <h2>Margen de Ganancia</h2>
         <div className="tabla-scroll-container">
-          <table className="tabla-detallada margen-table">
+          <table className="tabla-detallada margen-table" style={{ tableLayout: 'fixed' }}>
             <colgroup>
               <col style={{ minWidth: '140px' }} />
-              <col style={{ minWidth: '170px' }} />
-              {empresas.map((_, i) => (
-                <col key={`m-${i}`} style={{ minWidth: '170px' }} />
-              ))}
+              {empresas.concat(['general']).map(() => [
+                <col key={Math.random()} style={{ minWidth: '80px' }} />,
+                <col key={Math.random()} style={{ minWidth: '90px' }} />,
+              ])}
             </colgroup>
             <thead>
               <tr>
-                <th className="col-cliente">Concepto</th>
-                <th className="col-general">General</th>
+                <th className="col-cliente" rowSpan={2}>Concepto</th>
+                <th className="col-general" colSpan={2}>General</th>
                 {empresas.map((emp, idx) => (
-                  <th key={emp} className={`col-empresa-${idx % 4}`}>{emp}</th>
+                  <th key={emp} className={`col-empresa-${idx % 4}`} colSpan={2}>{formatEmpresa(emp)}</th>
                 ))}
+              </tr>
+              <tr>
+                <th className="col-general"></th>
+                <th className="col-general"></th>
+                {empresas.map((emp, idx) => [
+                  <th key={`${emp}-a`} className={`col-empresa-${idx % 4}`}></th>,
+                  <th key={`${emp}-b`} className={`col-empresa-${idx % 4}`}></th>,
+                ])}
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="col-cliente">Dólares (USD)</td>
-                <td>${formatNum(margen.USD.general.margen)}</td>
+                <td colSpan={2}>${formatNum(margen.USD.general.margen)}</td>
                 {empresas.map(emp => (
-                  <td key={`usd-${emp}`}>${formatNum((margen.USD[emp] || { margen: 0 }).margen)}</td>
+                  <td key={`usd-${emp}`} colSpan={2}>${formatNum((margen.USD[emp] || { margen: 0 }).margen)}</td>
                 ))}
               </tr>
               <tr>
                 <td className="col-cliente">Soles (PEN)</td>
-                <td>S/{formatNum(margen.PEN.general.margen)}</td>
+                <td colSpan={2}>S/{formatNum(margen.PEN.general.margen)}</td>
                 {empresas.map(emp => (
-                  <td key={`pen-${emp}`}>S/{formatNum((margen.PEN[emp] || { margen: 0 }).margen)}</td>
+                  <td key={`pen-${emp}`} colSpan={2}>S/{formatNum((margen.PEN[emp] || { margen: 0 }).margen)}</td>
                 ))}
               </tr>
             </tbody>
@@ -450,7 +467,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   {semana && <span style={{ color: '#1a6fa8', fontWeight: 700 }}> · Semana {semana}</span>}
                 </h3>
                 {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta', true)}
-                {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo')}
+                {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo', true)}
                 {renderMargen()}
               </div>
             </>

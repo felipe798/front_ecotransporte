@@ -385,6 +385,11 @@
   border-color: rgba(220, 38, 38, 0.2);
 }
 
+.result-warning {
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
 .result-item-status {
   font-size: 1.2rem;
   flex-shrink: 0;

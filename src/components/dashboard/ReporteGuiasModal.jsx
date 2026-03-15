@@ -57,6 +57,11 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     const content = printRef.current;
     if (!content) return;
     const semanaLabel = semana ? ` — Semana ${semana}` : '';
+    const filterParts = [];
+    if (empresa) filterParts.push(empresa);
+    if (mes) filterParts.push(mes);
+    if (semana) filterParts.push(`Semana ${semana}`);
+    const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <html>
@@ -65,6 +70,9 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
         <style>
           * { margin: 0; padding: 0; box-sizing: border-box; }
           body { font-family: Arial, sans-serif; padding: 12px; font-size: 8px; }
+          .pdf-title { text-align: center; padding: 16px 0 12px; border-bottom: 2px solid #1B7430; margin-bottom: 12px; }
+          .pdf-title h1 { font-size: 22px; font-weight: 800; color: #1B7430; margin: 0; }
+          .pdf-title p { font-size: 14px; color: #333; margin: 6px 0 0; }
           h2 { font-size: 13px; margin: 12px 0 6px 0; color: #1a1a1a; text-align: center; }
           h3 { font-size: 11px; margin: 8px 0 4px 0; color: #0F172A; }
           h4 { font-size: 10px; margin: 4px 0; color: #555; }
@@ -83,7 +91,10 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
           @media print { body { padding: 6px; } @page { size: landscape; margin: 8mm; } }
         </style>
       </head>
-      <body>${content.innerHTML}</body>
+      <body>
+        <div class="pdf-title"><h1>Reporte de Guías Emitidas</h1><p>${subtitle}</p></div>
+        ${content.innerHTML}
+      </body>
       </html>
     `);
     printWindow.document.close();

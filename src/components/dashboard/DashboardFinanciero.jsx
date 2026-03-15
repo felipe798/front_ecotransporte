@@ -392,14 +392,39 @@ const DashboardFinanciero = ({ filters }) => {
     return 'USD';
   };
 
+  // Helper: inyectar título con filtros al ref, capturar, y luego removerlo
+  const pdfWithTitle = async (ref, sectionTitle, filterObj, orientationOverride) => {
+    const filterParts = [];
+    if (filterObj.mes) filterParts.push(filterObj.mes);
+    if (filterObj.semana) filterParts.push(`Semana ${filterObj.semana}`);
+    if (filterObj.cliente) filterParts.push(filterObj.cliente);
+    if (filterObj.transportista) filterParts.push(filterObj.transportista);
+    if (filterObj.unidad) filterParts.push(`Placa: ${filterObj.unidad}`);
+    if (filterObj.divisa) filterParts.push(filterObj.divisa);
+    const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
+
+    const titleDiv = document.createElement('div');
+    titleDiv.style.cssText = 'text-align:center;padding:16px 0 12px;border-bottom:2px solid #1B7430;margin-bottom:12px;';
+    titleDiv.innerHTML = `<div style="font-size:22px;font-weight:800;color:#1B7430;">${sectionTitle}</div><div style="font-size:14px;color:#333;margin-top:6px;">${subtitle}</div>`;
+    ref.current.insertBefore(titleDiv, ref.current.firstChild);
+
+    try {
+      const canvas = await html2canvas(ref.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const orientation = orientationOverride || (canvas.width > canvas.height ? 'landscape' : 'portrait');
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      return pdf;
+    } finally {
+      ref.current.removeChild(titleDiv);
+    }
+  };
+
   const descargarCobrarPDF = async () => {
     if (!cobrarSectionRef.current) return;
     setExportingCobrarPdf(true);
     try {
-      const canvas = await html2canvas(cobrarSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const pdf = await pdfWithTitle(cobrarSectionRef, 'Por Cobrar', localFilters);
       pdf.save('Por_Cobrar.pdf');
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingCobrarPdf(false); }
@@ -430,10 +455,7 @@ const DashboardFinanciero = ({ filters }) => {
     if (!margenSectionRef.current) return;
     setExportingMargenPdf(true);
     try {
-      const canvas = await html2canvas(margenSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const pdf = await pdfWithTitle(margenSectionRef, 'Margen Operativo', localFiltersMargen);
       pdf.save('Margen_Operativo.pdf');
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingMargenPdf(false); }
@@ -468,10 +490,7 @@ const DashboardFinanciero = ({ filters }) => {
     if (!segSectionRef.current) return;
     setExportingSegPdf(true);
     try {
-      const canvas = await html2canvas(segSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const pdf = await pdfWithTitle(segSectionRef, 'Seguimiento de Transporte', localFiltersSeg, 'landscape');
       pdf.save('Seguimiento_Transporte.pdf');
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingSegPdf(false); }
@@ -518,16 +537,10 @@ const DashboardFinanciero = ({ filters }) => {
     if (!pagarSectionRef.current) return;
     setExportingPagarPdf(true);
     try {
-      const canvas = await html2canvas(pagarSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const pdf = await pdfWithTitle(pagarSectionRef, 'Por Pagar', localFiltersPagar);
       pdf.save('Por_Pagar.pdf');
-    } catch (err) {
-      console.error('Error generando PDF:', err);
-    } finally {
-      setExportingPagarPdf(false);
-    }
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingPagarPdf(false); }
   };
 
   const descargarPagarExcel = () => {
@@ -556,16 +569,10 @@ const DashboardFinanciero = ({ filters }) => {
     if (!tnSectionRef.current) return;
     setExportingTnPdf(true);
     try {
-      const canvas = await html2canvas(tnSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      const pdf = await pdfWithTitle(tnSectionRef, 'TN Cliente/Empresa', localFiltersTn);
       pdf.save('TN_Cliente_Empresa.pdf');
-    } catch (err) {
-      console.error('Error generando PDF:', err);
-    } finally {
-      setExportingTnPdf(false);
-    }
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingTnPdf(false); }
   };
 
   const descargarTnExcel = () => {
@@ -674,6 +681,21 @@ const DashboardFinanciero = ({ filters }) => {
   const tnChart = prepareTnData(tnClienteEmpresa);
   const seguimientoData = prepareSeguimientoData(seguimiento);
 
+  // Normalizar datos para barras stacked (USD = mitad izquierda, PEN = mitad derecha)
+  const normalizeForStackedBar = (chartData) => {
+    const maxUSD = Math.max(...chartData.map(d => Math.abs(d.USD || 0)), 1);
+    const maxPEN = Math.max(...chartData.map(d => Math.abs(d.PEN || 0)), 1);
+    return chartData.map(d => ({
+      ...d,
+      usdNorm: (Math.abs(d.USD || 0) / maxUSD) * 50,
+      penNorm: (Math.abs(d.PEN || 0) / maxPEN) * 50,
+    }));
+  };
+
+  const cobrarNorm = normalizeForStackedBar(cobrarChart);
+  const pagarNorm = normalizeForStackedBar(pagarChart);
+  const margenNorm = normalizeForStackedBar(margenChart);
+
   const tabs = [
     { id: 'cobrar', label: 'Por Cobrar' },
     { id: 'pagar', label: 'Por Pagar' },
@@ -772,7 +794,10 @@ const DashboardFinanciero = ({ filters }) => {
           <div ref={cobrarSectionRef}>
           {/* Tabla */}
           <div className="section-card">
-            <h3>Tabla Dinámica - Por Cobrar</h3>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
+              <h3 style={{margin:0}}>Tabla Dinámica - Por Cobrar</h3>
+              {porCobrar.length > 0 && <button className="btn-download-excel" onClick={descargarCobrarExcel} style={{padding:'5px 12px',borderRadius:'6px',border:'1px solid #1B7430',background:'#e8f5e9',color:'#1B7430',fontWeight:600,fontSize:'0.8rem',cursor:'pointer'}}>📊 Excel</button>}
+            </div>
             {porCobrar.length === 0 ? (
               <p className="empty-message">No hay datos de facturación</p>
             ) : (
@@ -808,18 +833,26 @@ const DashboardFinanciero = ({ filters }) => {
               {cobrarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, cobrarChart.length * (isMobile ? 40 : 50))}>
-                  <BarChart data={cobrarChart} layout="vertical" margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, cobrarNorm.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={cobrarNorm} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis type="number" hide />
+                    <XAxis type="number" hide domain={[0, 100]} />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
-                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                    <Tooltip content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0]?.payload;
+                      return (<div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>{d.label}</p>
+                        {d.USD > 0 && <p style={{ margin: '4px 0 0', color: COLORS.USD, fontSize: 12 }}>Dólares (USD): $ {fmtNum(d.USD)}</p>}
+                        {d.PEN > 0 && <p style={{ margin: '4px 0 0', color: COLORS.PEN, fontSize: 12 }}>Soles (PEN): S/ {fmtNum(d.PEN)}</p>}
+                      </div>);
+                    }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${parseFloat(v).toFixed(2)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
+                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]}>
+                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
                     </Bar>
-                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${parseFloat(v).toFixed(2)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
+                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -898,7 +931,10 @@ const DashboardFinanciero = ({ filters }) => {
 
           <div ref={pagarSectionRef}>
           <div className="section-card">
-            <h3>Tabla Dinámica - Por Pagar</h3>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
+              <h3 style={{margin:0}}>Tabla Dinámica - Por Pagar</h3>
+              {porPagar.length > 0 && <button className="btn-download-excel" onClick={descargarPagarExcel} style={{padding:'5px 12px',borderRadius:'6px',border:'1px solid #1B7430',background:'#e8f5e9',color:'#1B7430',fontWeight:600,fontSize:'0.8rem',cursor:'pointer'}}>📊 Excel</button>}
+            </div>
             {porPagar.length === 0 ? (
               <p className="empty-message">No hay datos de pagos pendientes</p>
             ) : (
@@ -933,18 +969,26 @@ const DashboardFinanciero = ({ filters }) => {
               {pagarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, pagarChart.length * (isMobile ? 40 : 50))}>
-                  <BarChart data={pagarChart} layout="vertical" margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, pagarNorm.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={pagarNorm} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis type="number" hide />
+                    <XAxis type="number" hide domain={[0, 100]} />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
-                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                    <Tooltip content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0]?.payload;
+                      return (<div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>{d.label}</p>
+                        {d.USD > 0 && <p style={{ margin: '4px 0 0', color: COLORS.USD, fontSize: 12 }}>Dólares (USD): $ {fmtNum(d.USD)}</p>}
+                        {d.PEN > 0 && <p style={{ margin: '4px 0 0', color: COLORS.PEN, fontSize: 12 }}>Soles (PEN): S/ {fmtNum(d.PEN)}</p>}
+                      </div>);
+                    }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
-                    </Bar>
-                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
+                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]}>
                       <LabelList dataKey="USD" position="right" formatter={(v) => v > 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
+                    </Bar>
+                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v > 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -1023,7 +1067,10 @@ const DashboardFinanciero = ({ filters }) => {
 
           <div ref={margenSectionRef}>
           <div className="section-card">
-            <h3>Tabla Dinámica - Margen Operativo (Por Cobrar - Por Pagar)</h3>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
+              <h3 style={{margin:0}}>Tabla Dinámica - Margen Operativo (Por Cobrar - Por Pagar)</h3>
+              {margenOperativo.length > 0 && <button className="btn-download-excel" onClick={descargarMargenExcel} style={{padding:'5px 12px',borderRadius:'6px',border:'1px solid #1B7430',background:'#e8f5e9',color:'#1B7430',fontWeight:600,fontSize:'0.8rem',cursor:'pointer'}}>📊 Excel</button>}
+            </div>
             {margenOperativo.length === 0 ? (
               <p className="empty-message">No hay datos de margen</p>
             ) : (
@@ -1063,18 +1110,26 @@ const DashboardFinanciero = ({ filters }) => {
               {margenChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, margenChart.length * (isMobile ? 40 : 50))}>
-                  <BarChart data={margenChart} layout="vertical" margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, margenNorm.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={margenNorm} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis type="number" hide />
+                    <XAxis type="number" hide domain={[0, 100]} />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
-                    <Tooltip formatter={(value, name) => [formatCurrency(value, name), name]} contentStyle={{ borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #e0e0e0' }} />
+                    <Tooltip content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const d = payload[0]?.payload;
+                      return (<div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: '8px 12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                        <p style={{ margin: 0, fontWeight: 600, fontSize: 12 }}>{d.label}</p>
+                        {d.USD !== 0 && <p style={{ margin: '4px 0 0', color: COLORS.USD, fontSize: 12 }}>Dólares (USD): $ {fmtNum(d.USD)}</p>}
+                        {d.PEN !== 0 && <p style={{ margin: '4px 0 0', color: COLORS.PEN, fontSize: 12 }}>Soles (PEN): S/ {fmtNum(d.PEN)}</p>}
+                      </div>);
+                    }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
-                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
-                    </Bar>
-                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} radius={[0, 6, 6, 0]}>
+                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]}>
                       <LabelList dataKey="USD" position="right" formatter={(v) => v !== 0 ? `$ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#4A86B8' }} />
+                    </Bar>
+                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]}>
+                      <LabelList dataKey="PEN" position="right" formatter={(v) => v !== 0 ? `S/ ${fmtNum(v)}` : ''} style={{ fontSize: isMobile ? 9 : 11, fill: '#1B7430' }} />
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
@@ -1152,7 +1207,10 @@ const DashboardFinanciero = ({ filters }) => {
           </div>
 
           <div className="section-card" ref={tnSectionRef}>
-            <h3>Tabla Dinámica - Peso Ticket (TN Recibida)</h3>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:'8px',marginBottom:'8px'}}>
+              <h3 style={{margin:0}}>Tabla Dinámica - Peso Ticket (TN Recibida)</h3>
+              {tnClienteEmpresa.length > 0 && <button className="btn-download-excel" onClick={descargarTnExcel} style={{padding:'5px 12px',borderRadius:'6px',border:'1px solid #1B7430',background:'#e8f5e9',color:'#1B7430',fontWeight:600,fontSize:'0.8rem',cursor:'pointer'}}>📊 Excel</button>}
+            </div>
             {tnClienteEmpresa.length === 0 ? (
               <p className="empty-message">No hay datos de tonelaje</p>
             ) : (
@@ -1185,8 +1243,8 @@ const DashboardFinanciero = ({ filters }) => {
               {tnChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(300, tnChart.length * (isMobile ? 40 : 50))}>
-                  <BarChart data={tnChart} layout="vertical" margin={{ right: isMobile ? 50 : 90, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, tnChart.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={tnChart} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 90, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                     <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 200} tick={{ fontSize: isMobile ? 9 : 11 }} />

@@ -7,6 +7,7 @@ import {
 import { useIsMobile } from '../../hooks/useIsMobile';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import XLSX from 'xlsx-js-style';
 import './DashboardComponents.css';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -34,7 +35,30 @@ const DashboardTransportista = () => {
     if (!contentRef.current) return;
     setExportingPdf(true);
     try {
+      // Build filter subtitle
+      const filterParts = [];
+      if (localFilters.mes) filterParts.push(localFilters.mes);
+      if (localFilters.cliente) filterParts.push(localFilters.cliente);
+      if (localFilters.transportista) filterParts.push(localFilters.transportista);
+      if (localFilters.unidad) filterParts.push(`Placa: ${localFilters.unidad}`);
+      if (divisaFiltro) filterParts.push(divisaFiltro);
+      const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
+
+      // Hide divisa select during capture
+      const divisaSelect = contentRef.current.querySelector('select');
+      const origDisplay = divisaSelect ? divisaSelect.style.display : null;
+      if (divisaSelect) divisaSelect.style.display = 'none';
+
+      // Inject title
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:16px 0 12px;border-bottom:2px solid #1B7430;margin-bottom:12px;';
+      titleDiv.innerHTML = `<div style="font-size:22px;font-weight:800;color:#1B7430;">Detalle Transportista</div><div style="font-size:14px;color:#333;margin-top:6px;">${subtitle}</div>`;
+      contentRef.current.insertBefore(titleDiv, contentRef.current.firstChild);
+
       const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      contentRef.current.removeChild(titleDiv);
+      if (divisaSelect) divisaSelect.style.display = origDisplay;
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
@@ -44,6 +68,30 @@ const DashboardTransportista = () => {
     } finally {
       setExportingPdf(false);
     }
+  };
+
+  const descargarDetalleExcel = () => {
+    const filtered = detalleTransportista.filter(item => !divisaFiltro || (item.divisa_cost || 'PEN') === divisaFiltro);
+    if (filtered.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '145A25' } } } };
+    const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellR = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellN = { font: { sz: 10 }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const rows = [
+      [{ v: 'Transportista', s: hStyle }, { v: 'Traslados', s: hStyle }, { v: 'Peso Ticket (TN)', s: hStyle }, { v: 'Divisa', s: hStyle }, { v: 'Precio con IGV', s: hStyle }],
+      ...filtered.sort((a, b) => (parseInt(b.cantidad_traslados) || 0) - (parseInt(a.cantidad_traslados) || 0)).map(item => [
+        { v: item.transportista || 'Sin asignar', s: cellL },
+        { v: parseInt(item.cantidad_traslados) || 0, t: 'n', s: cellN },
+        { v: Math.round((parseFloat(item.tn_recibido) || 0) * 100) / 100, t: 'n', s: cellR },
+        { v: item.divisa_cost || 'PEN', s: cellN },
+        { v: Math.round((parseFloat(item.precio_total) || 0) * 100) / 100, t: 'n', s: cellR },
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 35 }, { wch: 12 }, { wch: 18 }, { wch: 10 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Detalle Transportista');
+    XLSX.writeFile(wb, 'Detalle_Transportista.xlsx');
   };
 
   const [localFilters, setLocalFilters] = useState({
@@ -209,6 +257,7 @@ const DashboardTransportista = () => {
       <div className="section-card full-width">
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', marginBottom: '12px' }}>
           <h2 style={{ margin: 0 }}>📋 Detalle por Transportista</h2>
+          <button className="btn-download-excel" onClick={descargarDetalleExcel} style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #1B7430', background: '#e8f5e9', color: '#1B7430', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer' }}>📊 Excel</button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333', whiteSpace: 'nowrap' }}>Divisa:</label>
             <select

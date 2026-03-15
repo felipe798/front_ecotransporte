@@ -103,15 +103,27 @@ const DocumentDetail = () => {
         </div>
       )}
 
-      {document.motivo && (
-        <div className="motivo-detail-banner">
-          <div className="motivo-detail-icon">&#9888;</div>
-          <div className="motivo-detail-body">
-            <strong>Documento incompleto — Motivo registrado</strong>
-            <p className="motivo-detail-text">{document.motivo}</p>
-          </div>
-        </div>
-      )}
+      {(() => {
+        const faltantes = [];
+        if (!document.cliente) faltantes.push('Cliente no identificado');
+        if (!document.partida) faltantes.push('Punto de partida no identificado');
+        if (!document.llegada) faltantes.push('Punto de llegada no identificado');
+        if (!document.transportado) faltantes.push('Material transportado no reconocido');
+        if (!document.precio_unitario) faltantes.push('Tarifa no encontrada');
+        if (!document.unidad) faltantes.push('Placa del vehículo no identificada');
+        if (faltantes.length > 0) {
+          return (
+            <div className="motivo-detail-banner">
+              <div className="motivo-detail-icon">&#9888;</div>
+              <div className="motivo-detail-body">
+                <strong>Documento incompleto</strong>
+                <p className="motivo-detail-text">{faltantes.join(' | ')}</p>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      })()}
       <div className="detail-header">
         <div className="header-info">
           <Link to="/documents" className="back-link">← Volver</Link>

@@ -168,6 +168,11 @@ const Documents = () => {
               + Subir PDF
             </Link>
           )}
+          {user?.role === 1 && (
+            <Link to="/upload?manual=true" className="btn-upload" style={{ background: '#1B7430' }}>
+              ✏️ Agregar Registro
+            </Link>
+          )}
         </div>
       </div>
 

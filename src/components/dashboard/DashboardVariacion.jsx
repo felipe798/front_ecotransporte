@@ -22,7 +22,23 @@ const DashboardVariacion = ({ filters }) => {
     if (!contentRef.current) return;
     setExportingPdf(true);
     try {
+      const filterParts = [];
+      if (filters.mes) filterParts.push(filters.mes);
+      if (filters.semana) filterParts.push(`Semana ${filters.semana}`);
+      if (filters.cliente) filterParts.push(filters.cliente);
+      if (filters.transportista) filterParts.push(filters.transportista);
+      if (filters.unidad) filterParts.push(`Placa: ${filters.unidad}`);
+      if (filters.transportado) filterParts.push(filters.transportado);
+      const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:16px 0 12px;border-bottom:2px solid #1B7430;margin-bottom:12px;';
+      titleDiv.innerHTML = `<div style="font-size:22px;font-weight:800;color:#1B7430;">Variación TN</div><div style="font-size:14px;color:#333;margin-top:6px;">${subtitle}</div>`;
+      contentRef.current.insertBefore(titleDiv, contentRef.current.firstChild);
+
       const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      contentRef.current.removeChild(titleDiv);
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);

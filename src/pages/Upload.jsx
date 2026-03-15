@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { documentService, empresaTransporteService, unidadService, clientTariffService } from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import logoEmpresa from '../assets/Images/logo-empresa.png';
@@ -13,6 +13,7 @@ const Upload = () => {
   const [dragActive, setDragActive] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const fileInputRef = useRef(null);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const notification = useNotification();
 
@@ -26,6 +27,131 @@ const Upload = () => {
   const [missingTariffs, setMissingTariffs] = useState([]); // [{docId, cliente, partida, llegada, transportado, precioVentaSinIgv, precioCostoSinIgv, moneda, divisa}]
   const [savingTariff, setSavingTariff] = useState(false);
   const [tarifasCatalogo, setTarifasCatalogo] = useState([]); // datos de client_tariff para selects
+
+  // Manual registration state
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualForm, setManualForm] = useState({
+    fecha: '', grt: '', grr: '', transportista: '', unidad: '',
+    cliente: '', partida: '', llegada: '', transportado: '',
+    tn_enviado: '', tn_recibida: '', ticket: '', factura: '',
+    precioVentaSinIgv: '', precioCostoSinIgv: '', moneda: 'USD', divisa: 'PEN',
+  });
+  const [manualCatalogo, setManualCatalogo] = useState([]);
+  const [manualUnidades, setManualUnidades] = useState([]);
+  const [savingManual, setSavingManual] = useState(false);
+
+  // Auto-open manual modal if navigated with ?manual=true
+  useEffect(() => {
+    if (searchParams.get('manual') === 'true') {
+      openManualModal();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openManualModal = async () => {
+    setShowManualModal(true);
+    setManualForm({
+      fecha: '', grt: '', grr: '', transportista: '', unidad: '',
+      cliente: '', partida: '', llegada: '', transportado: '',
+      tn_enviado: '', tn_recibida: '', ticket: '', factura: '',
+      precioVentaSinIgv: '', precioCostoSinIgv: '', moneda: 'USD', divisa: 'PEN',
+    });
+    try {
+      const [tarifas, unidades] = await Promise.all([
+        clientTariffService.getAll(),
+        unidadService.getActivas(),
+      ]);
+      setManualCatalogo(tarifas || []);
+      setManualUnidades(unidades || []);
+    } catch (e) { console.error(e); }
+  };
+
+  const getManualFilteredOptions = () => {
+    const filterCatalog = (excludeField) => {
+      return manualCatalogo.filter(t => {
+        if (excludeField !== 'cliente' && manualForm.cliente && t.cliente !== manualForm.cliente) return false;
+        if (excludeField !== 'partida' && manualForm.partida && t.partida !== manualForm.partida) return false;
+        if (excludeField !== 'llegada' && manualForm.llegada && t.llegada !== manualForm.llegada) return false;
+        if (excludeField !== 'material' && manualForm.transportado && t.material !== manualForm.transportado) return false;
+        return true;
+      });
+    };
+    return {
+      clientes: [...new Set(filterCatalog('cliente').map(t => t.cliente))].filter(Boolean).sort(),
+      partidas: [...new Set(filterCatalog('partida').map(t => t.partida))].filter(Boolean).sort(),
+      llegadas: [...new Set(filterCatalog('llegada').map(t => t.llegada))].filter(Boolean).sort(),
+      materiales: [...new Set(filterCatalog('material').map(t => t.material))].filter(Boolean).sort(),
+    };
+  };
+
+  // Auto-fill tariff prices when route is complete
+  useEffect(() => {
+    if (!showManualModal || manualCatalogo.length === 0) return;
+    if (manualForm.cliente && manualForm.partida && manualForm.llegada && manualForm.transportado) {
+      const match = manualCatalogo.find(t =>
+        t.cliente === manualForm.cliente &&
+        t.partida === manualForm.partida &&
+        t.llegada === manualForm.llegada &&
+        t.material === manualForm.transportado
+      );
+      if (match) {
+        setManualForm(prev => ({
+          ...prev,
+          precioVentaSinIgv: match.precioVentaSinIgv ?? match.precio_venta_sin_igv ?? prev.precioVentaSinIgv,
+          precioCostoSinIgv: match.precioCostoSinIgv ?? match.precio_costo_sin_igv ?? prev.precioCostoSinIgv,
+          moneda: match.moneda || prev.moneda,
+          divisa: match.divisa || prev.divisa,
+        }));
+      }
+    }
+  }, [showManualModal, manualForm.cliente, manualForm.partida, manualForm.llegada, manualForm.transportado, manualCatalogo]);
+
+  // Auto-fill transportista when placa is selected
+  useEffect(() => {
+    if (!showManualModal || !manualForm.unidad) return;
+    const unidad = manualUnidades.find(u => u.placa === manualForm.unidad);
+    if (unidad && unidad.empresa) {
+      // Only auto-fill transportista if empty
+      if (!manualForm.transportista) {
+        setManualForm(prev => ({ ...prev, transportista: prev.transportista }));
+      }
+    }
+  }, [showManualModal, manualForm.unidad, manualUnidades]);
+
+  const handleManualSubmit = async () => {
+    if (!manualForm.fecha || !manualForm.grt) {
+      notification.error('La fecha y GRT son obligatorios');
+      return;
+    }
+    setSavingManual(true);
+    try {
+      const payload = {
+        fecha: manualForm.fecha,
+        grt: manualForm.grt || null,
+        grr: manualForm.grr || null,
+        transportista: manualForm.transportista || null,
+        unidad: manualForm.unidad || null,
+        cliente: manualForm.cliente || null,
+        partida: manualForm.partida || null,
+        llegada: manualForm.llegada || null,
+        transportado: manualForm.transportado || null,
+        tn_enviado: manualForm.tn_enviado ? Number(manualForm.tn_enviado) : null,
+        tn_recibida: manualForm.tn_recibida ? Number(manualForm.tn_recibida) : null,
+        ticket: manualForm.ticket || null,
+        factura: manualForm.factura || null,
+        precio_unitario: manualForm.precioVentaSinIgv ? Number(manualForm.precioVentaSinIgv) : null,
+        divisa: manualForm.moneda || null,
+        pcosto: manualForm.precioCostoSinIgv ? Number(manualForm.precioCostoSinIgv) : null,
+        divisa_cost: manualForm.divisa || null,
+      };
+      await documentService.createManual(payload);
+      notification.success('Registro creado exitosamente');
+      setShowManualModal(false);
+    } catch (err) {
+      notification.error('Error al crear registro: ' + (err.message || 'Error desconocido'));
+    } finally {
+      setSavingManual(false);
+    }
+  };
 
   // Cargar catálogo de tarifas cuando se abre el wizard de tarifas
   useEffect(() => {
@@ -134,16 +260,12 @@ const Upload = () => {
         }
         if (response.tarifaNoEncontrada && response.document?.id) {
           const tnf = response.tarifaNoEncontrada;
-          const camposFaltantes = [];
-          if (!tnf.cliente) camposFaltantes.push('cliente');
-          if (!tnf.partida) camposFaltantes.push('partida');
-          if (!tnf.llegada) camposFaltantes.push('llegada');
-          if (!tnf.transportado) camposFaltantes.push('material');
-          const motivoTarifa = camposFaltantes.length === 0
-            ? 'Ruta completa detectada — sin tarifa registrada para esta ruta'
-            : camposFaltantes.length === 1
-              ? `Ruta incompleta detectada: falta ${camposFaltantes[0]}`
-              : `Ruta incompleta detectada: faltan ${camposFaltantes.join(', ')}`;
+          const mensajes = [];
+          if (!tnf.partida || !tnf.llegada) mensajes.push('Ruta incompleta detectada');
+          if (!tnf.cliente) mensajes.push('Cliente no detectado');
+          if (!tnf.transportado) mensajes.push('Material no detectado');
+          if (mensajes.length === 0) mensajes.push('Sin tarifa registrada para esta ruta');
+          const motivoTarifa = mensajes.join(' — ');
           tarifasFaltantes.push({
             docId: response.document.id,
             cliente: tnf.cliente || '',
@@ -159,10 +281,11 @@ const Upload = () => {
         }
       } catch (err) {
         console.error('Upload error for', files[i].name, err);
-        const reason = err.rejected
-          ? err.reason || 'Documento rechazado'
-          : err.message || 'Error al procesar';
-        uploadResults.push({ file: files[i].name, success: false, error: reason });
+        if (err.rejected) {
+          uploadResults.push({ file: files[i].name, success: false, rejected: true, error: err.reason || 'Guía ya registrada' });
+        } else {
+          uploadResults.push({ file: files[i].name, success: false, error: err.message || 'Error al procesar' });
+        }
       }
       setResults([...uploadResults]);
     }
@@ -445,6 +568,17 @@ const Upload = () => {
             </button>
           </div>
 
+          <div style={{ textAlign: 'center', marginTop: '12px' }}>
+            <button
+              onClick={openManualModal}
+              className="btn-secondary"
+              disabled={loading}
+              style={{ gap: '6px' }}
+            >
+              ✏️ Agregar Registro Manual
+            </button>
+          </div>
+
           {loading && (
             <div className="processing-indicator">
               <div className="spinner"></div>
@@ -473,9 +607,9 @@ const Upload = () => {
 
           <div className="results-list">
             {results.map((r, idx) => (
-              <div key={idx} className={`result-item ${r.success ? 'result-success' : 'result-error'}`}>
+              <div key={idx} className={`result-item ${r.success ? 'result-success' : r.rejected ? 'result-warning' : 'result-error'}`}>
                 <div className="result-item-status">
-                  {r.success ? '✅' : '❌'}
+                  {r.success ? '✅' : r.rejected ? '⚠️' : '❌'}
                 </div>
                 <div className="result-item-info">
                   <span className="result-item-name">{r.file}</span>
@@ -605,7 +739,7 @@ const Upload = () => {
                     <div key={idx} className="wizard-tariff-card">
                       {t.motivo && (
                         <div className={`wizard-tariff-motivo ${
-                          t.motivo.startsWith('Ruta completa') ? 'motivo-sin-tarifa' : 'motivo-sin-datos'
+                          t.motivo === 'Sin tarifa registrada para esta ruta' ? 'motivo-sin-tarifa' : 'motivo-sin-datos'
                         }`}>
                           ⚠️ {t.motivo}
                         </div>
@@ -744,6 +878,152 @@ const Upload = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal de Registro Manual */}
+      {showManualModal && (
+        <div className="wizard-overlay" onClick={() => !savingManual && setShowManualModal(false)}>
+          <div className="wizard-modal-wide" onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+            <h2 style={{ textAlign: 'center', color: '#1B7430', marginBottom: '16px' }}>✏️ Agregar Registro Manual</h2>
+
+            {/* Información básica */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+              <div className="wizard-field">
+                <label>Fecha *</label>
+                <input type="date" value={manualForm.fecha} onChange={e => setManualForm(p => ({ ...p, fecha: e.target.value }))} className="wizard-input" />
+              </div>
+              <div className="wizard-field">
+                <label>GRT (Guía Remisión) *</label>
+                <input type="text" value={manualForm.grt} onChange={e => setManualForm(p => ({ ...p, grt: e.target.value }))} className="wizard-input" placeholder="Ej: 001-00012345" />
+              </div>
+              <div className="wizard-field">
+                <label>GRR (Guía Recepción)</label>
+                <input type="text" value={manualForm.grr} onChange={e => setManualForm(p => ({ ...p, grr: e.target.value }))} className="wizard-input" placeholder="Opcional" />
+              </div>
+            </div>
+
+            {/* Transporte */}
+            <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '0.95rem' }}>🚚 Transporte</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+              <div className="wizard-field">
+                <label>Transportista</label>
+                <input type="text" value={manualForm.transportista} onChange={e => setManualForm(p => ({ ...p, transportista: e.target.value }))} className="wizard-input" placeholder="Nombre completo" />
+              </div>
+              <div className="wizard-field">
+                <label>Placa (Unidad)</label>
+                <select value={manualForm.unidad} onChange={e => setManualForm(p => ({ ...p, unidad: e.target.value }))} className="wizard-select">
+                  <option value="">Seleccionar...</option>
+                  {manualUnidades.map(u => <option key={u.id} value={u.placa}>{u.placa}{u.empresa ? ` — ${u.empresa.nombre}` : ''}</option>)}
+                </select>
+              </div>
+              <div className="wizard-field">
+                <label>Ticket</label>
+                <input type="text" value={manualForm.ticket} onChange={e => setManualForm(p => ({ ...p, ticket: e.target.value }))} className="wizard-input" placeholder="Opcional" />
+              </div>
+              <div className="wizard-field">
+                <label>Factura</label>
+                <input type="text" value={manualForm.factura} onChange={e => setManualForm(p => ({ ...p, factura: e.target.value }))} className="wizard-input" placeholder="Opcional" />
+              </div>
+            </div>
+
+            {/* Ruta y tarifa — con filtros en cascada */}
+            <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '0.95rem' }}>📍 Ruta y Tarifa (filtros en cascada)</h3>
+            {(() => {
+              const opts = getManualFilteredOptions();
+              return (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+                  <div className="wizard-field">
+                    <label>Cliente</label>
+                    {opts.clientes.length > 0 ? (
+                      <select value={manualForm.cliente} onChange={e => setManualForm(p => ({ ...p, cliente: e.target.value }))} className="wizard-select">
+                        <option value="">Seleccionar...</option>
+                        {opts.clientes.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={manualForm.cliente} onChange={e => setManualForm(p => ({ ...p, cliente: e.target.value }))} className="wizard-input" placeholder="Escribir cliente" />
+                    )}
+                  </div>
+                  <div className="wizard-field">
+                    <label>Partida</label>
+                    {opts.partidas.length > 0 ? (
+                      <select value={manualForm.partida} onChange={e => setManualForm(p => ({ ...p, partida: e.target.value }))} className="wizard-select">
+                        <option value="">Seleccionar...</option>
+                        {opts.partidas.map(p => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={manualForm.partida} onChange={e => setManualForm(p => ({ ...p, partida: e.target.value }))} className="wizard-input" placeholder="Escribir partida" />
+                    )}
+                  </div>
+                  <div className="wizard-field">
+                    <label>Llegada</label>
+                    {opts.llegadas.length > 0 ? (
+                      <select value={manualForm.llegada} onChange={e => setManualForm(p => ({ ...p, llegada: e.target.value }))} className="wizard-select">
+                        <option value="">Seleccionar...</option>
+                        {opts.llegadas.map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={manualForm.llegada} onChange={e => setManualForm(p => ({ ...p, llegada: e.target.value }))} className="wizard-input" placeholder="Escribir llegada" />
+                    )}
+                  </div>
+                  <div className="wizard-field">
+                    <label>Material</label>
+                    {opts.materiales.length > 0 ? (
+                      <select value={manualForm.transportado} onChange={e => setManualForm(p => ({ ...p, transportado: e.target.value }))} className="wizard-select">
+                        <option value="">Seleccionar...</option>
+                        {opts.materiales.map(m => <option key={m} value={m}>{m}</option>)}
+                      </select>
+                    ) : (
+                      <input type="text" value={manualForm.transportado} onChange={e => setManualForm(p => ({ ...p, transportado: e.target.value }))} className="wizard-input" placeholder="Escribir material" />
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Tonelaje */}
+            <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '0.95rem' }}>⚖️ Tonelaje</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '16px' }}>
+              <div className="wizard-field">
+                <label>TN Enviado</label>
+                <input type="number" step="0.01" min="0" value={manualForm.tn_enviado} onChange={e => setManualForm(p => ({ ...p, tn_enviado: e.target.value }))} className="wizard-input" placeholder="0.00" />
+              </div>
+            </div>
+
+            {/* Precios */}
+            <h3 style={{ color: '#333', marginBottom: '8px', fontSize: '0.95rem' }}>💰 Precios (sin IGV)</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+              <div className="wizard-field">
+                <label>Precio Venta</label>
+                <input type="number" step="0.01" min="0" value={manualForm.precioVentaSinIgv} onChange={e => setManualForm(p => ({ ...p, precioVentaSinIgv: e.target.value }))} className="wizard-input" placeholder="0.00" />
+              </div>
+              <div className="wizard-field">
+                <label>Moneda Venta</label>
+                <select value={manualForm.moneda} onChange={e => setManualForm(p => ({ ...p, moneda: e.target.value }))} className="wizard-select">
+                  <option value="USD">USD</option>
+                  <option value="PEN">PEN</option>
+                </select>
+              </div>
+              <div className="wizard-field">
+                <label>Precio Costo</label>
+                <input type="number" step="0.01" min="0" value={manualForm.precioCostoSinIgv} onChange={e => setManualForm(p => ({ ...p, precioCostoSinIgv: e.target.value }))} className="wizard-input" placeholder="0.00" />
+              </div>
+              <div className="wizard-field">
+                <label>Moneda Costo</label>
+                <select value={manualForm.divisa} onChange={e => setManualForm(p => ({ ...p, divisa: e.target.value }))} className="wizard-select">
+                  <option value="USD">USD</option>
+                  <option value="PEN">PEN</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="wizard-actions">
+              <button onClick={() => setShowManualModal(false)} className="btn-secondary" disabled={savingManual}>Cancelar</button>
+              <button onClick={handleManualSubmit} className="btn-primary" disabled={savingManual}>
+                {savingManual ? 'Guardando...' : 'Crear Registro'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

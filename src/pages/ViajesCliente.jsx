@@ -23,10 +23,10 @@ const ViajesCliente = () => {
     '#C06050', '#5D8A5D', '#6882A8', '#B87840', '#9E6575'
   ];
 
-  // Cargar filtros iniciales
+  // Cargar filtros iniciales y cuando cambian los filtros seleccionados
   useEffect(() => {
     loadFiltros();
-  }, []);
+  }, [selectedCliente, selectedPlaca, selectedMes]);
 
   // Cargar datos cuando cambian los filtros
   useEffect(() => {
@@ -35,7 +35,11 @@ const ViajesCliente = () => {
 
   const loadFiltros = async () => {
     try {
-      const segmentadores = await dashboardService.getSegmentadores();
+      const filters = {};
+      if (selectedCliente) filters.cliente = selectedCliente;
+      if (selectedPlaca) filters.unidad = selectedPlaca;
+      if (selectedMes) filters.mes = selectedMes;
+      const segmentadores = await dashboardService.getSegmentadoresFiltrados(filters);
       setClientes(segmentadores.clientes || []);
       setPlacas(segmentadores.unidades || []);
       setMeses(segmentadores.meses || []);

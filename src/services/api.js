@@ -95,6 +95,15 @@ export const documentService = {
     return handleResponse(response);
   },
 
+  createManual: async (data) => {
+    const response = await fetch(`${API_URL}/documents/create-manual`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  },
+
   getAll: async () => {
     const response = await fetch(`${API_URL}/documents`, {
       headers: authHeaders()

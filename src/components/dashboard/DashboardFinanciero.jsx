@@ -45,8 +45,14 @@ const DashboardFinanciero = ({ filters }) => {
   const [activeTab, setActiveTab] = useState('cobrar');
   const tnSectionRef = useRef(null);
   const pagarSectionRef = useRef(null);
+  const cobrarSectionRef = useRef(null);
+  const margenSectionRef = useRef(null);
+  const segSectionRef = useRef(null);
   const [exportingTnPdf, setExportingTnPdf] = useState(false);
   const [exportingPagarPdf, setExportingPagarPdf] = useState(false);
+  const [exportingCobrarPdf, setExportingCobrarPdf] = useState(false);
+  const [exportingMargenPdf, setExportingMargenPdf] = useState(false);
+  const [exportingSegPdf, setExportingSegPdf] = useState(false);
 
   const [localFilters, setLocalFilters] = useState({ mes: '', semana: '', cliente: '', transportista: '', unidad: '', divisa: '' });
   const [filterOptions, setFilterOptions] = useState({ meses: [], semanas: [], clientes: [], transportistas: [], unidades: [], divisas: [] });
@@ -386,6 +392,128 @@ const DashboardFinanciero = ({ filters }) => {
     return 'USD';
   };
 
+  const descargarCobrarPDF = async () => {
+    if (!cobrarSectionRef.current) return;
+    setExportingCobrarPdf(true);
+    try {
+      const canvas = await html2canvas(cobrarSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Por_Cobrar.pdf');
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingCobrarPdf(false); }
+  };
+
+  const descargarCobrarExcel = () => {
+    if (porCobrar.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '145A25' } } } };
+    const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellR = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const rows = [
+      [{ v: 'Cliente', s: hStyle }, { v: 'Empresa', s: hStyle }, { v: 'Divisa', s: hStyle }, { v: 'Por Cobrar', s: hStyle }],
+      ...porCobrar.map(item => [
+        { v: item.cliente || 'Sin cliente', s: cellL },
+        { v: formatEmpresa(item.empresa), s: cellL },
+        { v: item.divisa || 'PEN', s: cellL },
+        { v: Math.round((Number(item.total) || 0) * 100) / 100, t: 'n', s: cellR },
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 10 }, { wch: 18 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Por Cobrar');
+    XLSX.writeFile(wb, 'Por_Cobrar.xlsx');
+  };
+
+  const descargarMargenPDF = async () => {
+    if (!margenSectionRef.current) return;
+    setExportingMargenPdf(true);
+    try {
+      const canvas = await html2canvas(margenSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Margen_Operativo.pdf');
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingMargenPdf(false); }
+  };
+
+  const descargarMargenExcel = () => {
+    if (margenOperativo.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '4A86B8' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '3A6E9A' } } } };
+    const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellPos = { font: { sz: 10, color: { rgb: '1B7430' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellNeg = { font: { sz: 10, color: { rgb: 'CC3333' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const rows = [
+      [{ v: 'Cliente', s: hStyle }, { v: 'Empresa', s: hStyle }, { v: 'Divisa', s: hStyle }, { v: 'Margen Operativo', s: hStyle }],
+      ...margenOperativo.map(item => {
+        const val = Math.round((Number(item.total) || 0) * 100) / 100;
+        return [
+          { v: item.cliente || 'Sin cliente', s: cellL },
+          { v: formatEmpresa(item.empresa), s: cellL },
+          { v: item.divisa || 'PEN', s: cellL },
+          { v: val, t: 'n', s: val >= 0 ? cellPos : cellNeg },
+        ];
+      })
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 10 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Margen Operativo');
+    XLSX.writeFile(wb, 'Margen_Operativo.xlsx');
+  };
+
+  const descargarSegPDF = async () => {
+    if (!segSectionRef.current) return;
+    setExportingSegPdf(true);
+    try {
+      const canvas = await html2canvas(segSectionRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Seguimiento_Transporte.pdf');
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingSegPdf(false); }
+  };
+
+  const descargarSegExcel = () => {
+    if (seguimiento.length === 0) return;
+    const sData = prepareSeguimientoData(seguimiento);
+    const wb = XLSX.utils.book_new();
+    const hStyle = { font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center', wrapText: true }, border: { bottom: { style: 'medium', color: { rgb: '145A25' } } } };
+    const hSem = { font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '4A86B8' } }, alignment: { horizontal: 'center', wrapText: true }, border: { bottom: { style: 'medium', color: { rgb: '3A6E9A' } } } };
+    const hTotal = { font: { bold: true, sz: 10, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: 'C4883A' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: 'A06B2D' } } } };
+    const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellN = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellT = { font: { bold: true, sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', fill: { fgColor: { rgb: 'FFF8E1' } }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+
+    const header = [
+      { v: 'Cliente', s: hStyle },
+      { v: 'Empresa', s: hStyle },
+      { v: 'Placa', s: hStyle },
+      ...sData.semanas.map(s => ({ v: `Sem. ${s} (TN Rec.)`, s: hSem })),
+      { v: 'Total (TN)', s: hTotal },
+    ];
+    const rows = [header];
+
+    for (const row of sData.rows) {
+      const total = sData.semanas.reduce((sum, s) => sum + (row[s] || 0), 0);
+      rows.push([
+        { v: row.cliente || 'Sin cliente', s: cellL },
+        { v: formatEmpresa(row.empresa), s: cellL },
+        { v: row.placa || '', s: cellL },
+        ...sData.semanas.map(s => row[s] ? { v: Math.round((Number(row[s]) || 0) * 100) / 100, t: 'n', s: cellN } : { v: '', s: cellL }),
+        { v: Math.round(total * 100) / 100, t: 'n', s: cellT },
+      ]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 30 }, { wch: 22 }, { wch: 10 }, ...sData.semanas.map(() => ({ wch: 16 })), { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, ws, 'Seguimiento');
+    XLSX.writeFile(wb, 'Seguimiento_Transporte.xlsx');
+  };
+
   const descargarPagarPDF = async () => {
     if (!pagarSectionRef.current) return;
     setExportingPagarPdf(true);
@@ -578,7 +706,17 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Por Cobrar */}
       {activeTab === 'cobrar' && (
         <div className="financiero-section">
-          <h2>💵 Por Cobrar por Cliente / Empresa</h2>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <h2 style={{margin:0}}>💵 Por Cobrar por Cliente / Empresa</h2>
+            {porCobrar.length > 0 && (
+              <div style={{display:'flex',gap:'8px'}}>
+                <button className="btn-download-excel" onClick={descargarCobrarExcel}>📊 Excel</button>
+                <button className="btn-download-pdf" onClick={descargarCobrarPDF} disabled={exportingCobrarPdf}>
+                  {exportingCobrarPdf ? 'Generando...' : '📥 PDF'}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -631,6 +769,7 @@ const DashboardFinanciero = ({ filters }) => {
             </div>
           </div>
           
+          <div ref={cobrarSectionRef}>
           {/* Tabla */}
           <div className="section-card">
             <h3>Tabla Dinámica - Por Cobrar</h3>
@@ -686,6 +825,7 @@ const DashboardFinanciero = ({ filters }) => {
                 </ResponsiveContainer>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}
@@ -818,7 +958,17 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Margen Operativo */}
       {activeTab === 'margen' && (
         <div className="financiero-section">
-          <h2>📈 Margen Operativo por Cliente / Empresa</h2>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <h2 style={{margin:0}}>📈 Margen Operativo por Cliente / Empresa</h2>
+            {margenOperativo.length > 0 && (
+              <div style={{display:'flex',gap:'8px'}}>
+                <button className="btn-download-excel" onClick={descargarMargenExcel}>📊 Excel</button>
+                <button className="btn-download-pdf" onClick={descargarMargenPDF} disabled={exportingMargenPdf}>
+                  {exportingMargenPdf ? 'Generando...' : '📥 PDF'}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -871,6 +1021,7 @@ const DashboardFinanciero = ({ filters }) => {
             </div>
           </div>
 
+          <div ref={margenSectionRef}>
           <div className="section-card">
             <h3>Tabla Dinámica - Margen Operativo (Por Cobrar - Por Pagar)</h3>
             {margenOperativo.length === 0 ? (
@@ -929,6 +1080,7 @@ const DashboardFinanciero = ({ filters }) => {
                 </ResponsiveContainer>
               )}
             </div>
+          </div>
           </div>
         </div>
       )}
@@ -1054,7 +1206,17 @@ const DashboardFinanciero = ({ filters }) => {
       {/* Seguimiento de Transporte */}
       {activeTab === 'seguimiento' && (
         <div className="financiero-section">
-          <h2>🚧 Seguimiento de Transporte - Peso Ticket Recibido por Semana</h2>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:'8px'}}>
+            <h2 style={{margin:0}}>🚧 Seguimiento de Transporte - Peso Ticket Recibido por Semana</h2>
+            {seguimiento.length > 0 && localFiltersSeg.mes && (
+              <div style={{display:'flex',gap:'8px'}}>
+                <button className="btn-download-excel" onClick={descargarSegExcel}>📊 Excel</button>
+                <button className="btn-download-pdf" onClick={descargarSegPDF} disabled={exportingSegPdf}>
+                  {exportingSegPdf ? 'Generando...' : '📥 PDF'}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Filtros */}
           <div className="section-filters">
@@ -1093,7 +1255,7 @@ const DashboardFinanciero = ({ filters }) => {
             </div>
           </div>
 
-          <div className="section-card full-width">
+          <div className="section-card full-width" ref={segSectionRef}>
             <h3>Tabla de Seguimiento - Tonelaje <span style={{color:'#1B7430'}}>Recibido</span> (Cliente → Empresa → Unidad → Semana)</h3>
             {!localFiltersSeg.mes ? (
               <p className="empty-message">📅 Selecciona un <strong>mes</strong> para generar la tabla de seguimiento.</p>

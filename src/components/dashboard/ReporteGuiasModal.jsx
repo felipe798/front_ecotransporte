@@ -297,7 +297,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
                   <td className="col-left">{v.recorrido}</td>
                   <td className="col-left">{v.material}</td>
                   <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.precio)}</td>
-                  <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.importeTotal)}</td>
+                  <td>{v.divisa === 'PEN' ? 'S/' : '$'}{formatNum(v.bi)}</td>
                 </tr>
               ))}
               <tr className="fila-subtotal">

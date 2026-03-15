@@ -9,7 +9,6 @@ const AdminUnidades = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUnidad, setEditingUnidad] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
   const [filterEmpresa, setFilterEmpresa] = useState('todas');
   const [filterEstado, setFilterEstado] = useState('todas');
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,17 +71,6 @@ const AdminUnidades = () => {
       estado: unidad.estado || 'activo'
     });
     setShowModal(true);
-  };
-
-  const handleDelete = async () => {
-    try {
-      await unidadService.delete(confirmDelete.id);
-      showNotification('Unidad eliminada correctamente', 'success');
-      setConfirmDelete(null);
-      loadData();
-    } catch (error) {
-      showNotification(error.message || 'Error al eliminar unidad', 'error');
-    }
   };
 
   const resetForm = () => {
@@ -206,9 +194,6 @@ const AdminUnidades = () => {
                     <button className="btn-edit btn-sm" onClick={() => handleEdit(unidad)} title="Editar">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button className="btn-danger btn-sm" onClick={() => setConfirmDelete(unidad)} title="Eliminar">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
                   </td>
                 </tr>
               ))}
@@ -234,7 +219,7 @@ const AdminUnidades = () => {
                   onChange={(e) => setFormData({ ...formData, placa: e.target.value.toUpperCase() })}
                   required
                   placeholder="Ej: ABC123"
-                  maxLength={10}
+                  maxLength={20}
                   style={{ textTransform: 'uppercase' }}
                 />
               </div>
@@ -270,27 +255,6 @@ const AdminUnidades = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Confirmar Eliminación */}
-      {confirmDelete && (
-        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
-          <div className="modal-content confirm-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Confirmar Eliminación</h2>
-              <button className="modal-close" onClick={() => setConfirmDelete(null)}>&times;</button>
-            </div>
-            <p>¿Estás seguro de eliminar la unidad <strong>{confirmDelete.placa}</strong>?</p>
-            <div className="form-actions">
-              <button className="btn-secondary" onClick={() => setConfirmDelete(null)}>
-                Cancelar
-              </button>
-              <button className="btn-danger" onClick={handleDelete}>
-                Eliminar
-              </button>
-            </div>
           </div>
         </div>
       )}

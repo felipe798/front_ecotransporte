@@ -351,33 +351,33 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
           <table className="tabla-detallada margen-table">
             <colgroup>
               <col style={{ minWidth: '140px' }} />
-              {empresas.concat(['general']).map((_, i) => [
-                <col key={`m1-${i}`} style={{ minWidth: '80px' }} />,
-                <col key={`m2-${i}`} style={{ minWidth: '90px' }} />,
-              ])}
+              <col style={{ minWidth: '170px' }} />
+              {empresas.map((_, i) => (
+                <col key={`m-${i}`} style={{ minWidth: '170px' }} />
+              ))}
             </colgroup>
             <thead>
               <tr>
                 <th className="col-cliente">Concepto</th>
-                <th className="col-general" colSpan={2}>General</th>
+                <th className="col-general">General</th>
                 {empresas.map((emp, idx) => (
-                  <th key={emp} className={`col-empresa-${idx % 4}`} colSpan={2}>{emp}</th>
+                  <th key={emp} className={`col-empresa-${idx % 4}`}>{emp}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="col-cliente">Dólares (USD)</td>
-                <td colSpan={2}>${formatNum(margen.USD.general.margen)}</td>
+                <td>${formatNum(margen.USD.general.margen)}</td>
                 {empresas.map(emp => (
-                  <td key={`usd-${emp}`} colSpan={2}>${formatNum((margen.USD[emp] || { margen: 0 }).margen)}</td>
+                  <td key={`usd-${emp}`}>${formatNum((margen.USD[emp] || { margen: 0 }).margen)}</td>
                 ))}
               </tr>
               <tr>
                 <td className="col-cliente">Soles (PEN)</td>
-                <td colSpan={2}>S/{formatNum(margen.PEN.general.margen)}</td>
+                <td>S/{formatNum(margen.PEN.general.margen)}</td>
                 {empresas.map(emp => (
-                  <td key={`pen-${emp}`} colSpan={2}>S/{formatNum((margen.PEN[emp] || { margen: 0 }).margen)}</td>
+                  <td key={`pen-${emp}`}>S/{formatNum((margen.PEN[emp] || { margen: 0 }).margen)}</td>
                 ))}
               </tr>
             </tbody>

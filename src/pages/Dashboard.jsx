@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import DashboardResumen from '../components/dashboard/DashboardResumen';
 import DashboardSemanal from '../components/dashboard/DashboardSemanal';
 import DashboardTransportista from '../components/dashboard/DashboardTransportista';
@@ -8,6 +9,7 @@ import logoEmpresa from '../assets/Images/logo-empresa.png';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('resumen');
 
   const tabs = [
@@ -28,6 +30,11 @@ const Dashboard = () => {
         <Link to="/upload" className="btn-upload">
           + Subir PDF
         </Link>
+        {user?.role === 1 && (
+          <Link to="/upload?manual=true" className="btn-upload" style={{ background: '#1B7430', marginLeft: '8px' }}>
+            ✏️ Agregar Registro
+          </Link>
+        )}
       </div>
 
       {/* Tabs */}

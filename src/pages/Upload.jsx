@@ -568,17 +568,6 @@ const Upload = () => {
             </button>
           </div>
 
-          <div style={{ textAlign: 'center', marginTop: '12px' }}>
-            <button
-              onClick={openManualModal}
-              className="btn-secondary"
-              disabled={loading}
-              style={{ gap: '6px' }}
-            >
-              ✏️ Agregar Registro Manual
-            </button>
-          </div>
-
           {loading && (
             <div className="processing-indicator">
               <div className="spinner"></div>

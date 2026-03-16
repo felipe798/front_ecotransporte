@@ -25,6 +25,8 @@ const Upload = () => {
   // Tariff wizard state
   const [missingTariffs, setMissingTariffs] = useState([]); // [{docId, cliente, partida, llegada, transportado, precioVentaSinIgv, precioCostoSinIgv, moneda, divisa}]
   const [savingTariff, setSavingTariff] = useState(false);
+  // Docs where OCR found no plate at all — user enters plate manually
+  const [docsManualPlaca, setDocsManualPlaca] = useState([]); // [{ docId, grt, placa, empresaId }]
   const [tarifasCatalogo, setTarifasCatalogo] = useState([]); // datos de client_tariff para selects
 
   // Cargar catálogo de tarifas cuando se abre el wizard de tarifas
@@ -121,6 +123,7 @@ const Upload = () => {
     const uploadResults = [];
     const placasNuevas = new Set();
     const tarifasFaltantes = [];
+    const docsManualPlacaLocal = [];
 
     for (let i = 0; i < files.length; i++) {
       setCurrentIndex(i);
@@ -131,6 +134,9 @@ const Upload = () => {
         uploadResults.push({ file: files[i].name, success: true, document: response.document });
         if (response.placaNoRegistrada) {
           placasNuevas.add(response.placaNoRegistrada);
+        } else if (response.document?.unidad === null) {
+          // OCR didn't detect any plate — let user enter it manually
+          docsManualPlacaLocal.push({ docId: response.document.id, grt: response.document.grt || '-', placa: '', empresaId: '' });
         }
         if (response.tarifaNoEncontrada && response.document?.id) {
           const tnf = response.tarifaNoEncontrada;
@@ -156,9 +162,14 @@ const Upload = () => {
       } catch (err) {
         console.error('Upload error for', files[i].name, err);
         if (err.rejected) {
-          uploadResults.push({ file: files[i].name, success: false, rejected: true, error: err.reason || 'Guía ya registrada' });
+          // Documento rechazado por la IA o GRT duplicada — usar el reason específico del backend
+          uploadResults.push({ file: files[i].name, success: false, rejected: true, error: err.reason || 'Documento no válido' });
         } else {
-          uploadResults.push({ file: files[i].name, success: false, error: err.message || 'Error al procesar' });
+          // Error técnico — mostrar el mensaje detallado si existe
+          const msg = err.message && err.message !== 'Error en la petición'
+            ? err.message
+            : 'Error al procesar el documento. Intenta nuevamente.';
+          uploadResults.push({ file: files[i].name, success: false, error: msg });
         }
       }
       setResults([...uploadResults]);
@@ -174,9 +185,10 @@ const Upload = () => {
       notification.error(`${fallidos} documento(s) fallaron`);
     }
 
-    // Si hay placas nuevas, iniciar wizard de placas
-    if (placasNuevas.size > 0) {
+    // Si hay placas nuevas o docs sin placa, iniciar wizard de placas
+    if (placasNuevas.size > 0 || docsManualPlacaLocal.length > 0) {
       setNewPlacas([...placasNuevas].map(p => ({ placa: p, empresaId: '' })));
+      setDocsManualPlaca(docsManualPlacaLocal);
       try {
         const resp = await empresaTransporteService.getActivas();
         setEmpresas(resp || []);
@@ -185,13 +197,13 @@ const Upload = () => {
       }
       setWizardStep('placas');
     } else if (tarifasFaltantes.length > 0) {
-      // Si no hay placas nuevas pero sí tarifas faltantes, ir directo a tarifas
+      // Sin placas nuevas pero sí tarifas faltantes, ir directo a tarifas
       setMissingTariffs(tarifasFaltantes);
       setWizardStep('tarifas');
     }
 
     // Guardar tarifas faltantes para después del wizard de placas
-    if (placasNuevas.size > 0 && tarifasFaltantes.length > 0) {
+    if ((placasNuevas.size > 0 || docsManualPlacaLocal.length > 0) && tarifasFaltantes.length > 0) {
       setMissingTariffs(tarifasFaltantes);
     }
   };
@@ -224,10 +236,19 @@ const Upload = () => {
     setNewPlacas(prev => prev.map((p, i) => i === idx ? { ...p, empresaId } : p));
   };
 
+  const handleManualPlacaChange = (idx, field, value) => {
+    setDocsManualPlaca(prev => prev.map((d, i) => i === idx ? { ...d, [field]: value } : d));
+  };
+
   const handleSavePlacas = async () => {
     const incomplete = newPlacas.filter(p => !p.empresaId);
     if (incomplete.length > 0) {
       notification.error(`Asigna una empresa a todas las placas (${incomplete.length} pendiente(s))`);
+      return;
+    }
+    const incompleteManual = docsManualPlaca.filter(d => d.placa.trim() && !d.empresaId);
+    if (incompleteManual.length > 0) {
+      notification.error(`Asigna una empresa a las placas ingresadas manualmente (${incompleteManual.length} pendiente(s))`);
       return;
     }
 
@@ -242,6 +263,23 @@ const Upload = () => {
       }
     }
 
+    // Guardar placas ingresadas manualmente y actualizar los documentos
+    for (const doc of docsManualPlaca) {
+      if (!doc.placa.trim() || !doc.empresaId) continue;
+      const placaNorm = doc.placa.trim().toUpperCase();
+      try {
+        await unidadService.create({ placa: placaNorm, empresaId: Number(doc.empresaId) });
+        saved++;
+      } catch (e) {
+        console.error(`Error registrando placa manual ${placaNorm}:`, e);
+      }
+      try {
+        await documentService.update(doc.docId, { unidad: placaNorm });
+      } catch (e) {
+        console.error(`Error actualizando placa en doc ${doc.docId}:`, e);
+      }
+    }
+
     // Re-asociar documentos con las nuevas placas
     try {
       const reassocResult = await documentService.reassociate();
@@ -253,6 +291,7 @@ const Upload = () => {
     notification.success(`${saved} placa(s) registrada(s) y documentos re-asociados`);
     setSavingWizard(false);
     setNewPlacas([]);
+    setDocsManualPlaca([]);
     // Si hay tarifas faltantes, pasar al wizard de tarifas
     if (missingTariffs.length > 0) {
       setWizardStep('tarifas');
@@ -263,6 +302,7 @@ const Upload = () => {
 
   const handleSkipWizard = () => {
     setNewPlacas([]);
+    setDocsManualPlaca([]);
     // Si estamos en placas y hay tarifas pendientes, pasar a tarifas
     if (wizardStep === 'placas' && missingTariffs.length > 0) {
       setWizardStep('tarifas');
@@ -480,6 +520,8 @@ const Upload = () => {
                     <span className="result-item-detail">
                       GRT: {r.document?.grt || '-'} | Cliente: {r.document?.cliente || '-'} | TN: {r.document?.tn_enviado || '-'}
                     </span>
+                  ) : r.rejected ? (
+                    <span className="result-item-error" style={{ color: '#b45309' }}>{r.error}</span>
                   ) : (
                     <span className="result-item-error">{r.error}</span>
                   )}
@@ -510,8 +552,12 @@ const Upload = () => {
             <div className="wizard-overlay">
               <div className="wizard-modal">
                 <div className="wizard-header">
-                  <h2>🚛 Placas No Registradas</h2>
-                  <p>Se detectaron <strong>{newPlacas.length}</strong> placa(s) que no están registradas. Asigna cada una a su empresa de transporte.</p>
+                  <h2>🚛 Registro de Placas</h2>
+                  <p>
+                    {newPlacas.length > 0 && <span>Se detectaron <strong>{newPlacas.length}</strong> placa(s) nuevas. </span>}
+                    {docsManualPlaca.length > 0 && <span>Hay <strong>{docsManualPlaca.length}</strong> guía(s) sin placa identificada. </span>}
+                    Asigna cada placa a su empresa de transporte.
+                  </p>
                 </div>
 
                 {/* Crear empresa rápido */}
@@ -563,8 +609,41 @@ const Upload = () => {
                   ))}
                 </div>
 
+                {/* Guías sin placa detectada — usuario ingresa la placa manualmente */}
+                {docsManualPlaca.length > 0 && (
+                  <div className="wizard-manual-placas">
+                    <h3>📝 Guías sin placa identificada</h3>
+                    <p className="wizard-manual-desc">El sistema no pudo leer la placa en estas guías. Si la conoces, ingrésala ahora (opcional):</p>
+                    {docsManualPlaca.map((doc, idx) => (
+                      <div key={doc.docId} className={`wizard-placa-row ${doc.placa && doc.empresaId ? 'assigned' : ''}`}>
+                        <span className="wizard-placa-badge wizard-placa-grt" title="GRT del documento">GRT: {doc.grt}</span>
+                        <input
+                          type="text"
+                          placeholder="Ej: CBS886"
+                          value={doc.placa}
+                          onChange={e => handleManualPlacaChange(idx, 'placa', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+                          className="wizard-input wizard-input-placa"
+                          maxLength={6}
+                        />
+                        <select
+                          value={doc.empresaId}
+                          onChange={e => handleManualPlacaChange(idx, 'empresaId', e.target.value)}
+                          className="wizard-select"
+                          disabled={!doc.placa.trim()}
+                        >
+                          <option value="">— Seleccionar empresa —</option>
+                          {empresas.map(emp => (
+                            <option key={emp.id} value={emp.id}>{emp.nombre}</option>
+                          ))}
+                        </select>
+                        {doc.placa && doc.empresaId ? <span className="wizard-check">✓</span> : <span className="wizard-pending">⚠</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="wizard-progress">
-                  {newPlacas.filter(p => p.empresaId).length} de {newPlacas.length} asignadas
+                  {newPlacas.filter(p => p.empresaId).length + docsManualPlaca.filter(d => d.placa.trim() && d.empresaId).length} placa(s) completadas
                 </div>
 
                 <div className="wizard-actions">
@@ -576,7 +655,7 @@ const Upload = () => {
                     disabled={savingWizard}
                     className="btn-primary"
                   >
-                    {savingWizard ? 'Guardando...' : `Registrar ${newPlacas.length} Placa(s)`}
+                    {savingWizard ? 'Guardando...' : `Registrar ${newPlacas.length + docsManualPlaca.filter(d => d.placa.trim() && d.empresaId).length} Placa(s)`}
                   </button>
                 </div>
               </div>

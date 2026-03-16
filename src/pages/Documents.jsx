@@ -164,11 +164,11 @@ const Documents = () => {
             )}
           </button>
           {user?.role === 1 && (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link to="/upload" className="btn-upload">
+            <div style={{ display: 'flex', gap: '8px', flex: '1 1 auto', minWidth: 0 }}>
+              <Link to="/upload" className="btn-upload" style={{ flex: 1, textAlign: 'center' }}>
                 + Subir PDF
               </Link>
-              <Link to="/manual-register" className="btn-upload" style={{ background: '#1B7430' }}>
+              <Link to="/manual-register" className="btn-upload" style={{ background: '#1B7430', flex: 1, textAlign: 'center' }}>
                 ✏️ Agregar Registro
               </Link>
             </div>

@@ -34,6 +34,47 @@ const CHART_COLORS = [
   '#9E6575'  // Rosa antiguo
 ];
 
+// SVG path for bar with rounded end (right for positive, left for negative)
+const roundedBarPath = (x, y, w, h) => {
+  if (!w || !h) return '';
+  const r = Math.min(4, Math.abs(w) / 2, h / 2);
+  if (w >= 0) {
+    return `M${x},${y} L${x+w-r},${y} Q${x+w},${y} ${x+w},${y+r} L${x+w},${y+h-r} Q${x+w},${y+h} ${x+w-r},${y+h} L${x},${y+h} Z`;
+  }
+  const ax = x + w;
+  return `M${x},${y} L${x},${y+h} L${ax+r},${y+h} Q${ax},${y+h} ${ax},${y+h-r} L${ax},${y+r} Q${ax},${y} ${ax+r},${y} Z`;
+};
+
+// Custom bar shape that centers when the other currency is absent
+const makeCenteredBar = (dataKey, otherKey, color, fmtLabel) => (props) => {
+  const { x, y, width, height, payload } = props;
+  if (!width || Math.abs(width) < 0.5) return null;
+  const value = payload[dataKey];
+  const otherValue = payload[otherKey];
+  const hasOther = otherValue != null && otherValue !== 0;
+  // USD=top bar, PEN=bottom bar; center if other is missing
+  const adjustedY = hasOther ? y : (dataKey === 'USD' ? y + height / 2 : y - height / 2);
+  const d = roundedBarPath(x, adjustedY, width, height);
+  const label = fmtLabel(value);
+  const labelX = width >= 0 ? x + width + 5 : x + width - 5;
+  const anchor = width >= 0 ? 'start' : 'end';
+  return (
+    <g>
+      <path d={d} fill={color} />
+      {label && (
+        <text x={labelX} y={adjustedY + height / 2} dy="0.35em" fill={color} fontSize={10} fontWeight={600} textAnchor={anchor}>
+          {label}
+        </text>
+      )}
+    </g>
+  );
+};
+
+const CobrarUsdBar = makeCenteredBar('USD', 'PEN', COLORS.USD, v => v > 0 ? `$ ${fmtNum(v)}` : '');
+const CobrarPenBar = makeCenteredBar('PEN', 'USD', COLORS.PEN, v => v > 0 ? `S/ ${fmtNum(v)}` : '');
+const MargenUsdBar = makeCenteredBar('USD', 'PEN', COLORS.USD, v => v !== 0 ? `$ ${fmtNum(v)}` : '');
+const MargenPenBar = makeCenteredBar('PEN', 'USD', COLORS.PEN, v => v !== 0 ? `S/ ${fmtNum(v)}` : '');
+
 const DashboardFinanciero = ({ filters }) => {
   const isMobile = useIsMobile();
   const [porCobrar, setPorCobrar] = useState([]);
@@ -681,21 +722,6 @@ const DashboardFinanciero = ({ filters }) => {
   const tnChart = prepareTnData(tnClienteEmpresa);
   const seguimientoData = prepareSeguimientoData(seguimiento);
 
-  // Normalizar datos para barras stacked (USD = mitad izquierda, PEN = mitad derecha)
-  const normalizeForStackedBar = (chartData) => {
-    const maxUSD = Math.max(...chartData.map(d => Math.abs(d.USD || 0)), 1);
-    const maxPEN = Math.max(...chartData.map(d => Math.abs(d.PEN || 0)), 1);
-    return chartData.map(d => ({
-      ...d,
-      usdNorm: (Math.abs(d.USD || 0) / maxUSD) * 50,
-      penNorm: (Math.abs(d.PEN || 0) / maxPEN) * 50,
-    }));
-  };
-
-  const cobrarNorm = normalizeForStackedBar(cobrarChart);
-  const pagarNorm = normalizeForStackedBar(pagarChart);
-  const margenNorm = normalizeForStackedBar(margenChart);
-
   const tabs = [
     { id: 'cobrar', label: 'Por Cobrar' },
     { id: 'pagar', label: 'Por Pagar' },
@@ -833,10 +859,10 @@ const DashboardFinanciero = ({ filters }) => {
               {cobrarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(120, cobrarNorm.length * (isMobile ? 60 : 70) + 40)}>
-                  <BarChart data={cobrarNorm} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, cobrarChart.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={cobrarChart} layout="vertical" barSize={14} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis type="number" hide domain={[0, 100]} />
+                    <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
@@ -848,8 +874,8 @@ const DashboardFinanciero = ({ filters }) => {
                       </div>);
                     }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]} />
+                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} shape={CobrarUsdBar} />
+                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} shape={CobrarPenBar} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -965,10 +991,10 @@ const DashboardFinanciero = ({ filters }) => {
               {pagarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(120, pagarNorm.length * (isMobile ? 60 : 70) + 40)}>
-                  <BarChart data={pagarNorm} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, pagarChart.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={pagarChart} layout="vertical" barSize={14} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis type="number" hide domain={[0, 100]} />
+                    <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
@@ -980,8 +1006,8 @@ const DashboardFinanciero = ({ filters }) => {
                       </div>);
                     }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]} />
+                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} shape={CobrarUsdBar} />
+                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} shape={CobrarPenBar} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -1102,10 +1128,10 @@ const DashboardFinanciero = ({ filters }) => {
               {margenChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
               ) : (
-                <ResponsiveContainer width="100%" height={Math.max(120, margenNorm.length * (isMobile ? 60 : 70) + 40)}>
-                  <BarChart data={margenNorm} layout="vertical" barSize={30} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
+                <ResponsiveContainer width="100%" height={Math.max(120, margenChart.length * (isMobile ? 60 : 70) + 40)}>
+                  <BarChart data={margenChart} layout="vertical" barSize={14} margin={{ right: isMobile ? 50 : 110, left: isMobile ? 5 : 10 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                    <XAxis type="number" hide domain={[0, 100]} />
+                    <XAxis type="number" hide />
                     <YAxis dataKey="label" type="category" width={isMobile ? 80 : 180} tick={{ fontSize: isMobile ? 9 : 11 }} />
                     <Tooltip content={({ active, payload }) => {
                       if (!active || !payload?.length) return null;
@@ -1117,8 +1143,8 @@ const DashboardFinanciero = ({ filters }) => {
                       </div>);
                     }} />
                     {!isMobile && <Legend />}
-                    <Bar dataKey="usdNorm" name="Dólares (USD)" stackId="stack" fill={COLORS.USD} radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="penNorm" name="Soles (PEN)" stackId="stack" fill={COLORS.PEN} radius={[0, 6, 6, 0]} />
+                    <Bar dataKey="USD" name="Dólares (USD)" fill={COLORS.USD} shape={MargenUsdBar} />
+                    <Bar dataKey="PEN" name="Soles (PEN)" fill={COLORS.PEN} shape={MargenPenBar} />
                   </BarChart>
                 </ResponsiveContainer>
               )}

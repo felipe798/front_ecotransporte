@@ -4,10 +4,9 @@
 
 .documents-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: stretch;
   margin-bottom: 2rem;
-  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -35,6 +34,8 @@
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .search-input {
@@ -44,7 +45,8 @@
   background: var(--bg-tertiary);
   color: var(--text-primary);
   font-size: 0.9rem;
-  width: 300px;
+  flex: 1 1 250px;
+  min-width: 200px;
   transition: all 0.3s ease;
 }
 

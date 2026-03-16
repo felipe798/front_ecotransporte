@@ -164,9 +164,14 @@ const Documents = () => {
             )}
           </button>
           {user?.role === 1 && (
-            <Link to="/upload" className="btn-upload">
-              + Subir PDF
-            </Link>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link to="/upload" className="btn-upload">
+                + Subir PDF
+              </Link>
+              <Link to="/manual-register" className="btn-upload" style={{ background: '#1B7430' }}>
+                ✏️ Agregar Registro
+              </Link>
+            </div>
           )}
         </div>
       </div>

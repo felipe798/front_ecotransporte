@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Documents from './pages/Documents';
 import DocumentDetail from './pages/DocumentDetail';
 import EditDocument from './pages/EditDocument';
+import ManualRegister from './pages/ManualRegister';
 import Upload from './pages/Upload';
 import AdminEmpresas from './pages/AdminEmpresas';
 import AdminUnidades from './pages/AdminUnidades';
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/documents" element={<Documents />} />
                 <Route path="/documents/:id" element={<DocumentDetail />} />
                 <Route path="/documents/:id/edit" element={<EditDocument />} />
+                <Route path="/manual-register" element={<ManualRegister />} />
                 <Route path="/upload" element={<Upload />} />
                 <Route path="/admin/empresas" element={<AdminEmpresas />} />
                 <Route path="/admin/unidades" element={<AdminUnidades />} />

@@ -82,6 +82,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [exportingSemanaPdf, setExportingSemanaPdf] = useState(false);
   const [exportingConcentradoPdf, setExportingConcentradoPdf] = useState(false);
+  const [localFilters, setLocalFilters] = useState({ mes: '', transportado: '', cliente: '' });
 
   const descargarPDF = async () => {
     if (!contentRef.current) return;

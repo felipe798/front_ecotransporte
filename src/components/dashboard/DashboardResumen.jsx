@@ -133,6 +133,43 @@ const DashboardResumen = () => {
     }
   };
 
+  const descargarResumenPDF = async () => {
+    if (!resumenRef.current) return;
+    setExportingPdf(true);
+    try {
+      const capitalizeText = (text) => {
+        if (!text) return '';
+        return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      };
+      const filterParts = [];
+      if (filters.mes) filterParts.push(capitalizeText(filters.mes));
+      if (filters.semana) filterParts.push(capitalizeText(filters.semana));
+      if (filters.cliente) filterParts.push(capitalizeText(filters.cliente));
+      if (filters.transportista) filterParts.push(capitalizeText(filters.transportista));
+      if (filters.unidad) filterParts.push(filters.unidad.toUpperCase());
+      if (filters.transportado) filterParts.push(capitalizeText(filters.transportado));
+      const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Resumen General</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
+      resumenRef.current.insertBefore(titleDiv, resumenRef.current.firstChild);
+
+      const canvas = await html2canvas(resumenRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      resumenRef.current.removeChild(titleDiv);
+
+      const imgData = canvas.toDataURL('image/png');
+      const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Resumen_General.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   if (loading) {
     return <div className="loading-section"><div className="spinner"></div></div>;
   }

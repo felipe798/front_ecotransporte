@@ -89,11 +89,17 @@ const DashboardFinanciero = ({ filters }) => {
   const cobrarSectionRef = useRef(null);
   const margenSectionRef = useRef(null);
   const segSectionRef = useRef(null);
+  const cobrarChartRef = useRef(null);
+  const pagarChartRef = useRef(null);
+  const margenChartRef = useRef(null);
   const [exportingTnPdf, setExportingTnPdf] = useState(false);
   const [exportingPagarPdf, setExportingPagarPdf] = useState(false);
   const [exportingCobrarPdf, setExportingCobrarPdf] = useState(false);
   const [exportingMargenPdf, setExportingMargenPdf] = useState(false);
   const [exportingSegPdf, setExportingSegPdf] = useState(false);
+  const [exportingCobrarChartPdf, setExportingCobrarChartPdf] = useState(false);
+  const [exportingPagarChartPdf, setExportingPagarChartPdf] = useState(false);
+  const [exportingMargenChartPdf, setExportingMargenChartPdf] = useState(false);
 
   const [localFilters, setLocalFilters] = useState({ mes: '', semana: '', cliente: '', transportista: '', unidad: '', divisa: '' });
   const [filterOptions, setFilterOptions] = useState({ meses: [], semanas: [], clientes: [], transportistas: [], unidades: [], divisas: [] });
@@ -433,20 +439,57 @@ const DashboardFinanciero = ({ filters }) => {
     return 'USD';
   };
 
+  // Helper: capitalizar correctamente textos (meses, nombres, apellidos, etc.)
+  const capitalizeText = (text) => {
+    if (!text) return '';
+    return text
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+  // Helper: generar filas de título y filtros para Excel
+  const excelTitleRows = (title, filterObj, colCount) => {
+    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const filterStyle = { font: { bold: false, sz: 11, color: { rgb: '333333' } }, fill: { fgColor: { rgb: 'E8F5E9' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const filterParts = [];
+    if (filterObj.mes) filterParts.push(capitalizeText(filterObj.mes));
+    if (filterObj.semana) filterParts.push(`Semana ${filterObj.semana}`);
+    if (filterObj.cliente) filterParts.push(capitalizeText(filterObj.cliente));
+    if (filterObj.transportista) filterParts.push(capitalizeText(filterObj.transportista));
+    if (filterObj.unidad) filterParts.push(`Placa: ${filterObj.unidad.toUpperCase()}`);
+    if (filterObj.divisa) filterParts.push(filterObj.divisa.toUpperCase());
+    const filterText = filterParts.length > 0 ? filterParts.join(' — ') : 'Sin filtros';
+
+    const titleRow = Array(colCount).fill({ v: '', s: titleStyle });
+    titleRow[0] = { v: title, s: titleStyle };
+    const filterRow = Array(colCount).fill({ v: '', s: filterStyle });
+    filterRow[0] = { v: filterText, s: filterStyle };
+    const emptyRow = Array(colCount).fill({ v: '' });
+
+    return {
+      rows: [titleRow, filterRow, emptyRow],
+      merges: [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+        { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+      ],
+    };
+  };
+
   // Helper: inyectar título con filtros al ref, capturar, y luego removerlo
   const pdfWithTitle = async (ref, sectionTitle, filterObj, orientationOverride) => {
     const filterParts = [];
-    if (filterObj.mes) filterParts.push(filterObj.mes);
+    if (filterObj.mes) filterParts.push(capitalizeText(filterObj.mes));
     if (filterObj.semana) filterParts.push(`Semana ${filterObj.semana}`);
-    if (filterObj.cliente) filterParts.push(filterObj.cliente);
-    if (filterObj.transportista) filterParts.push(filterObj.transportista);
-    if (filterObj.unidad) filterParts.push(`Placa: ${filterObj.unidad}`);
-    if (filterObj.divisa) filterParts.push(filterObj.divisa);
+    if (filterObj.cliente) filterParts.push(capitalizeText(filterObj.cliente));
+    if (filterObj.transportista) filterParts.push(capitalizeText(filterObj.transportista));
+    if (filterObj.unidad) filterParts.push(`Placa: ${filterObj.unidad.toUpperCase()}`);
+    if (filterObj.divisa) filterParts.push(filterObj.divisa.toUpperCase());
     const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
 
     const titleDiv = document.createElement('div');
-    titleDiv.style.cssText = 'text-align:center;padding:16px 0 12px;border-bottom:2px solid #1B7430;margin-bottom:12px;';
-    titleDiv.innerHTML = `<div style="font-size:22px;font-weight:800;color:#1B7430;">${sectionTitle}</div><div style="font-size:14px;color:#333;margin-top:6px;">${subtitle}</div>`;
+    titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+    titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">${sectionTitle}</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
     ref.current.insertBefore(titleDiv, ref.current.firstChild);
 
     try {
@@ -471,13 +514,46 @@ const DashboardFinanciero = ({ filters }) => {
     finally { setExportingCobrarPdf(false); }
   };
 
+  const descargarCobrarChartPDF = async () => {
+    if (!cobrarChartRef.current) return;
+    setExportingCobrarChartPdf(true);
+    try {
+      const pdf = await pdfWithTitle(cobrarChartRef, 'Gráfica - Por Cobrar', localFilters);
+      pdf.save('Grafica_Por_Cobrar.pdf');
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingCobrarChartPdf(false); }
+  };
+
+  const descargarPagarChartPDF = async () => {
+    if (!pagarChartRef.current) return;
+    setExportingPagarChartPdf(true);
+    try {
+      const pdf = await pdfWithTitle(pagarChartRef, 'Gráfica - Por Pagar', localFiltersPagar);
+      pdf.save('Grafica_Por_Pagar.pdf');
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingPagarChartPdf(false); }
+  };
+
+  const descargarMargenChartPDF = async () => {
+    if (!margenChartRef.current) return;
+    setExportingMargenChartPdf(true);
+    try {
+      const pdf = await pdfWithTitle(margenChartRef, 'Gráfica - Margen Operativo', localFiltersMargen);
+      pdf.save('Grafica_Margen_Operativo.pdf');
+    } catch (err) { console.error('Error generando PDF:', err); }
+    finally { setExportingMargenChartPdf(false); }
+  };
+
   const descargarCobrarExcel = () => {
     if (porCobrar.length === 0) return;
     const wb = XLSX.utils.book_new();
+    const colCount = 4;
+    const { rows: titleRows, merges } = excelTitleRows('Por Cobrar', localFilters, colCount);
     const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '145A25' } } } };
     const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const cellR = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const rows = [
+      ...titleRows,
       [{ v: 'Cliente', s: hStyle }, { v: 'Empresa', s: hStyle }, { v: 'Divisa', s: hStyle }, { v: 'Por Cobrar', s: hStyle }],
       ...porCobrar.map(item => [
         { v: item.cliente || 'Sin cliente', s: cellL },
@@ -488,6 +564,7 @@ const DashboardFinanciero = ({ filters }) => {
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 10 }, { wch: 18 }];
+    ws['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, ws, 'Por Cobrar');
     XLSX.writeFile(wb, 'Por_Cobrar.xlsx');
   };
@@ -505,11 +582,14 @@ const DashboardFinanciero = ({ filters }) => {
   const descargarMargenExcel = () => {
     if (margenOperativo.length === 0) return;
     const wb = XLSX.utils.book_new();
+    const colCount = 4;
+    const { rows: titleRows, merges } = excelTitleRows('Margen Operativo', localFiltersMargen, colCount);
     const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '4A86B8' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '3A6E9A' } } } };
     const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const cellPos = { font: { sz: 10, color: { rgb: '1B7430' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const cellNeg = { font: { sz: 10, color: { rgb: 'CC3333' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const rows = [
+      ...titleRows,
       [{ v: 'Cliente', s: hStyle }, { v: 'Empresa', s: hStyle }, { v: 'Divisa', s: hStyle }, { v: 'Margen Operativo', s: hStyle }],
       ...margenOperativo.map(item => {
         const val = Math.round((Number(item.total) || 0) * 100) / 100;
@@ -523,6 +603,7 @@ const DashboardFinanciero = ({ filters }) => {
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 10 }, { wch: 20 }];
+    ws['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, ws, 'Margen Operativo');
     XLSX.writeFile(wb, 'Margen_Operativo.xlsx');
   };
@@ -548,6 +629,8 @@ const DashboardFinanciero = ({ filters }) => {
     const cellN = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const cellT = { font: { bold: true, sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', fill: { fgColor: { rgb: 'FFF8E1' } }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
 
+    const colCount = 3 + sData.semanas.length + 1;
+    const { rows: titleRows, merges } = excelTitleRows('Seguimiento de Transporte', localFiltersSeg, colCount);
     const header = [
       { v: 'Cliente', s: hStyle },
       { v: 'Empresa', s: hStyle },
@@ -555,7 +638,7 @@ const DashboardFinanciero = ({ filters }) => {
       ...sData.semanas.map(s => ({ v: `Sem. ${s} (TN Rec.)`, s: hSem })),
       { v: 'Total (TN)', s: hTotal },
     ];
-    const rows = [header];
+    const rows = [...titleRows, header];
 
     for (const row of sData.rows) {
       const total = sData.semanas.reduce((sum, s) => sum + (row[s] || 0), 0);
@@ -570,6 +653,7 @@ const DashboardFinanciero = ({ filters }) => {
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 30 }, { wch: 22 }, { wch: 10 }, ...sData.semanas.map(() => ({ wch: 16 })), { wch: 14 }];
+    ws['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, ws, 'Seguimiento');
     XLSX.writeFile(wb, 'Seguimiento_Transporte.xlsx');
   };
@@ -587,11 +671,14 @@ const DashboardFinanciero = ({ filters }) => {
   const descargarPagarExcel = () => {
     if (porPagar.length === 0) return;
     const wb = XLSX.utils.book_new();
+    const colCount = 4;
+    const { rows: titleRows, merges } = excelTitleRows('Por Pagar', localFiltersPagar, colCount);
     const headerStyle = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' } };
     const cellStyle = { alignment: { horizontal: 'left' } };
     const numStyle = { alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
     const filtered = porPagar.filter(item => item.empresa !== 'ECOTRANSPORTE');
     const rows = [
+      ...titleRows,
       [{ v: 'Cliente', s: headerStyle }, { v: 'Empresa', s: headerStyle }, { v: 'Divisa', s: headerStyle }, { v: 'Por Pagar', s: headerStyle }],
       ...filtered.map(item => [
         { v: item.cliente || 'Sin cliente', s: cellStyle },
@@ -602,6 +689,7 @@ const DashboardFinanciero = ({ filters }) => {
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 35 }, { wch: 20 }, { wch: 10 }, { wch: 18 }];
+    ws['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, ws, 'Por Pagar');
     XLSX.writeFile(wb, 'Por_Pagar.xlsx');
   };
@@ -610,7 +698,10 @@ const DashboardFinanciero = ({ filters }) => {
     if (!tnSectionRef.current) return;
     setExportingTnPdf(true);
     try {
-      const pdf = await pdfWithTitle(tnSectionRef, 'TN Cliente/Empresa', localFiltersTn);
+      const tnTitle = localFiltersTn.mes
+        ? `TN Total Recibido / Cliente - ${capitalizeText(localFiltersTn.mes)} ${new Date().getFullYear()}`
+        : '🧑‍💼 TN por Cliente';
+      const pdf = await pdfWithTitle(tnSectionRef, tnTitle, localFiltersTn);
       pdf.save('TN_Cliente_Empresa.pdf');
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingTnPdf(false); }
@@ -619,10 +710,16 @@ const DashboardFinanciero = ({ filters }) => {
   const descargarTnExcel = () => {
     if (tnClienteEmpresa.length === 0) return;
     const wb = XLSX.utils.book_new();
+    const colCount = 3;
+    const tnTitle = localFiltersTn.mes
+      ? `TN Total Recibido / Cliente - ${capitalizeText(localFiltersTn.mes)} ${new Date().getFullYear()}`
+      : 'TN por Cliente';
+    const { rows: titleRows, merges } = excelTitleRows(tnTitle, localFiltersTn, colCount);
     const headerStyle = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' } };
     const cellStyle = { alignment: { horizontal: 'left' } };
     const numStyle = { alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
     const rows = [
+      ...titleRows,
       [{ v: 'Cliente', s: headerStyle }, { v: 'Empresa', s: headerStyle }, { v: 'Peso Ticket (TN Recibida)', s: headerStyle }],
       ...tnClienteEmpresa.map(item => [
         { v: item.cliente || 'Sin cliente', s: cellStyle },
@@ -632,6 +729,7 @@ const DashboardFinanciero = ({ filters }) => {
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 35 }, { wch: 25 }, { wch: 25 }];
+    ws['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, ws, 'TN Cliente Empresa');
     XLSX.writeFile(wb, 'TN_Cliente_Empresa.xlsx');
   };
@@ -853,8 +951,13 @@ const DashboardFinanciero = ({ filters }) => {
           </div>
 
           {/* Gráfico */}
-          <div className="chart-section">
-            <h3>Gráfica - Por Cobrar</h3>
+          <div className="chart-section" ref={cobrarChartRef}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>Gráfica - Por Cobrar</h3>
+              <button className="download-btn" onClick={descargarCobrarChartPDF} disabled={exportingCobrarChartPdf || cobrarChart.length === 0}>
+                {exportingCobrarChartPdf ? 'Generando...' : '📥 Descargar PDF'}
+              </button>
+            </div>
             <div className="chart-container">
               {cobrarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
@@ -985,8 +1088,13 @@ const DashboardFinanciero = ({ filters }) => {
             )}
           </div>
 
-          <div className="chart-section">
-            <h3>Gráfica - Por Pagar</h3>
+          <div className="chart-section" ref={pagarChartRef}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>Gráfica - Por Pagar</h3>
+              <button className="download-btn" onClick={descargarPagarChartPDF} disabled={exportingPagarChartPdf || pagarChart.length === 0}>
+                {exportingPagarChartPdf ? 'Generando...' : '📥 Descargar PDF'}
+              </button>
+            </div>
             <div className="chart-container">
               {pagarChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>
@@ -1122,8 +1230,13 @@ const DashboardFinanciero = ({ filters }) => {
             )}
           </div>
 
-          <div className="chart-section">
-            <h3>Gráfica - Margen Operativo</h3>
+          <div className="chart-section" ref={margenChartRef}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3>Gráfica - Margen Operativo</h3>
+              <button className="download-btn" onClick={descargarMargenChartPDF} disabled={exportingMargenChartPdf || margenChart.length === 0}>
+                {exportingMargenChartPdf ? 'Generando...' : '📥 Descargar PDF'}
+              </button>
+            </div>
             <div className="chart-container">
               {margenChart.length === 0 ? (
                 <p className="empty-message">No hay datos para graficar</p>

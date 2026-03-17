@@ -74,11 +74,32 @@ const DashboardTransportista = () => {
     const filtered = detalleTransportista.filter(item => !divisaFiltro || (item.divisa_cost || 'PEN') === divisaFiltro);
     if (filtered.length === 0) return;
     const wb = XLSX.utils.book_new();
+    const colCount = 5;
+    const capitalizeText = (t) => t ? t.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : '';
+    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const filterStyle = { font: { bold: false, sz: 11, color: { rgb: '333333' } }, fill: { fgColor: { rgb: 'E8F5E9' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const filterParts = [];
+    if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
+    if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
+    if (localFilters.transportista) filterParts.push(capitalizeText(localFilters.transportista));
+    if (localFilters.unidad) filterParts.push(`Placa: ${localFilters.unidad.toUpperCase()}`);
+    if (divisaFiltro) filterParts.push(divisaFiltro.toUpperCase());
+    const filterText = filterParts.length > 0 ? filterParts.join(' — ') : 'Sin filtros';
+    const titleRow = Array(colCount).fill({ v: '', s: titleStyle });
+    titleRow[0] = { v: 'Detalle Transportista', s: titleStyle };
+    const filterRow = Array(colCount).fill({ v: '', s: filterStyle });
+    filterRow[0] = { v: filterText, s: filterStyle };
+    const emptyRow = Array(colCount).fill({ v: '' });
+    const merges = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+    ];
     const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '145A25' } } } };
     const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const cellR = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const cellN = { font: { sz: 10 }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
     const rows = [
+      titleRow, filterRow, emptyRow,
       [{ v: 'Transportista', s: hStyle }, { v: 'Traslados', s: hStyle }, { v: 'Peso Ticket (TN)', s: hStyle }, { v: 'Divisa', s: hStyle }, { v: 'Precio con IGV', s: hStyle }],
       ...filtered.sort((a, b) => (parseInt(b.cantidad_traslados) || 0) - (parseInt(a.cantidad_traslados) || 0)).map(item => [
         { v: item.transportista || 'Sin asignar', s: cellL },
@@ -90,6 +111,7 @@ const DashboardTransportista = () => {
     ];
     const ws = XLSX.utils.aoa_to_sheet(rows);
     ws['!cols'] = [{ wch: 35 }, { wch: 12 }, { wch: 18 }, { wch: 10 }, { wch: 18 }];
+    ws['!merges'] = merges;
     XLSX.utils.book_append_sheet(wb, ws, 'Detalle Transportista');
     XLSX.writeFile(wb, 'Detalle_Transportista.xlsx');
   };

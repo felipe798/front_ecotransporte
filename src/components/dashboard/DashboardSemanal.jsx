@@ -70,6 +70,8 @@ const Modal = ({ title, items, onClose }) => (
 const DashboardSemanal = ({ filters: globalFilters }) => {
   const isMobile = useIsMobile();
   const contentRef = useRef(null);
+  const pesoSemanaRef = useRef(null);
+  const pesoConcentradoRef = useRef(null);
   const [tnEnviadoPorSemana, setTnEnviadoPorSemana] = useState([]);
   const [tnRecibidoPorSemana, setTnRecibidoPorSemana] = useState([]);
   const [tnRecibidoPorConcentrado, setTnRecibidoPorConcentrado] = useState([]);
@@ -78,20 +80,26 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
   const [loadingModal, setLoadingModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [exportingSemanaPdf, setExportingSemanaPdf] = useState(false);
+  const [exportingConcentradoPdf, setExportingConcentradoPdf] = useState(false);
 
   const descargarPDF = async () => {
     if (!contentRef.current) return;
     setExportingPdf(true);
     try {
+      const capitalizeText = (text) => {
+        if (!text) return '';
+        return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      };
       const filterParts = [];
-      if (localFilters.mes) filterParts.push(localFilters.mes);
-      if (localFilters.transportado) filterParts.push(localFilters.transportado);
-      if (localFilters.cliente) filterParts.push(localFilters.cliente);
+      if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
+      if (localFilters.transportado) filterParts.push(capitalizeText(localFilters.transportado));
+      if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
       const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
 
       const titleDiv = document.createElement('div');
-      titleDiv.style.cssText = 'text-align:center;padding:16px 0 12px;border-bottom:2px solid #1B7430;margin-bottom:12px;';
-      titleDiv.innerHTML = `<div style="font-size:22px;font-weight:800;color:#1B7430;">Variación TN Semanal</div><div style="font-size:14px;color:#333;margin-top:6px;">${subtitle}</div>`;
+      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Variación TN Semanal</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
       contentRef.current.insertBefore(titleDiv, contentRef.current.firstChild);
 
       const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
@@ -107,13 +115,43 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
       setExportingPdf(false);
     }
   };
-  
-  // Filtros locales exclusivos de esta sección
-  const [localFilters, setLocalFilters] = useState({
-    mes: '',
-    transportado: '',
-    cliente: ''
-  });
+
+  const chartPdfHelper = async (ref, title, setExporting, fileName) => {
+    if (!ref.current) return;
+    setExporting(true);
+    try {
+      const capitalizeText = (text) => {
+        if (!text) return '';
+        return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      };
+      const filterParts = [];
+      if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
+      if (localFilters.transportado) filterParts.push(capitalizeText(localFilters.transportado));
+      if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
+      const subtitle = filterParts.length > 0 ? filterParts.join(' \u2014 ') : 'General';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">${title}</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
+      ref.current.insertBefore(titleDiv, ref.current.firstChild);
+
+      const canvas = await html2canvas(ref.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      ref.current.removeChild(titleDiv);
+
+      const imgData = canvas.toDataURL('image/png');
+      const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(fileName);
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const descargarSemanaPDF = () => chartPdfHelper(pesoSemanaRef, 'Peso Ticket por Semana', setExportingSemanaPdf, 'Peso_Ticket_por_Semana.pdf');
+  const descargarConcentradoPDF = () => chartPdfHelper(pesoConcentradoRef, 'Peso Ticket por Tipo de Concentrado', setExportingConcentradoPdf, 'Peso_Ticket_por_Concentrado.pdf');
   
   // Opciones para los filtros
   const [segmentadores, setSegmentadores] = useState({
@@ -338,8 +376,13 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
       ) : (
         <>
           {/* Gráfico TN Recibido por Semana */}
-          <div className="chart-section">
-        <h2>📦 Peso Ticket por Semana</h2>
+          <div className="chart-section" ref={pesoSemanaRef}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2>📦 Peso Ticket por Semana</h2>
+          <button className="download-btn" onClick={descargarSemanaPDF} disabled={exportingSemanaPdf || tnRecibidoPorSemana.length === 0} style={{ fontSize: 13, padding: '6px 14px' }}>
+            {exportingSemanaPdf ? 'Generando...' : '📥 Descargar PDF'}
+          </button>
+        </div>
         <div className="chart-container">
           {tnRecibidoPorSemana.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>
@@ -368,8 +411,13 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
       </div>
 
       {/* TN Recibido por Tipo de Concentrado */}
-      <div className="chart-section">
-        <h2>⛏️ Peso Ticket por Tipo de Concentrado</h2>
+      <div className="chart-section" ref={pesoConcentradoRef}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2>⛏️ Peso Ticket por Tipo de Concentrado</h2>
+          <button className="download-btn" onClick={descargarConcentradoPDF} disabled={exportingConcentradoPdf || tnRecibidoPorConcentrado.length === 0} style={{ fontSize: 13, padding: '6px 14px' }}>
+            {exportingConcentradoPdf ? 'Generando...' : '📥 Descargar PDF'}
+          </button>
+        </div>
         <div className="chart-container">
           {tnRecibidoPorConcentrado.length === 0 ? (
             <p className="empty-message">No hay datos para mostrar</p>

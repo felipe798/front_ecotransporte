@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { dashboardService } from '../../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LabelList, Cell
 } from 'recharts';
 import { useIsMobile } from '../../hooks/useIsMobile';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import './DashboardComponents.css';
 import TablasDetalladasModal from './TablasDetalladasModal';
 import ReporteGuiasModal from './ReporteGuiasModal';
@@ -20,6 +22,8 @@ const DashboardResumen = () => {
   const [filters, setFilters] = useState({});
   const [showTablas, setShowTablas] = useState(false);
   const [showGuias, setShowGuias] = useState(false);
+  const resumenRef = useRef(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [segmentadores, setSegmentadores] = useState({
     meses: [],
     semanas: [],
@@ -211,9 +215,19 @@ const DashboardResumen = () => {
           <button className="btn-clear-local" onClick={clearFilters} disabled={filtersLoading}>
             {filtersLoading ? '...' : 'Limpiar filtros'}
           </button>
+          <button
+            className="btn-clear-local"
+            onClick={descargarResumenPDF}
+            disabled={exportingPdf}
+            style={{ marginLeft: 'auto', background: '#1B7430', color: '#fff', border: 'none' }}
+          >
+            {exportingPdf ? 'Generando...' : '\uD83D\uDCE5 Descargar PDF'}
+          </button>
         </div>
       </div>
 
+      {/* Contenido capturado para PDF */}
+      <div ref={resumenRef}>
       {/* Indicadores principales */}
       <div className="indicators-grid">
         <div className="indicator-card">
@@ -299,6 +313,7 @@ const DashboardResumen = () => {
         <button className="btn-ver-tablas btn-ver-guias" onClick={() => setShowGuias(true)}>
           🚛 Reporte de Guías
         </button>
+      </div>
       </div>
 
       {/* Modal Tablas Detalladas */}

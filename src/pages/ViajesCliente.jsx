@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { dashboardService } from '../services/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList
 } from 'recharts';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import XLSX from 'xlsx-js-style';
 import './ViajesCliente.css';
 
 const ViajesCliente = () => {
@@ -16,6 +19,10 @@ const ViajesCliente = () => {
   const [viajesPorPlaca, setViajesPorPlaca] = useState([]);
   const [resumen, setResumen] = useState({ viajes: 0, traslados: 0 });
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef(null);
+  const graficPlacaRef = useRef(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [exportingPlacaPdf, setExportingPlacaPdf] = useState(false);
 
   // Paleta de colores equilibrada
   const COLORS = [
@@ -107,6 +114,113 @@ const ViajesCliente = () => {
     setSelectedMes('');
   };
 
+  const capitalizeText = (text) => {
+    if (!text) return '';
+    return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  };
+
+  const descargarPDF = async () => {
+    if (!contentRef.current) return;
+    setExportingPdf(true);
+    try {
+      const filterParts = [];
+      if (selectedMes) filterParts.push(capitalizeText(selectedMes));
+      if (selectedCliente) filterParts.push(capitalizeText(selectedCliente));
+      if (selectedPlaca) filterParts.push(`Placa: ${selectedPlaca.toUpperCase()}`);
+      const subtitle = filterParts.length > 0 ? filterParts.join(' \u2014 ') : 'General';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Viajes por Cliente</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
+      contentRef.current.insertBefore(titleDiv, contentRef.current.firstChild);
+
+      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      contentRef.current.removeChild(titleDiv);
+
+      const imgData = canvas.toDataURL('image/png');
+      const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Viajes_por_Cliente.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
+  const descargarDiasExcel = () => {
+    if (diasViajes.length === 0) return;
+    const wb = XLSX.utils.book_new();
+    const colCount = 3;
+    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const filterStyle = { font: { bold: false, sz: 11, color: { rgb: '333333' } }, fill: { fgColor: { rgb: 'E8F5E9' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const filterParts = [];
+    if (selectedMes) filterParts.push(capitalizeText(selectedMes));
+    if (selectedCliente) filterParts.push(capitalizeText(selectedCliente));
+    if (selectedPlaca) filterParts.push(`Placa: ${selectedPlaca.toUpperCase()}`);
+    const filterText = filterParts.length > 0 ? filterParts.join(' \u2014 ') : 'Sin filtros';
+
+    const titleRow = Array(colCount).fill({ v: '', s: titleStyle });
+    titleRow[0] = { v: 'D\u00edas con Viajes', s: titleStyle };
+    const filterRow = Array(colCount).fill({ v: '', s: filterStyle });
+    filterRow[0] = { v: filterText, s: filterStyle };
+    const emptyRow = Array(colCount).fill({ v: '' });
+
+    const hStyle = { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'medium', color: { rgb: '145A25' } } } };
+    const cellL = { font: { sz: 10 }, alignment: { horizontal: 'left' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellR = { font: { sz: 10 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+    const cellN = { font: { sz: 10 }, alignment: { horizontal: 'center' }, border: { bottom: { style: 'thin', color: { rgb: 'E0E0E0' } } } };
+
+    const rows = [
+      titleRow, filterRow, emptyRow,
+      [{ v: 'Fecha', s: hStyle }, { v: 'Traslados', s: hStyle }, { v: 'Tonelaje Recibido (TN)', s: hStyle }],
+      ...diasViajes.map(dia => [
+        { v: formatFecha(dia.fecha), s: cellL },
+        { v: parseInt(dia.traslados) || 0, t: 'n', s: cellN },
+        { v: Math.round((Number(dia.tonelaje_recibido) || 0) * 100) / 100, t: 'n', s: cellR },
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 25 }, { wch: 14 }, { wch: 22 }];
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: colCount - 1 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: colCount - 1 } },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'D\u00edas con Viajes');
+    XLSX.writeFile(wb, 'Dias_con_Viajes.xlsx');
+  };
+
+  const descargarPlacaPDF = async () => {
+    if (!graficPlacaRef.current) return;
+    setExportingPlacaPdf(true);
+    try {
+      const filterParts = [];
+      if (selectedMes) filterParts.push(capitalizeText(selectedMes));
+      if (selectedCliente) filterParts.push(capitalizeText(selectedCliente));
+      if (selectedPlaca) filterParts.push(`Placa: ${selectedPlaca.toUpperCase()}`);
+      const subtitle = filterParts.length > 0 ? filterParts.join(' \u2014 ') : 'General';
+
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Traslados por Placa</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
+      graficPlacaRef.current.insertBefore(titleDiv, graficPlacaRef.current.firstChild);
+
+      const canvas = await html2canvas(graficPlacaRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      graficPlacaRef.current.removeChild(titleDiv);
+
+      const imgData = canvas.toDataURL('image/png');
+      const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('Traslados_por_Placa.pdf');
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPlacaPdf(false);
+    }
+  };
+
   return (
     <div className="viajes-cliente-container">
       <h1>Viajes por Cliente</h1>
@@ -155,12 +269,21 @@ const ViajesCliente = () => {
         <button className="btn-limpiar" onClick={limpiarFiltros}>
           Limpiar Filtros
         </button>
+
+        <button
+          className="btn-limpiar"
+          onClick={descargarPDF}
+          disabled={exportingPdf}
+          style={{ marginLeft: 'auto', background: '#1B7430', color: '#fff', border: 'none' }}
+        >
+          {exportingPdf ? 'Generando...' : '\uD83D\uDCE5 Descargar PDF'}
+        </button>
       </div>
 
       {loading ? (
         <div className="loading-section"><div className="spinner"></div></div>
       ) : (
-        <>
+        <div ref={contentRef}>
           {/* Indicadores */}
           <div className="indicadores-viajes">
             <div className="indicador-card">
@@ -186,7 +309,17 @@ const ViajesCliente = () => {
           <div className="contenido-viajes">
             {/* Lista de días */}
             <div className="seccion-dias">
-              <h2>Días con Viajes</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <h2 style={{ margin: 0 }}>Días con Viajes</h2>
+                <button
+                  className="btn-limpiar"
+                  onClick={descargarDiasExcel}
+                  disabled={diasViajes.length === 0}
+                  style={{ background: '#1B7430', color: '#fff', border: 'none', fontSize: 13, padding: '6px 14px' }}
+                >
+                  📥 Descargar Excel
+                </button>
+              </div>
               {diasViajes.length === 0 ? (
                 <p className="empty-message">No hay viajes registrados</p>
               ) : (
@@ -218,8 +351,18 @@ const ViajesCliente = () => {
             </div>
 
             {/* Gráfico de barras */}
-            <div className="seccion-grafico">
-              <h2>Traslados por Placa</h2>
+            <div className="seccion-grafico" ref={graficPlacaRef}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                <h2 style={{ margin: 0 }}>Traslados por Placa</h2>
+                <button
+                  className="btn-limpiar"
+                  onClick={descargarPlacaPDF}
+                  disabled={exportingPlacaPdf || viajesPorPlaca.length === 0}
+                  style={{ background: '#1B7430', color: '#fff', border: 'none', fontSize: 13, padding: '6px 14px' }}
+                >
+                  {exportingPlacaPdf ? 'Generando...' : '\uD83D\uDCE5 Descargar PDF'}
+                </button>
+              </div>
               {viajesPorPlaca.length === 0 ? (
                 <p className="empty-message">No hay datos para mostrar</p>
               ) : (
@@ -254,7 +397,7 @@ const ViajesCliente = () => {
               )}
             </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

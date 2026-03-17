@@ -378,7 +378,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
         <>
           {/* Gráfico TN Recibido por Semana */}
           <div className="chart-section" ref={pesoSemanaRef}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h2>📦 Peso Ticket por Semana</h2>
           <button className="download-btn" onClick={descargarSemanaPDF} disabled={exportingSemanaPdf || tnRecibidoPorSemana.length === 0} style={{ fontSize: 13, padding: '6px 14px' }}>
             {exportingSemanaPdf ? 'Generando...' : '📥 Descargar PDF'}
@@ -413,7 +413,7 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
 
       {/* TN Recibido por Tipo de Concentrado */}
       <div className="chart-section" ref={pesoConcentradoRef}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
           <h2>⛏️ Peso Ticket por Tipo de Concentrado</h2>
           <button className="download-btn" onClick={descargarConcentradoPDF} disabled={exportingConcentradoPdf || tnRecibidoPorConcentrado.length === 0} style={{ fontSize: 13, padding: '6px 14px' }}>
             {exportingConcentradoPdf ? 'Generando...' : '📥 Descargar PDF'}

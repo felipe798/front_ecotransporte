@@ -309,7 +309,7 @@ const ViajesCliente = () => {
           <div className="contenido-viajes">
             {/* Lista de días */}
             <div className="seccion-dias">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ margin: 0 }}>Días con Viajes</h2>
                 <button
                   className="btn-limpiar"
@@ -352,7 +352,7 @@ const ViajesCliente = () => {
 
             {/* Gráfico de barras */}
             <div className="seccion-grafico" ref={graficPlacaRef}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <h2 style={{ margin: 0 }}>Traslados por Placa</h2>
                 <button
                   className="btn-limpiar"

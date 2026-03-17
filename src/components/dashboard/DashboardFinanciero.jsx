@@ -952,7 +952,7 @@ const DashboardFinanciero = ({ filters }) => {
 
           {/* Gráfico */}
           <div className="chart-section" ref={cobrarChartRef}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3>Gráfica - Por Cobrar</h3>
               <button className="download-btn" onClick={descargarCobrarChartPDF} disabled={exportingCobrarChartPdf || cobrarChart.length === 0}>
                 {exportingCobrarChartPdf ? 'Generando...' : '📥 Descargar PDF'}
@@ -1089,7 +1089,7 @@ const DashboardFinanciero = ({ filters }) => {
           </div>
 
           <div className="chart-section" ref={pagarChartRef}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3>Gráfica - Por Pagar</h3>
               <button className="download-btn" onClick={descargarPagarChartPDF} disabled={exportingPagarChartPdf || pagarChart.length === 0}>
                 {exportingPagarChartPdf ? 'Generando...' : '📥 Descargar PDF'}
@@ -1231,7 +1231,7 @@ const DashboardFinanciero = ({ filters }) => {
           </div>
 
           <div className="chart-section" ref={margenChartRef}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3>Gráfica - Margen Operativo</h3>
               <button className="download-btn" onClick={descargarMargenChartPDF} disabled={exportingMargenChartPdf || margenChart.length === 0}>
                 {exportingMargenChartPdf ? 'Generando...' : '📥 Descargar PDF'}

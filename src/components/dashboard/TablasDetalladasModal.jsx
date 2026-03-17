@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import XLSX from 'xlsx-js-style';
 import { dashboardService } from '../../services/api';
 import './TablasDetalladasModal.css';
@@ -10,6 +10,52 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const printRef = useRef();
+  const ventaTableRef = useRef();
+  const costoTableRef = useRef();
+  const margenTableRef = useRef();
+
+  // Sync column widths across all 3 tables so they align
+  const syncColumnWidths = useCallback(() => {
+    const tables = [ventaTableRef.current, costoTableRef.current, margenTableRef.current].filter(Boolean);
+    if (tables.length < 2) return;
+
+    // Reset widths first so auto-layout recalculates
+    tables.forEach(table => {
+      const cells = table.querySelectorAll('thead tr:first-child th');
+      cells.forEach(cell => { cell.style.minWidth = ''; });
+    });
+
+    // Force reflow
+    void document.body.offsetHeight;
+
+    // Measure the max width for each column position across all tables
+    const maxCols = Math.max(...tables.map(t => t.querySelectorAll('thead tr:first-child th').length));
+    const maxWidths = new Array(maxCols).fill(0);
+
+    tables.forEach(table => {
+      const headerCells = table.querySelectorAll('thead tr:first-child th');
+      headerCells.forEach((cell, i) => {
+        const w = cell.getBoundingClientRect().width;
+        if (w > maxWidths[i]) maxWidths[i] = w;
+      });
+    });
+
+    // Apply max widths to all tables
+    tables.forEach(table => {
+      const headerCells = table.querySelectorAll('thead tr:first-child th');
+      headerCells.forEach((cell, i) => {
+        if (maxWidths[i]) cell.style.minWidth = `${Math.ceil(maxWidths[i])}px`;
+      });
+    });
+  }, []);
+
+  useEffect(() => {
+    if (data && !loading) {
+      // Wait for DOM to update then sync
+      const timer = setTimeout(syncColumnWidths, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [data, loading, empresaFiltro, syncColumnWidths]);
 
   useEffect(() => {
     if (isOpen && mesesDisponibles.length > 0 && !mes) {
@@ -262,15 +308,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     return (
       <div className="tabla-detallada-section">
         <h2>{title}</h2>
-        <div className="tabla-scroll-container">
-          <table className="tabla-detallada" style={{ tableLayout: 'fixed', width: `${140 + (1 + empresas.length) * 170}px` }}>
-            <colgroup>
-              <col style={{ width: '140px' }} />
-              {empresas.concat(['general']).map((_, i) => [
-                <col key={`tne-${i}`} style={{ width: '80px' }} />,
-                <col key={`imp-${i}`} style={{ width: '90px' }} />,
-              ])}
-            </colgroup>
+          <table className="tabla-detallada" ref={type === 'venta' ? ventaTableRef : costoTableRef}>
             <thead>
               <tr>
                 <th className="col-cliente" rowSpan={2}>Cliente</th>
@@ -341,7 +379,6 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
               </tr>
             </tbody>
           </table>
-        </div>
       </div>
     );
   };
@@ -356,15 +393,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     return (
       <div className="tabla-detallada-section margen-section">
         <h2>Margen de Ganancia</h2>
-        <div className="tabla-scroll-container">
-          <table className="tabla-detallada margen-table" style={{ tableLayout: 'fixed', width: `${140 + (1 + empresas.length) * 170}px` }}>
-            <colgroup>
-              <col style={{ width: '140px' }} />
-              {empresas.concat(['general']).map((_, i) => [
-                <col key={`tne-${i}`} style={{ width: '80px' }} />,
-                <col key={`imp-${i}`} style={{ width: '90px' }} />,
-              ])}
-            </colgroup>
+          <table className="tabla-detallada margen-table" ref={margenTableRef}>
             <thead>
               <tr>
                 <th className="col-cliente" rowSpan={2}>Concepto</th>
@@ -399,7 +428,6 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
               </tr>
             </tbody>
           </table>
-        </div>
       </div>
     );
   };
@@ -466,9 +494,11 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                   Reporte Detallado — <span style={{ textTransform: 'uppercase', color: '#2D8F4E', fontWeight: 800 }}>{mes}</span>
                   {semana && <span style={{ color: '#1a6fa8', fontWeight: 700 }}> · Semana {semana}</span>}
                 </h3>
-                {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta', true)}
-                {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo', true)}
-                {renderMargen()}
+                <div className="tabla-scroll-container">
+                  {renderTable('Tabla de Venta (Precio Unitario × Peso Ticket)', 'venta', true)}
+                  {renderTable('Tabla de Costo (Precio Costo × Peso Ticket)', 'costo', true)}
+                  {renderMargen()}
+                </div>
               </div>
             </>
           )}

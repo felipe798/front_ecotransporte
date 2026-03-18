@@ -106,30 +106,31 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     if (!data || data.error) return;
 
     const white = { font: { sz: 10 }, alignment: { horizontal: 'center', vertical: 'center' } };
-    const bold = { font: { bold: true, sz: 10 } };
-    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center' } };
-    const hInfo = { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '2563EB' } }, alignment: { horizontal: 'center', wrapText: true }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const bold = { font: { bold: true, sz: 10 }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const titleStyle = { font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '1B7430' } }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const hInfo = { font: { bold: true, sz: 9, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '2563EB' } }, alignment: { horizontal: 'center', vertical: 'center', wrapText: true }, border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
     const hPeso = { ...hInfo, fill: { fgColor: { rgb: '5B21B6' } } };
     const hRef = { ...hInfo, fill: { fgColor: { rgb: 'B45309' } } };
     const hCliente = { ...hInfo, fill: { fgColor: { rgb: '145524' } } };
     const hMoney = { ...hInfo, fill: { fgColor: { rgb: '7F1D1D' } } };
     const border = { border: { top: { style: 'thin', color: { rgb: 'E2E8F0' } }, bottom: { style: 'thin', color: { rgb: 'E2E8F0' } }, left: { style: 'thin', color: { rgb: 'E2E8F0' } }, right: { style: 'thin', color: { rgb: 'E2E8F0' } } } };
-    const cellLeft = { ...border, font: { sz: 9 }, alignment: { horizontal: 'left' } };
-    const cellRight = { ...border, font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
-    const cellMoney = { ...border, font: { sz: 9 }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00' };
-    const placaStyle = { font: { bold: true, sz: 10, color: { rgb: '1B7430' } }, fill: { fgColor: { rgb: 'E8F5E9' } }, alignment: { horizontal: 'left' } };
-    const semanaStyle = { font: { bold: true, sz: 9, color: { rgb: '555555' } }, fill: { fgColor: { rgb: 'F8F9FA' } }, alignment: { horizontal: 'left' } };
-    const subtotalStyle = { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'F1F5F9' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
-    const totalStyle = { font: { bold: true, sz: 10 }, fill: { fgColor: { rgb: 'E2E8F0' } }, alignment: { horizontal: 'right' }, numFmt: '#,##0.00', border: { top: { style: 'medium' }, bottom: { style: 'medium' }, left: { style: 'thin' }, right: { style: 'thin' } } };
-    const totalLabelStyle = { ...totalStyle, alignment: { horizontal: 'left' } };
+    const cellCenter = { ...border, font: { sz: 9 }, alignment: { horizontal: 'center', vertical: 'center' } };
+    const cellNum = { ...border, font: { sz: 9 }, alignment: { horizontal: 'center', vertical: 'center' }, numFmt: '#,##0.00' };
+    const placaStyle = { font: { bold: true, sz: 10, color: { rgb: '1B7430' } }, fill: { fgColor: { rgb: 'E8F5E9' } }, alignment: { horizontal: 'left', vertical: 'center' } };
+    const semanaStyle = { font: { bold: true, sz: 9, color: { rgb: '555555' } }, fill: { fgColor: { rgb: 'F8F9FA' } }, alignment: { horizontal: 'left', vertical: 'center' } };
+    const subtotalStyle = { font: { bold: true, sz: 9 }, fill: { fgColor: { rgb: 'F1F5F9' } }, alignment: { horizontal: 'center', vertical: 'center' }, numFmt: '#,##0.00', border: { top: { style: 'thin' }, bottom: { style: 'thin' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const totalStyle = { font: { bold: true, sz: 10 }, fill: { fgColor: { rgb: 'E2E8F0' } }, alignment: { horizontal: 'center', vertical: 'center' }, numFmt: '#,##0.00', border: { top: { style: 'medium' }, bottom: { style: 'medium' }, left: { style: 'thin' }, right: { style: 'thin' } } };
+    const totalLabelStyle = { ...totalStyle, alignment: { horizontal: 'left', vertical: 'center' } };
 
-    const COLS = 14;
+    const COLS = 13;
     const rows = [];
+    const merges = [];
 
     // Título
     const titleRow = Array(COLS).fill({ v: '', s: titleStyle });
     titleRow[0] = { v: `${data.empresa} — TRANSPORTE SEGÚN GUÍAS EMITIDAS`, s: titleStyle };
     rows.push(titleRow);
+    merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: COLS - 1 } });
 
     // Info
     const infoRow = Array(COLS).fill({ v: '', s: white });
@@ -152,7 +153,8 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
         const prevBloque = data.bloques[data.bloques.indexOf(bloque) - 1];
         if (!prevBloque || prevBloque.empresaNombre !== bloque.empresaNombre) {
           const empresaRow = Array(COLS).fill({ v: '', s: { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0D3D19' } } } });
-          empresaRow[0] = { v: `▶ ${bloque.empresaNombre}`, s: { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0D3D19' } }, alignment: { horizontal: 'left' } } };
+          empresaRow[0] = { v: `▶ ${bloque.empresaNombre}`, s: { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0D3D19' } }, alignment: { horizontal: 'left', vertical: 'center' } } };
+          merges.push({ s: { r: rows.length, c: 0 }, e: { r: rows.length, c: COLS - 1 } });
           rows.push(empresaRow);
         }
       }
@@ -160,30 +162,32 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
       // Placa header
       const placaRow = Array(COLS).fill({ v: '', s: placaStyle });
       placaRow[0] = { v: `▶ UNIDAD: ${bloque.placa}`, s: placaStyle };
+      merges.push({ s: { r: rows.length, c: 0 }, e: { r: rows.length, c: COLS - 1 } });
       rows.push(placaRow);
 
       for (const sem of bloque.semanas) {
         // Semana label
         const semRow = Array(COLS).fill({ v: '', s: semanaStyle });
         semRow[0] = { v: `  ${sem.semana}`, s: semanaStyle };
+        merges.push({ s: { r: rows.length, c: 0 }, e: { r: rows.length, c: COLS - 1 } });
         rows.push(semRow);
 
         for (const v of sem.viajes) {
           const fechaStr = v.fecha ? String(v.fecha).substring(0, 10) : '';
           rows.push([
-            { v: fechaStr, s: cellLeft },
-            { v: v.grt || '', s: cellLeft },
-            { v: v.conductor || '', s: cellLeft },
-            { v: Math.round((Number(v.peso) || 0) * 100) / 100, t: 'n', s: cellRight },
-            { v: Math.round((Number(v.pesoMina) || 0) * 100) / 100, t: 'n', s: cellRight },
-            { v: v.ticket || '', s: cellLeft },
-            { v: v.grr || '', s: cellLeft },
-            { v: v.cliente || '', s: cellLeft },
-            { v: v.recorrido || '', s: cellLeft },
-            { v: v.material || '', s: cellLeft },
-            { v: Math.round((Number(v.precio) || 0) * 100) / 100, t: 'n', s: cellMoney },
-            { v: v.divisa || '', s: cellLeft },
-            { v: Math.round((Number(v.importeTotal) || 0) * 100) / 100, t: 'n', s: cellMoney },
+            { v: fechaStr, s: cellCenter },
+            { v: v.grt || '', s: cellCenter },
+            { v: v.conductor || '', s: cellCenter },
+            { v: Math.round((Number(v.peso) || 0) * 100) / 100, t: 'n', s: cellNum },
+            { v: Math.round((Number(v.pesoMina) || 0) * 100) / 100, t: 'n', s: cellNum },
+            { v: v.ticket || '', s: cellCenter },
+            { v: v.grr || '', s: cellCenter },
+            { v: v.cliente || '', s: cellCenter },
+            { v: v.recorrido || '', s: cellCenter },
+            { v: v.material || '', s: cellCenter },
+            { v: Math.round((Number(v.precio) || 0) * 100) / 100, t: 'n', s: cellNum },
+            { v: v.divisa || '', s: cellCenter },
+            { v: Math.round((Number(v.importeTotal) || 0) * 100) / 100, t: 'n', s: cellNum },
           ]);
         }
         // Subtotal
@@ -202,13 +206,13 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
       if (bloque.totalDolares > 0) {
         const dRow = Array(COLS).fill({ v: '', s: white });
         dRow[0] = { v: 'Total Dólares (USD):', s: bold };
-        dRow[1] = { v: Math.round((Number(bloque.totalDolares)) * 100) / 100, t: 'n', s: cellMoney };
+        dRow[1] = { v: Math.round((Number(bloque.totalDolares)) * 100) / 100, t: 'n', s: cellNum };
         rows.push(dRow);
       }
       if (bloque.totalSoles > 0) {
         const sRow = Array(COLS).fill({ v: '', s: white });
         sRow[0] = { v: 'Total Soles (PEN):', s: bold };
-        sRow[1] = { v: Math.round((Number(bloque.totalSoles)) * 100) / 100, t: 'n', s: cellMoney };
+        sRow[1] = { v: Math.round((Number(bloque.totalSoles)) * 100) / 100, t: 'n', s: cellNum };
         rows.push(sRow);
       }
       rows.push(Array(COLS).fill({ v: '', s: white }));
@@ -221,31 +225,31 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
 
     const tnRow = Array(COLS).fill({ v: '', s: bold });
     tnRow[0] = { v: 'Total TN:', s: bold };
-    tnRow[1] = { v: Math.round((Number(data.totalesGenerales.totalTn)) * 100) / 100, t: 'n', s: cellRight };
+    tnRow[1] = { v: Math.round((Number(data.totalesGenerales.totalTn)) * 100) / 100, t: 'n', s: cellNum };
     rows.push(tnRow);
 
     if (data.totalesGenerales.totalDolares > 0) {
       const r = Array(COLS).fill({ v: '', s: bold });
       r[0] = { v: 'Total Dólares (USD):', s: bold };
-      r[1] = { v: Math.round((Number(data.totalesGenerales.totalDolares)) * 100) / 100, t: 'n', s: cellMoney };
+      r[1] = { v: Math.round((Number(data.totalesGenerales.totalDolares)) * 100) / 100, t: 'n', s: cellNum };
       rows.push(r);
     }
     if (data.totalesGenerales.totalSoles > 0) {
       const r = Array(COLS).fill({ v: '', s: bold });
       r[0] = { v: 'Total Soles (PEN):', s: bold };
-      r[1] = { v: Math.round((Number(data.totalesGenerales.totalSoles)) * 100) / 100, t: 'n', s: cellMoney };
+      r[1] = { v: Math.round((Number(data.totalesGenerales.totalSoles)) * 100) / 100, t: 'n', s: cellNum };
       rows.push(r);
     }
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
     // Anchos de columna
     ws['!cols'] = [
-      { wch: 12 }, { wch: 16 }, { wch: 25 }, { wch: 12 }, { wch: 12 },
-      { wch: 12 }, { wch: 16 }, { wch: 20 }, { wch: 20 }, { wch: 16 },
+      { wch: 12 }, { wch: 16 }, { wch: 28 }, { wch: 13 }, { wch: 13 },
+      { wch: 12 }, { wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 18 },
       { wch: 12 }, { wch: 8 }, { wch: 14 },
     ];
     // Merge título
-    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: COLS - 2 } }];
+    ws['!merges'] = merges;
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Guías Emitidas');

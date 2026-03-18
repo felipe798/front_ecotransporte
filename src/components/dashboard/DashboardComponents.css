@@ -739,6 +739,27 @@
   cursor: not-allowed;
 }
 
+.download-btn {
+  background: #1B7430;
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: #145a25;
+}
+
+.download-btn:disabled {
+  background: #8fbb98;
+  cursor: not-allowed;
+}
+
 .btn-download-excel {
   background: #4A86B8;
   color: #fff;

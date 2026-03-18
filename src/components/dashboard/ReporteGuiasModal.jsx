@@ -246,8 +246,8 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     const ws = XLSX.utils.aoa_to_sheet(rows);
     // Anchos de columna
     ws['!cols'] = [
-      { wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 13 }, { wch: 13 },
-      { wch: 12 }, { wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 18 },
+      { wch: 28 }, { wch: 18 }, { wch: 28 }, { wch: 13 }, { wch: 13 },
+      { wch: 18 }, { wch: 18 }, { wch: 24 }, { wch: 24 }, { wch: 20 },
       { wch: 12 }, { wch: 8 }, { wch: 14 },
     ];
     // Merge título

@@ -212,7 +212,6 @@
   position: sticky;
   left: 0;
   z-index: 3;
-  min-width: 120px;
 }
 
 .tabla-detallada thead th.col-general {
@@ -362,7 +361,6 @@
 
   .tabla-detallada thead th.col-cliente,
   .tabla-detallada tbody td.col-cliente {
-    min-width: 100px;
   }
 
   .tabla-detallada {
@@ -473,9 +471,6 @@
   .tabla-detallada thead th.col-cliente,
   .tabla-detallada tbody td.col-cliente {
     min-width: 80px;
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .tabla-detallada tbody td {
@@ -540,6 +535,5 @@
   .tabla-detallada thead th.col-cliente,
   .tabla-detallada tbody td.col-cliente {
     min-width: 65px;
-    max-width: 80px;
   }
 }

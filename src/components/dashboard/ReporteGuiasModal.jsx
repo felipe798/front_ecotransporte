@@ -138,7 +138,9 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     infoRow[1] = { v: data.mes, s: white };
     infoRow[2] = { v: semana ? `Semana: ${semana}` : 'Todo el mes', s: white };
     infoRow[4] = { v: 'Empresa de Transporte:', s: bold };
-    infoRow[5] = { v: empresa === 'TODAS' ? 'Todas las empresas' : data.empresa, s: white };
+    infoRow[7] = { v: empresa === 'TODAS' ? 'Todas las empresas' : data.empresa, s: white };
+    merges.push({ s: { r: rows.length, c: 4 }, e: { r: rows.length, c: 6 } });
+    merges.push({ s: { r: rows.length, c: 7 }, e: { r: rows.length, c: 9 } });
     rows.push(infoRow);
     rows.push(Array(COLS).fill({ v: '', s: white }));
 
@@ -244,7 +246,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     const ws = XLSX.utils.aoa_to_sheet(rows);
     // Anchos de columna
     ws['!cols'] = [
-      { wch: 12 }, { wch: 16 }, { wch: 28 }, { wch: 13 }, { wch: 13 },
+      { wch: 22 }, { wch: 16 }, { wch: 28 }, { wch: 13 }, { wch: 13 },
       { wch: 12 }, { wch: 16 }, { wch: 22 }, { wch: 22 }, { wch: 18 },
       { wch: 12 }, { wch: 8 }, { wch: 14 },
     ];

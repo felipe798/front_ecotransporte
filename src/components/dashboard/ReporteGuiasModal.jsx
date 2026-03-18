@@ -136,6 +136,8 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     infoRow[0] = { v: 'Mes:', s: bold };
     infoRow[1] = { v: data.mes, s: white };
     infoRow[2] = { v: semana ? `Semana: ${semana}` : 'Todo el mes', s: white };
+    infoRow[4] = { v: 'Empresa de Transporte:', s: bold };
+    infoRow[5] = { v: empresa === 'TODAS' ? 'Todas las empresas' : data.empresa, s: white };
     rows.push(infoRow);
     rows.push(Array(COLS).fill({ v: '', s: white }));
 
@@ -145,6 +147,16 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     rows.push(headerLabels.map((h, i) => ({ v: h, s: headerStyles[i] })));
 
     for (const bloque of data.bloques) {
+      // Empresa header (when TODAS)
+      if (empresa === 'TODAS' && bloque.empresaNombre) {
+        const prevBloque = data.bloques[data.bloques.indexOf(bloque) - 1];
+        if (!prevBloque || prevBloque.empresaNombre !== bloque.empresaNombre) {
+          const empresaRow = Array(COLS).fill({ v: '', s: { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0D3D19' } } } });
+          empresaRow[0] = { v: `▶ ${bloque.empresaNombre}`, s: { font: { bold: true, sz: 11, color: { rgb: 'FFFFFF' } }, fill: { fgColor: { rgb: '0D3D19' } }, alignment: { horizontal: 'left' } } };
+          rows.push(empresaRow);
+        }
+      }
+
       // Placa header
       const placaRow = Array(COLS).fill({ v: '', s: placaStyle });
       placaRow[0] = { v: `▶ UNIDAD: ${bloque.placa}`, s: placaStyle };
@@ -256,8 +268,13 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
     return `${day}/${month}/${year}`;
   };
 
-  const renderBloque = (bloque, idx) => (
+  const renderBloque = (bloque, idx, allBloques) => (
     <div key={idx} className="rg-bloque">
+      {empresa === 'TODAS' && bloque.empresaNombre && (idx === 0 || allBloques[idx - 1]?.empresaNombre !== bloque.empresaNombre) && (
+        <h2 style={{ textAlign: 'left', color: '#1B7430', fontSize: '0.95rem', fontWeight: 800, margin: '16px 0 4px', borderBottom: '2px solid #1B7430', paddingBottom: 4 }}>
+          {bloque.empresaNombre}
+        </h2>
+      )}
       <h3>UNID: {bloque.placa}</h3>
       {bloque.semanas.map((sem, sIdx) => (
         <div key={sIdx} className="rg-semana-block">
@@ -385,6 +402,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
               disabled={loadingOpciones}
             >
               <option value="">Seleccionar empresa</option>
+              <option value="TODAS">Todas las empresas</option>
               {empresas.map(e => <option key={e.id} value={e.nombre}>{e.nombre}</option>)}
             </select>
           </div>
@@ -433,7 +451,7 @@ const ReporteGuiasModal = ({ isOpen, onClose }) => {
                 {data.mes}{semana && <span style={{ color: '#1a6fa8' }}> · Semana {semana}</span>}
               </h4>
 
-              {data.bloques.map((bloque, idx) => renderBloque(bloque, idx))}
+              {data.bloques.map((bloque, idx) => renderBloque(bloque, idx, data.bloques))}
 
               {/* Totales generales */}
               <div className="rg-totales-generales">

@@ -535,6 +535,11 @@
   max-height: 500px;
 }
 
+.seguimiento-table .data-table th,
+.seguimiento-table .data-table td {
+  text-align: center;
+}
+
 .seguimiento-table .data-table th {
   position: sticky;
   top: 0;

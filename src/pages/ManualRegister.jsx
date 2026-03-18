@@ -88,7 +88,14 @@ const ManualRegister = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const next = { ...prev, [name]: value };
+      // Cascada: al cambiar un padre, resetear hijos
+      if (name === 'cliente') { next.partida = ''; next.llegada = ''; next.transportado = ''; }
+      if (name === 'partida') { next.llegada = ''; next.transportado = ''; }
+      if (name === 'llegada') { next.transportado = ''; }
+      return next;
+    });
   };
 
   const handleUnidadChange = (e) => {
@@ -305,8 +312,8 @@ const ManualRegister = () => {
             </div>
             <div className="form-group">
               <label htmlFor="partida">Punto de Partida</label>
-              <select id="partida" name="partida" value={formData.partida} onChange={handleChange}>
-                <option value="">-- Seleccionar partida --</option>
+              <select id="partida" name="partida" value={formData.partida} onChange={handleChange} disabled={!formData.cliente}>
+                <option value="">{!formData.cliente ? '-- Primero selecciona cliente --' : '-- Seleccionar partida --'}</option>
                 {partidasUnicas.map(p => (
                   <option key={p} value={p}>{p}</option>
                 ))}
@@ -314,8 +321,8 @@ const ManualRegister = () => {
             </div>
             <div className="form-group">
               <label htmlFor="llegada">Punto de Llegada</label>
-              <select id="llegada" name="llegada" value={formData.llegada} onChange={handleChange}>
-                <option value="">-- Seleccionar llegada --</option>
+              <select id="llegada" name="llegada" value={formData.llegada} onChange={handleChange} disabled={!formData.partida}>
+                <option value="">{!formData.partida ? '-- Primero selecciona partida --' : '-- Seleccionar llegada --'}</option>
                 {llegadasUnicas.map(l => (
                   <option key={l} value={l}>{l}</option>
                 ))}
@@ -323,8 +330,8 @@ const ManualRegister = () => {
             </div>
             <div className="form-group">
               <label htmlFor="transportado">Material Transportado</label>
-              <select id="transportado" name="transportado" value={formData.transportado} onChange={handleChange}>
-                <option value="">-- Seleccionar material --</option>
+              <select id="transportado" name="transportado" value={formData.transportado} onChange={handleChange} disabled={!formData.llegada}>
+                <option value="">{!formData.llegada ? '-- Primero selecciona llegada --' : '-- Seleccionar material --'}</option>
                 {materialesUnicos.map(m => (
                   <option key={m} value={m}>{m}</option>
                 ))}

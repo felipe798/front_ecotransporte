@@ -140,7 +140,14 @@ const EditDocument = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const next = { ...prev, [name]: value };
+      // Cascada: al cambiar un padre, resetear hijos
+      if (name === 'cliente') { next.partida = ''; next.llegada = ''; next.transportado = ''; }
+      if (name === 'partida') { next.llegada = ''; next.transportado = ''; }
+      if (name === 'llegada') { next.transportado = ''; }
+      return next;
+    });
   };
 
   // Al cambiar la placa, auto-rellena empresa si está en la BD
@@ -438,8 +445,8 @@ const EditDocument = () => {
                 <div className="form-group">
                   <label htmlFor="partida">Punto de Partida</label>
                   <div className="campo-actual">Actual: <strong>{document?.partida || '—'}</strong></div>
-                  <select id="partida" name="partida" value={formData.partida} onChange={handleChange}>
-                    <option value="">-- Seleccionar partida --</option>
+                  <select id="partida" name="partida" value={formData.partida} onChange={handleChange} disabled={!formData.cliente}>
+                    <option value="">{!formData.cliente ? '-- Primero selecciona cliente --' : '-- Seleccionar partida --'}</option>
                     {formData.partida && !partidasUnicas.includes(formData.partida) && (
                       <option value={formData.partida}>{formData.partida} (actual)</option>
                     )}
@@ -451,8 +458,8 @@ const EditDocument = () => {
                 <div className="form-group">
                   <label htmlFor="llegada">Punto de Llegada</label>
                   <div className="campo-actual">Actual: <strong>{document?.llegada || '—'}</strong></div>
-                  <select id="llegada" name="llegada" value={formData.llegada} onChange={handleChange}>
-                    <option value="">-- Seleccionar llegada --</option>
+                  <select id="llegada" name="llegada" value={formData.llegada} onChange={handleChange} disabled={!formData.partida}>
+                    <option value="">{!formData.partida ? '-- Primero selecciona partida --' : '-- Seleccionar llegada --'}</option>
                     {formData.llegada && !llegadasUnicas.includes(formData.llegada) && (
                       <option value={formData.llegada}>{formData.llegada} (actual)</option>
                     )}
@@ -464,8 +471,8 @@ const EditDocument = () => {
                 <div className="form-group">
                   <label htmlFor="transportado">Material Transportado</label>
                   <div className="campo-actual">Actual: <strong>{document?.transportado || '—'}</strong></div>
-                  <select id="transportado" name="transportado" value={formData.transportado} onChange={handleChange}>
-                    <option value="">-- Seleccionar material --</option>
+                  <select id="transportado" name="transportado" value={formData.transportado} onChange={handleChange} disabled={!formData.llegada}>
+                    <option value="">{!formData.llegada ? '-- Primero selecciona llegada --' : '-- Seleccionar material --'}</option>
                     {formData.transportado && !materialesUnicos.includes(formData.transportado) && (
                       <option value={formData.transportado}>{formData.transportado} (actual)</option>
                     )}

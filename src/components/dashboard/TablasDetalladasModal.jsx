@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import XLSX from 'xlsx-js-style';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { dashboardService } from '../../services/api';
 import './TablasDetalladasModal.css';
 
@@ -88,60 +90,57 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
     }
   };
 
-  const handleDownloadPDF = () => {
+  const [exportingPdf, setExportingPdf] = useState(false);
+
+  const handleDownloadPDF = async () => {
     const content = printRef.current;
     if (!content) return;
+    setExportingPdf(true);
+    try {
+      const capitalizeText = (text) => {
+        if (!text) return '';
+        return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      };
+      const filterParts = [];
+      if (mes) filterParts.push(capitalizeText(mes));
+      if (empresaFiltro) filterParts.push(empresaFiltro);
+      if (semana) filterParts.push(`Semana ${semana}`);
+      const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
 
-    const semanaLabel = semana ? ` — Semana ${semana}` : '';
-    const filterParts = [];
-    if (mes) filterParts.push(mes);
-    if (empresaFiltro) filterParts.push(empresaFiltro);
-    if (semana) filterParts.push(`Semana ${semana}`);
-    const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-      <head>
-        <title>Tablas Detalladas - ${mes}${semanaLabel}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
-          .pdf-title { text-align: center; padding: 16px 0 12px; border-bottom: 2px solid #1B7430; margin-bottom: 12px; }
-          .pdf-title h1 { font-size: 22px; font-weight: 800; color: #1B7430; margin: 0; }
-          .pdf-title p { font-size: 14px; color: #333; margin: 6px 0 0; }
-          h2 { font-size: 16px; margin: 15px 0 8px 0; color: #1E3D2C; }
-          h3 { font-size: 13px; margin: 10px 0 5px 0; text-align: center; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
-          th, td { border: 1px solid #E2E8F0; padding: 4px 6px; text-align: right; color: #1E2A3A; }
-          th { background: #A8DFC4; color: #1E3D2C; font-weight: 600; text-align: center; }
-          th.col-cliente { text-align: left; background: #96D9B8; color: #173324; }
-          th.col-general { background: #A3BFFA; border-color: #8DAFEF; color: #1E2F5C; }
-          th.col-empresa-0 { background: #C4A8F0; border-color: #B393E5; color: #2E2048; }
-          th.col-empresa-1 { background: #FAC98A; border-color: #EBB876; color: #3D2200; }
-          th.col-empresa-2 { background: #F5A3A8; border-color: #E89298; color: #3D1018; }
-          th.col-empresa-3 { background: #A8C8DC; border-color: #95BACE; color: #1A3040; }
-          td.col-cliente { text-align: left; font-weight: 500; }
-          td.col-material { padding-left: 20px; font-weight: 400; font-size: 9px; }
-          tr.fila-cliente-header td { background: #C5D0E0; color: #1E2A3A; font-weight: 700; text-align: left; }
-          tr.fila-total { background: #A8DBC0; font-weight: 700; color: #1E3D2C; }
-          .margen-table { margin: 10px 0; }
-          .margen-table th { background: #A3BFFA; }
-          .margen-table td { font-weight: 600; }
-          @media print { body { padding: 10px; } }
-        </style>
-      </head>
-      <body>
-        <div class="pdf-title"><h1>Reporte Detallado</h1><p>${subtitle}</p></div>
-        ${content.innerHTML}
-      </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
+      // Inject title
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
+      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Reporte Detallado</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
+      content.insertBefore(titleDiv, content.firstChild);
+
+      // Temporarily expand the scroll container so nothing is clipped
+      const scrollContainer = content.querySelector('.tabla-scroll-container');
+      let prevOverflow, prevMaxHeight;
+      if (scrollContainer) {
+        prevOverflow = scrollContainer.style.overflow;
+        prevMaxHeight = scrollContainer.style.maxHeight;
+        scrollContainer.style.overflow = 'visible';
+        scrollContainer.style.maxHeight = 'none';
+      }
+
+      const canvas = await html2canvas(content, { scale: 2, useCORS: true, backgroundColor: '#fff', scrollX: 0, scrollY: 0, windowWidth: content.scrollWidth + 40 });
+
+      // Restore
+      content.removeChild(titleDiv);
+      if (scrollContainer) {
+        scrollContainer.style.overflow = prevOverflow;
+        scrollContainer.style.maxHeight = prevMaxHeight;
+      }
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: [canvas.width, canvas.height] });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save(`Reporte_Detallado_${mes || 'general'}.pdf`);
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   const handleDownloadExcel = () => {
@@ -474,8 +473,8 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
             <button className="btn-download-excel" onClick={handleDownloadExcel} disabled={loading || !data}>
               📊 Descargar Excel
             </button>
-            <button className="btn-download-pdf" onClick={handleDownloadPDF} disabled={loading || !data}>
-              📥 Descargar PDF
+            <button className="btn-download-pdf" onClick={handleDownloadPDF} disabled={loading || !data || exportingPdf}>
+              {exportingPdf ? 'Generando...' : '📥 Descargar PDF'}
             </button>
             <button className="btn-close-modal" onClick={onClose}>✕</button>
           </div>

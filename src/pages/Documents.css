@@ -38,6 +38,11 @@
   min-width: 0;
 }
 
+.documents-quick-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .search-input {
   padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
@@ -281,6 +286,32 @@
   font-weight: 600;
 }
 
+.btn-export-excel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1rem;
+  border: 1px solid #1B7430;
+  border-radius: 8px;
+  background: #1B7430;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-export-excel:hover {
+  background: #145524;
+  border-color: #145524;
+}
+
+.btn-export-link {
+  text-decoration: none;
+}
+
 .incomplete-badge {
   display: inline-flex;
   align-items: center;
@@ -473,6 +504,15 @@
   .btn-filter-incomplete {
     width: 100%;
     justify-content: center;
+  }
+
+  .btn-export-excel {
+    width: 100%;
+  }
+
+  .documents-quick-actions {
+    width: 100%;
+    flex-direction: column;
   }
 
   .documents-table th,

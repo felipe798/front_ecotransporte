@@ -9,6 +9,7 @@ const AdminUnidades = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUnidad, setEditingUnidad] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const [filterEmpresa, setFilterEmpresa] = useState('todas');
   const [filterEstado, setFilterEstado] = useState('todas');
   const [searchTerm, setSearchTerm] = useState('');
@@ -91,6 +92,18 @@ const AdminUnidades = () => {
       loadData();
     } catch (error) {
       showNotification(error.message || 'Error al cambiar estado', 'error');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDelete) return;
+    try {
+      await unidadService.delete(confirmDelete.id);
+      showNotification(`Unidad ${confirmDelete.placa} eliminada correctamente`, 'success');
+      setConfirmDelete(null);
+      loadData();
+    } catch (error) {
+      showNotification(error.message || 'Error al eliminar unidad', 'error');
     }
   };
 
@@ -222,6 +235,20 @@ const AdminUnidades = () => {
                     >
                       {unidad.estado === 'activo' ? '🚫 Deshabilitar' : '✅ Habilitar'}
                     </button>
+                    <button
+                      className="btn-danger btn-sm"
+                      onClick={() => setConfirmDelete(unidad)}
+                      title="Eliminar placa"
+                      style={{ marginLeft: 6 }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                        <path d="M10 11v6"/>
+                        <path d="M14 11v6"/>
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -283,6 +310,30 @@ const AdminUnidades = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmar Eliminación */}
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal-content confirm-dialog" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Confirmar Eliminación</h2>
+              <button className="modal-close" onClick={() => setConfirmDelete(null)}>&times;</button>
+            </div>
+            <p>¿Estás seguro de eliminar la placa <strong>{confirmDelete.placa}</strong>?</p>
+            <p style={{ fontSize: '0.85rem', color: '#666' }}>
+              La placa ya no aparecerá en la lista, pero los documentos históricos asociados se conservarán.
+            </p>
+            <div className="form-actions">
+              <button className="btn-secondary" onClick={() => setConfirmDelete(null)}>
+                Cancelar
+              </button>
+              <button className="btn-danger" onClick={handleDelete}>
+                Eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}

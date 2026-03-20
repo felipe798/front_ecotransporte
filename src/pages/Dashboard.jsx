@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import DashboardResumen from '../components/dashboard/DashboardResumen';
+import DashboardResumenGeneral from '../components/dashboard/DashboardResumenGeneral';
 import DashboardSemanal from '../components/dashboard/DashboardSemanal';
 import DashboardTransportista from '../components/dashboard/DashboardTransportista';
 import DashboardFinanciero from '../components/dashboard/DashboardFinanciero';
@@ -17,6 +18,7 @@ const Dashboard = () => {
     { id: 'semanal', label: '⚖️ Variación de TN' },
     { id: 'transportista', label: '🚚 Detalle Transportista' },
     { id: 'financiero', label: '💰 Financiero' },
+    { id: 'control-peso', label: '⚖️ Control de peso' },
   ];
 
   return (
@@ -54,10 +56,11 @@ const Dashboard = () => {
 
       {/* Contenido de cada tab */}
       <div className="dashboard-content">
-        {activeTab === 'resumen' && <DashboardResumen />}
+        {activeTab === 'resumen' && <DashboardResumenGeneral />}
         {activeTab === 'semanal' && <DashboardSemanal />}
         {activeTab === 'transportista' && <DashboardTransportista />}
         {activeTab === 'financiero' && <DashboardFinanciero />}
+        {activeTab === 'control-peso' && <DashboardResumen />}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
+import { Fragment, useState, useEffect, useRef, useLayoutEffect, useCallback } from 'react';
 import XLSX from 'xlsx-js-style';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -326,7 +326,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
             </thead>
             <tbody>
               {grupos.map((grupo, gIdx) => (
-                <>
+                <Fragment key={`grupo-${gIdx}-${grupo.cliente}`}>
                   {/* Fila encabezado del cliente */}
                   <tr key={`cliente-${gIdx}`} className="fila-cliente-header">
                     <td className="col-cliente" colSpan={3 + empresas.length * 2}>
@@ -348,7 +348,7 @@ const TablasDetalladasModal = ({ isOpen, onClose, mesesDisponibles }) => {
                       })}
                     </tr>
                   ))}
-                </>
+                </Fragment>
               ))}
               {/* Total Dólares */}
               <tr className="fila-total">

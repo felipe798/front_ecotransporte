@@ -43,6 +43,210 @@ const Documents = () => {
     }
   };
 
+  const toBase64 = (blob) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+
+  const formatExcelDate = (value) => {
+    if (!value) return '';
+
+    // Evita desfases por zona horaria: si viene YYYY-MM-DD o ISO, se toma la parte de fecha literal.
+    const dateText = String(value).trim();
+    const isoPrefix = dateText.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (isoPrefix) {
+      const [, year, month, day] = isoPrefix;
+      return `${day}/${month}/${year}`;
+    }
+
+    const parsed = new Date(dateText);
+    if (Number.isNaN(parsed.getTime())) return dateText.substring(0, 10);
+    return parsed.toLocaleDateString('es-PE');
+  };
+
+  const getAttachedFiles = (doc) => {
+    return Array.isArray(doc.documentos) ? doc.documentos.filter(Boolean) : [];
+  };
+
+  const getFriendlyFileName = (url) => {
+    if (!url) return 'Abrir archivo';
+    try {
+      const cleanUrl = String(url).split('?')[0];
+      const parts = cleanUrl.split('/');
+      const rawName = parts[parts.length - 1] || 'archivo';
+      return decodeURIComponent(rawName);
+    } catch {
+      return 'Abrir archivo';
+    }
+  };
+
+  const handleExportExcel = async () => {
+    if (!filteredDocuments.length) {
+      notification.warning('No hay documentos para exportar con los filtros actuales');
+      return;
+    }
+
+    try {
+      const { default: ExcelJS } = await import('exceljs');
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Documentos');
+      worksheet.views = [{ state: 'frozen', ySplit: 6 }];
+
+      worksheet.columns = [
+        { key: 'fecha', width: 16 },
+        { key: 'grt', width: 18 },
+        { key: 'grr', width: 18 },
+        { key: 'conductor', width: 34 },
+        { key: 'peso', width: 28 },
+        { key: 'cliente', width: 34 },
+        { key: 'factura', width: 20 },
+        { key: 'archivos', width: 60 },
+      ];
+
+      worksheet.mergeCells('A1:B2');
+      worksheet.getCell('A1').value = '';
+
+      worksheet.mergeCells('C1:H1');
+      worksheet.getCell('C1').value = 'ECOTRANSPORTE - REPORTE DE DOCUMENTOS';
+      worksheet.getCell('C1').font = { bold: true, size: 15, color: { argb: 'FF1B7430' } };
+      worksheet.getCell('C1').alignment = { vertical: 'middle', horizontal: 'left' };
+
+      worksheet.mergeCells('C2:H2');
+      worksheet.getCell('C2').value = `Generado: ${new Date().toLocaleString('es-PE')}`;
+      worksheet.getCell('C2').font = { size: 10, color: { argb: 'FF4B5563' } };
+
+      worksheet.mergeCells('A4:H4');
+      worksheet.getCell('A4').value = `Total documentos exportados: ${filteredDocuments.length}`;
+      worksheet.getCell('A4').font = { bold: true, size: 10, color: { argb: 'FF374151' } };
+      worksheet.getCell('A4').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFE5F4E7' },
+      };
+
+      try {
+        const logoResponse = await fetch(logoEmpresa);
+        const logoBlob = await logoResponse.blob();
+        const logoBase64 = await toBase64(logoBlob);
+        const imageId = workbook.addImage({
+          base64: logoBase64,
+          extension: 'png',
+        });
+        // Inserta el logo dentro del rango A1:B2 para que quede como celda lateral al titulo.
+        worksheet.addImage(imageId, 'A1:B2');
+      } catch (logoError) {
+        console.warn('No se pudo insertar el logo en Excel:', logoError);
+      }
+
+      const headerRowNumber = 6;
+      const headerRow = worksheet.getRow(headerRowNumber);
+      headerRow.values = ['Fecha', 'GRT', 'GRR', 'Conductor', 'Peso Ticket (TN Recibida)', 'Cliente', 'Factura', 'Archivos (Opcional)'];
+      headerRow.height = 24;
+
+      for (let col = 1; col <= 8; col++) {
+        const cell = headerRow.getCell(col);
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 10 };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF1B7430' },
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF15803D' } },
+          left: { style: 'thin', color: { argb: 'FF15803D' } },
+          bottom: { style: 'thin', color: { argb: 'FF15803D' } },
+          right: { style: 'thin', color: { argb: 'FF15803D' } },
+        };
+      }
+
+      filteredDocuments.forEach((doc) => {
+        const files = getAttachedFiles(doc);
+        const firstFile = files[0] || '';
+        const numericTnRecibida = Number.parseFloat(doc.tn_recibida ?? '');
+        const row = worksheet.addRow({
+          fecha: formatExcelDate(doc.fecha),
+          grt: doc.grt || '',
+          grr: doc.grr || '',
+          conductor: doc.transportista || '',
+          peso: Number.isFinite(numericTnRecibida) ? numericTnRecibida : '',
+          cliente: doc.cliente || '',
+          factura: doc.factura || '',
+          archivos: firstFile ? getFriendlyFileName(firstFile) : '',
+        });
+
+        row.eachCell((cell, colNumber) => {
+          cell.alignment = {
+            vertical: 'top',
+            horizontal: colNumber === 5 ? 'right' : 'left',
+            wrapText: colNumber === 8,
+          };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+            left: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+            bottom: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+            right: { style: 'thin', color: { argb: 'FFD1D5DB' } },
+          };
+        });
+
+        row.getCell(5).numFmt = '#,##0.00';
+
+        // Hiperlink real para abrir el archivo con un clic.
+        if (firstFile) {
+          row.getCell(8).value = {
+            text: files.length > 1
+              ? `${getFriendlyFileName(firstFile)} (+${files.length - 1} más)`
+              : getFriendlyFileName(firstFile),
+            hyperlink: firstFile,
+          };
+          row.getCell(8).font = {
+            color: { argb: 'FF1155CC' },
+            underline: true,
+          };
+          row.getCell(8).alignment = {
+            vertical: 'top',
+            horizontal: 'left',
+            wrapText: false,
+          };
+        }
+      });
+
+      worksheet.autoFilter = {
+        from: { row: headerRowNumber, column: 1 },
+        to: { row: headerRowNumber, column: 8 },
+      };
+
+      worksheet.getRow(1).height = 34;
+      worksheet.getRow(2).height = 22;
+      worksheet.getRow(4).height = 20;
+
+      // Limpia explícitamente celdas que Google Sheets podría mostrar con valores previos.
+      worksheet.getCell('A1').value = '';
+      worksheet.getCell('B1').value = '';
+
+      const fileName = `documentos_ecotransporte_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      notification.success('Reporte Excel exportado correctamente');
+    } catch (error) {
+      console.error('Error exportando a Excel:', error);
+      notification.error('No se pudo exportar el Excel');
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('¿Estás seguro de eliminar este documento?')) return;
     
@@ -163,12 +367,19 @@ const Documents = () => {
               <span className="incomplete-badge">{incompleteCount}</span>
             )}
           </button>
+          <button
+            className="btn-export-excel"
+            onClick={handleExportExcel}
+            title="Exportar a Excel"
+          >
+            📊 Exportar Excel
+          </button>
           {user?.role === 1 && (
-            <div style={{ display: 'flex', gap: '8px', flex: '1 1 auto', minWidth: 0 }}>
-              <Link to="/upload" className="btn-upload" style={{ flex: 1, textAlign: 'center' }}>
+            <div className="documents-quick-actions">
+              <Link to="/upload" className="btn-export-excel btn-export-link">
                 + Subir PDF
               </Link>
-              <Link to="/manual-register" className="btn-upload" style={{ background: '#1B7430', flex: 1, textAlign: 'center' }}>
+              <Link to="/manual-register" className="btn-export-excel btn-export-link">
                 ✏️ Agregar Registro
               </Link>
             </div>

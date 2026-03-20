@@ -7,8 +7,6 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import './DashboardComponents.css';
-import TablasDetalladasModal from './TablasDetalladasModal';
-import ReporteGuiasModal from './ReporteGuiasModal';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -20,8 +18,6 @@ const DashboardResumen = () => {
   const [loading, setLoading] = useState(true);
   const [filtersLoading, setFiltersLoading] = useState(false);
   const [filters, setFilters] = useState({});
-  const [showTablas, setShowTablas] = useState(false);
-  const [showGuias, setShowGuias] = useState(false);
   const resumenRef = useRef(null);
   const [exportingPdf, setExportingPdf] = useState(false);
   const [segmentadores, setSegmentadores] = useState({
@@ -341,30 +337,7 @@ const DashboardResumen = () => {
           })()}
         </div>
       </div>
-
-      {/* Botón Tablas Detalladas */}
-      <div className="section-card" style={{ textAlign: 'center', display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-        <button className="btn-ver-tablas" onClick={() => setShowTablas(true)}>
-          📊 Tablas Detalladas
-        </button>
-        <button className="btn-ver-tablas btn-ver-guias" onClick={() => setShowGuias(true)}>
-          🚛 Reporte de Guías
-        </button>
       </div>
-      </div>
-
-      {/* Modal Tablas Detalladas */}
-      <TablasDetalladasModal
-        isOpen={showTablas}
-        onClose={() => setShowTablas(false)}
-        mesesDisponibles={segmentadores.meses}
-      />
-
-      {/* Modal Reporte Guías */}
-      <ReporteGuiasModal
-        isOpen={showGuias}
-        onClose={() => setShowGuias(false)}
-      />
 
     </div>
   );

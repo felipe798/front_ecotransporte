@@ -8,6 +8,7 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import XLSX from 'xlsx-js-style';
+import logoEmpresa from '../../assets/Images/logo-empresa.png';
 import './DashboardComponents.css';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -31,38 +32,182 @@ const DashboardTransportista = () => {
   const [exportingPdf, setExportingPdf] = useState(false);
   const [divisaFiltro, setDivisaFiltro] = useState('');
 
+  const loadImageAsDataUrl = async (src) => {
+    const response = await fetch(src);
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const capitalizeText = (text) => {
+    if (!text) return '';
+    return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  };
+
+  const getSubtitle = () => {
+    const filterParts = [];
+    if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
+    if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
+    if (localFilters.transportista) filterParts.push(capitalizeText(localFilters.transportista));
+    if (localFilters.unidad) filterParts.push(`Placa: ${localFilters.unidad.toUpperCase()}`);
+    if (divisaFiltro) filterParts.push(divisaFiltro.toUpperCase());
+    return filterParts.length > 0 ? filterParts.join(' - ') : 'General';
+  };
+
+  const addHeader = (pdf, title, subtitle, logoDataUrl) => {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const marginX = 24;
+
+    if (logoDataUrl) {
+      pdf.addImage(logoDataUrl, 'PNG', marginX, 16, 50, 28);
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(27, 116, 48);
+    pdf.setFontSize(18);
+    pdf.text(title, pageWidth / 2, 28, { align: 'center' });
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(70, 70, 70);
+    pdf.setFontSize(10.5);
+    pdf.text(subtitle, pageWidth / 2, 43, { align: 'center' });
+    pdf.text(`Generado: ${new Date().toLocaleString('es-PE')}`, pageWidth - marginX, 18, { align: 'right' });
+
+    pdf.setDrawColor(27, 116, 48);
+    pdf.setLineWidth(1.1);
+    pdf.line(marginX, 52, pageWidth - marginX, 52);
+    return 60;
+  };
+
+  const exportVisualPdfFromSections = async ({
+    rootElement,
+    sectionSelector,
+    fileName,
+    title,
+    subtitle,
+  }) => {
+    const cloneRoot = rootElement.cloneNode(true);
+    cloneRoot.querySelectorAll('button, .pdf-btn-wrapper, .btn-download-excel').forEach((btn) => btn.remove());
+    cloneRoot.querySelectorAll('select').forEach((sel) => sel.remove());
+
+    // Ensure table text remains high-contrast in PDF capture.
+    cloneRoot.querySelectorAll('.data-table td, .data-table td *').forEach((node) => {
+      node.style.color = '#1f2937';
+      node.style.opacity = '1';
+    });
+    cloneRoot.querySelectorAll('.data-table tbody tr').forEach((row) => {
+      row.style.opacity = '1';
+    });
+
+    // Print mode: expand internal scroll areas so all rows/items are rendered.
+    cloneRoot.querySelectorAll('.table-container').forEach((node) => {
+      node.style.maxHeight = 'none';
+      node.style.height = 'auto';
+      node.style.overflow = 'visible';
+    });
+    cloneRoot.querySelectorAll('.chart-container').forEach((node) => {
+      node.style.maxHeight = 'none';
+      node.style.height = 'auto';
+      node.style.overflow = 'visible';
+      node.style.overflowX = 'visible';
+      node.style.overflowY = 'visible';
+    });
+
+    cloneRoot.style.position = 'fixed';
+    cloneRoot.style.left = '-10000px';
+    cloneRoot.style.top = '0';
+    cloneRoot.style.width = `${Math.max(rootElement.scrollWidth, rootElement.offsetWidth)}px`;
+    cloneRoot.style.background = '#ffffff';
+    cloneRoot.style.padding = '16px';
+    cloneRoot.style.boxSizing = 'border-box';
+    cloneRoot.style.zIndex = '-1';
+
+    document.body.appendChild(cloneRoot);
+
+    try {
+      const sectionNodes = Array.from(cloneRoot.querySelectorAll(sectionSelector));
+      const sectionCanvases = [];
+
+      for (const section of sectionNodes) {
+        // Ensure each section captures full width/height (including hidden horizontal content).
+        section.style.overflow = 'visible';
+        section.style.maxHeight = 'none';
+        section.style.height = 'auto';
+        section.style.width = `${Math.max(section.scrollWidth, section.offsetWidth)}px`;
+
+        section.querySelectorAll('.chart-container, .table-container').forEach((node) => {
+          node.style.overflow = 'visible';
+          node.style.overflowX = 'visible';
+          node.style.overflowY = 'visible';
+          node.style.maxHeight = 'none';
+          node.style.height = 'auto';
+          node.style.width = `${Math.max(node.scrollWidth, node.offsetWidth)}px`;
+        });
+
+        const canvas = await html2canvas(section, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: Math.max(cloneRoot.scrollWidth, section.scrollWidth),
+          windowHeight: section.scrollHeight,
+        });
+        sectionCanvases.push(canvas);
+      }
+
+      const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = 24;
+      const availableWidth = pageWidth - marginX * 2;
+      const pageContentHeight = pageHeight - 60 - 16;
+
+      let y = addHeader(pdf, title, subtitle, logoDataUrl);
+
+      for (const canvas of sectionCanvases) {
+        const imgData = canvas.toDataURL('image/png');
+        let renderWidth = availableWidth;
+        let renderHeight = (canvas.height * renderWidth) / canvas.width;
+
+        if (renderHeight > pageContentHeight) {
+          const fitRatio = pageContentHeight / renderHeight;
+          renderWidth = renderWidth * fitRatio;
+          renderHeight = pageContentHeight;
+        }
+
+        if (y + renderHeight > pageHeight - 16) {
+          pdf.addPage();
+          y = addHeader(pdf, title, subtitle, logoDataUrl);
+        }
+
+        const x = marginX + (availableWidth - renderWidth) / 2;
+        pdf.addImage(imgData, 'PNG', x, y, renderWidth, renderHeight);
+        y += renderHeight + 12;
+      }
+
+      pdf.save(fileName);
+    } finally {
+      document.body.removeChild(cloneRoot);
+    }
+  };
+
   const descargarPDF = async () => {
     if (!contentRef.current) return;
     setExportingPdf(true);
     try {
-      // Build filter subtitle
-      const filterParts = [];
-      if (localFilters.mes) filterParts.push(localFilters.mes);
-      if (localFilters.cliente) filterParts.push(localFilters.cliente);
-      if (localFilters.transportista) filterParts.push(localFilters.transportista);
-      if (localFilters.unidad) filterParts.push(`Placa: ${localFilters.unidad}`);
-      if (divisaFiltro) filterParts.push(divisaFiltro);
-      const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
-
-      // Hide divisa select during capture
-      const divisaSelect = contentRef.current.querySelector('select');
-      const origDisplay = divisaSelect ? divisaSelect.style.display : null;
-      if (divisaSelect) divisaSelect.style.display = 'none';
-
-      // Inject title
-      const titleDiv = document.createElement('div');
-      titleDiv.style.cssText = 'text-align:center;padding:16px 0 12px;border-bottom:2px solid #1B7430;margin-bottom:12px;';
-      titleDiv.innerHTML = `<div style="font-size:22px;font-weight:800;color:#1B7430;">Detalle Transportista</div><div style="font-size:14px;color:#333;margin-top:6px;">${subtitle}</div>`;
-      contentRef.current.insertBefore(titleDiv, contentRef.current.firstChild);
-
-      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      contentRef.current.removeChild(titleDiv);
-      if (divisaSelect) divisaSelect.style.display = origDisplay;
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('Detalle_Transportista.pdf');
+      await exportVisualPdfFromSections({
+        rootElement: contentRef.current,
+        sectionSelector: '.section-card',
+        fileName: 'Detalle_Transportista.pdf',
+        title: 'Detalle Transportista',
+        subtitle: getSubtitle(),
+      });
     } catch (err) {
       console.error('Error generando PDF:', err);
     } finally {

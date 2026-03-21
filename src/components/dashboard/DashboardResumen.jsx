@@ -6,6 +6,7 @@ import {
 import { useIsMobile } from '../../hooks/useIsMobile';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import logoEmpresa from '../../assets/Images/logo-empresa.png';
 import './DashboardComponents.css';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -133,6 +134,58 @@ const DashboardResumen = () => {
     if (!resumenRef.current) return;
     setExportingPdf(true);
     try {
+      const loadImageAsDataUrl = (src) => new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const c = document.createElement('canvas');
+          c.width = img.width;
+          c.height = img.height;
+          const ctx = c.getContext('2d');
+          if (!ctx) return reject(new Error('No se pudo obtener contexto del canvas'));
+          ctx.drawImage(img, 0, 0);
+          resolve(c.toDataURL('image/png'));
+        };
+        img.onerror = reject;
+        img.src = src;
+      });
+
+      const addPdfHeader = (pdf, title, subtitle, logoDataUrl) => {
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const margin = 24;
+
+        pdf.setFillColor(247, 250, 247);
+        pdf.rect(0, 0, pageWidth, 76, 'F');
+
+        if (logoDataUrl) {
+          pdf.addImage(logoDataUrl, 'PNG', margin, 10, 56, 56);
+        }
+
+        pdf.setTextColor(27, 116, 48);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(18);
+        pdf.text(title, logoDataUrl ? margin + 66 : margin, 30);
+
+        pdf.setTextColor(70, 70, 70);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(10);
+        if (subtitle) {
+          const safeSubtitle = pdf.splitTextToSize(subtitle, pageWidth - (logoDataUrl ? margin + 66 : margin) - margin);
+          pdf.text(safeSubtitle, logoDataUrl ? margin + 66 : margin, 46);
+        }
+
+        const fecha = new Date().toLocaleString();
+        pdf.setTextColor(100, 100, 100);
+        pdf.setFontSize(9);
+        pdf.text(fecha, pageWidth - margin, 24, { align: 'right' });
+
+        pdf.setDrawColor(27, 116, 48);
+        pdf.setLineWidth(1.2);
+        pdf.line(margin, 74, pageWidth - margin, 74);
+
+        return 82;
+      };
+
       const capitalizeText = (text) => {
         if (!text) return '';
         return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -146,19 +199,29 @@ const DashboardResumen = () => {
       if (filters.transportado) filterParts.push(capitalizeText(filters.transportado));
       const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
 
-      const titleDiv = document.createElement('div');
-      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
-      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Resumen General</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
-      resumenRef.current.insertBefore(titleDiv, resumenRef.current.firstChild);
+      const canvas = await html2canvas(resumenRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: -window.scrollY,
+      });
 
-      const canvas = await html2canvas(resumenRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      resumenRef.current.removeChild(titleDiv);
-
+      const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = 24;
+      const contentTop = addPdfHeader(pdf, 'Control de Peso', subtitle, logoDataUrl);
+      const maxWidth = pageWidth - marginX * 2;
+      const maxHeight = pageHeight - contentTop - 18;
+      const ratio = Math.min(maxWidth / canvas.width, maxHeight / canvas.height);
+      const renderWidth = canvas.width * ratio;
+      const renderHeight = canvas.height * ratio;
       const imgData = canvas.toDataURL('image/png');
-      const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
-      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('Resumen_General.pdf');
+
+      pdf.addImage(imgData, 'PNG', (pageWidth - renderWidth) / 2, contentTop, renderWidth, renderHeight);
+      pdf.save('Control_Peso.pdf');
     } catch (err) {
       console.error('Error generando PDF:', err);
     } finally {

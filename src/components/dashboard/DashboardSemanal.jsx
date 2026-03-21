@@ -8,6 +8,7 @@ import {
 import { useIsMobile } from '../../hooks/useIsMobile';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import logoEmpresa from '../../assets/Images/logo-empresa.png';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -88,28 +89,13 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
     if (!contentRef.current) return;
     setExportingPdf(true);
     try {
-      const capitalizeText = (text) => {
-        if (!text) return '';
-        return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-      };
-      const filterParts = [];
-      if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
-      if (localFilters.transportado) filterParts.push(capitalizeText(localFilters.transportado));
-      if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
-      const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
-
-      const titleDiv = document.createElement('div');
-      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
-      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">Variación TN Semanal</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
-      contentRef.current.insertBefore(titleDiv, contentRef.current.firstChild);
-
-      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      contentRef.current.removeChild(titleDiv);
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: canvas.width > canvas.height ? 'landscape' : 'portrait', unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('Variacion_TN.pdf');
+      await exportVisualPdfFromSections({
+        rootElement: contentRef.current,
+        sectionSelector: '.chart-section',
+        fileName: 'Variacion_TN.pdf',
+        title: 'Variacion TN Semanal',
+        subtitle: getSubtitle(),
+      });
     } catch (err) {
       console.error('Error generando PDF:', err);
     } finally {
@@ -117,42 +103,38 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
     }
   };
 
-  const chartPdfHelper = async (ref, title, setExporting, fileName) => {
-    if (!ref.current) return;
-    setExporting(true);
+  const descargarSemanaPDF = async () => {
+    if (!pesoSemanaRef.current) return;
+    setExportingSemanaPdf(true);
     try {
-      const capitalizeText = (text) => {
-        if (!text) return '';
-        return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-      };
-      const filterParts = [];
-      if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
-      if (localFilters.transportado) filterParts.push(capitalizeText(localFilters.transportado));
-      if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
-      const subtitle = filterParts.length > 0 ? filterParts.join(' \u2014 ') : 'General';
-
-      const titleDiv = document.createElement('div');
-      titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
-      titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">${title}</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
-      ref.current.insertBefore(titleDiv, ref.current.firstChild);
-
-      const canvas = await html2canvas(ref.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
-      ref.current.removeChild(titleDiv);
-
-      const imgData = canvas.toDataURL('image/png');
-      const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
-      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save(fileName);
+      await exportVisualPdfFromElement({
+        element: pesoSemanaRef.current,
+        fileName: 'Peso_Ticket_por_Semana.pdf',
+        title: 'Peso Ticket por Semana',
+        subtitle: getSubtitle(),
+      });
     } catch (err) {
       console.error('Error generando PDF:', err);
     } finally {
-      setExporting(false);
+      setExportingSemanaPdf(false);
     }
   };
-
-  const descargarSemanaPDF = () => chartPdfHelper(pesoSemanaRef, 'Peso Ticket por Semana', setExportingSemanaPdf, 'Peso_Ticket_por_Semana.pdf');
-  const descargarConcentradoPDF = () => chartPdfHelper(pesoConcentradoRef, 'Peso Ticket por Tipo de Concentrado', setExportingConcentradoPdf, 'Peso_Ticket_por_Concentrado.pdf');
+  const descargarConcentradoPDF = async () => {
+    if (!pesoConcentradoRef.current) return;
+    setExportingConcentradoPdf(true);
+    try {
+      await exportVisualPdfFromElement({
+        element: pesoConcentradoRef.current,
+        fileName: 'Peso_Ticket_por_Concentrado.pdf',
+        title: 'Peso Ticket por Tipo de Concentrado',
+        subtitle: getSubtitle(),
+      });
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+    } finally {
+      setExportingConcentradoPdf(false);
+    }
+  };
   
   // Opciones para los filtros
   const [segmentadores, setSegmentadores] = useState({
@@ -161,6 +143,203 @@ const DashboardSemanal = ({ filters: globalFilters }) => {
     clientes: []
   });
   const [filtersLoading, setFiltersLoading] = useState(false);
+
+  const loadImageAsDataUrl = async (src) => {
+    const response = await fetch(src);
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const getSubtitle = () => {
+    const capitalizeText = (text) => {
+      if (!text) return '';
+      return text.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    };
+
+    const filterParts = [];
+    if (localFilters.mes) filterParts.push(capitalizeText(localFilters.mes));
+    if (localFilters.transportado) filterParts.push(capitalizeText(localFilters.transportado));
+    if (localFilters.cliente) filterParts.push(capitalizeText(localFilters.cliente));
+    return filterParts.length > 0 ? filterParts.join(' - ') : 'General';
+  };
+
+  const captureElementWithoutButtons = async (element) => {
+    const clone = element.cloneNode(true);
+    clone.querySelectorAll('button, .pdf-btn-wrapper').forEach((btn) => btn.remove());
+
+    clone.style.position = 'fixed';
+    clone.style.left = '-10000px';
+    clone.style.top = '0';
+    clone.style.width = `${Math.max(element.scrollWidth, element.offsetWidth)}px`;
+    clone.style.background = '#ffffff';
+    clone.style.padding = '16px';
+    clone.style.boxSizing = 'border-box';
+    clone.style.zIndex = '-1';
+
+    document.body.appendChild(clone);
+    try {
+      return await html2canvas(clone, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: clone.scrollWidth,
+        windowHeight: clone.scrollHeight,
+      });
+    } finally {
+      document.body.removeChild(clone);
+    }
+  };
+
+  const addHeader = (pdf, title, subtitle, logoDataUrl) => {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const marginX = 24;
+
+    if (logoDataUrl) {
+      pdf.addImage(logoDataUrl, 'PNG', marginX, 16, 50, 28);
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(27, 116, 48);
+    pdf.setFontSize(18);
+    pdf.text(title, pageWidth / 2, 28, { align: 'center' });
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(70, 70, 70);
+    pdf.setFontSize(10.5);
+    pdf.text(subtitle, pageWidth / 2, 43, { align: 'center' });
+    pdf.text(`Generado: ${new Date().toLocaleString('es-PE')}`, pageWidth - marginX, 18, { align: 'right' });
+
+    pdf.setDrawColor(27, 116, 48);
+    pdf.setLineWidth(1.1);
+    pdf.line(marginX, 52, pageWidth - marginX, 52);
+    return 60;
+  };
+
+  const exportVisualPdfFromElement = async ({ element, fileName, title, subtitle }) => {
+    const canvas = await captureElementWithoutButtons(element);
+    const imgData = canvas.toDataURL('image/png');
+    const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const marginX = 24;
+    const headerBottomY = addHeader(pdf, title, subtitle, logoDataUrl);
+    const availableWidth = pageWidth - marginX * 2;
+    const scaledImgHeight = (canvas.height * availableWidth) / canvas.width;
+
+    let remainingHeight = scaledImgHeight;
+    let sourceY = 0;
+    const pageContentHeight = pageHeight - headerBottomY - 16;
+    const sourceSliceHeight = (pageContentHeight * canvas.width) / availableWidth;
+
+    while (remainingHeight > 0) {
+      const currentSliceHeight = Math.min(sourceSliceHeight, canvas.height - sourceY);
+      const sliceCanvas = document.createElement('canvas');
+      sliceCanvas.width = canvas.width;
+      sliceCanvas.height = currentSliceHeight;
+      const ctx = sliceCanvas.getContext('2d');
+      ctx.drawImage(canvas, 0, sourceY, canvas.width, currentSliceHeight, 0, 0, canvas.width, currentSliceHeight);
+
+      const sliceData = sliceCanvas.toDataURL('image/png');
+      const sliceRenderHeight = (currentSliceHeight * availableWidth) / canvas.width;
+      pdf.addImage(sliceData, 'PNG', marginX, headerBottomY, availableWidth, sliceRenderHeight);
+
+      sourceY += currentSliceHeight;
+      remainingHeight -= sliceRenderHeight;
+
+      if (sourceY < canvas.height) {
+        pdf.addPage();
+        addHeader(pdf, title, subtitle, logoDataUrl);
+      }
+    }
+
+    pdf.save(fileName);
+  };
+
+  const exportVisualPdfFromSections = async ({
+    rootElement,
+    sectionSelector,
+    fileName,
+    title,
+    subtitle,
+  }) => {
+    const cloneRoot = rootElement.cloneNode(true);
+    cloneRoot.querySelectorAll('button, .pdf-btn-wrapper').forEach((btn) => btn.remove());
+
+    cloneRoot.style.position = 'fixed';
+    cloneRoot.style.left = '-10000px';
+    cloneRoot.style.top = '0';
+    cloneRoot.style.width = `${Math.max(rootElement.scrollWidth, rootElement.offsetWidth)}px`;
+    cloneRoot.style.background = '#ffffff';
+    cloneRoot.style.padding = '16px';
+    cloneRoot.style.boxSizing = 'border-box';
+    cloneRoot.style.zIndex = '-1';
+
+    document.body.appendChild(cloneRoot);
+
+    try {
+      const sectionNodes = Array.from(cloneRoot.querySelectorAll(sectionSelector));
+      const sectionCanvases = [];
+
+      for (const section of sectionNodes) {
+        const canvas = await html2canvas(section, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: cloneRoot.scrollWidth,
+          windowHeight: section.scrollHeight,
+        });
+        sectionCanvases.push(canvas);
+      }
+
+      const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = 24;
+      const headerBottomY = addHeader(pdf, title, subtitle, logoDataUrl);
+      const availableWidth = pageWidth - marginX * 2;
+      const pageContentHeight = pageHeight - headerBottomY - 16;
+      let y = headerBottomY;
+
+      for (let i = 0; i < sectionCanvases.length; i++) {
+        const canvas = sectionCanvases[i];
+        const imgData = canvas.toDataURL('image/png');
+
+        let renderWidth = availableWidth;
+        let renderHeight = (canvas.height * renderWidth) / canvas.width;
+
+        if (renderHeight > pageContentHeight) {
+          const fitRatio = pageContentHeight / renderHeight;
+          renderWidth = renderWidth * fitRatio;
+          renderHeight = pageContentHeight;
+        }
+
+        if (y + renderHeight > pageHeight - 16) {
+          pdf.addPage();
+          y = addHeader(pdf, title, subtitle, logoDataUrl);
+        }
+
+        const x = marginX + (availableWidth - renderWidth) / 2;
+        pdf.addImage(imgData, 'PNG', x, y, renderWidth, renderHeight);
+        y += renderHeight + 12;
+      }
+
+      pdf.save(fileName);
+    } finally {
+      document.body.removeChild(cloneRoot);
+    }
+  };
 
   useEffect(() => {
     const init = async () => {

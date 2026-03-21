@@ -8,6 +8,7 @@ import { useIsMobile } from '../../hooks/useIsMobile';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import XLSX from 'xlsx-js-style';
+import logoEmpresa from '../../assets/Images/logo-empresa.png';
 import './DashboardComponents.css';
 
 const fmtNum = (n) => parseFloat(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -476,31 +477,204 @@ const DashboardFinanciero = ({ filters }) => {
     };
   };
 
-  // Helper: inyectar título con filtros al ref, capturar, y luego removerlo
-  const pdfWithTitle = async (ref, sectionTitle, filterObj, orientationOverride) => {
+  const getPdfSubtitle = (filterObj = {}) => {
     const filterParts = [];
     if (filterObj.mes) filterParts.push(capitalizeText(filterObj.mes));
     if (filterObj.semana) filterParts.push(`Semana ${filterObj.semana}`);
     if (filterObj.cliente) filterParts.push(capitalizeText(filterObj.cliente));
     if (filterObj.transportista) filterParts.push(capitalizeText(filterObj.transportista));
     if (filterObj.unidad) filterParts.push(`Placa: ${filterObj.unidad.toUpperCase()}`);
-    if (filterObj.divisa) filterParts.push(filterObj.divisa.toUpperCase());
-    const subtitle = filterParts.length > 0 ? filterParts.join(' — ') : 'General';
+    if (filterObj.divisa) filterParts.push(String(filterObj.divisa).toUpperCase());
+    return filterParts.length > 0 ? filterParts.join(' - ') : 'General';
+  };
 
-    const titleDiv = document.createElement('div');
-    titleDiv.style.cssText = 'text-align:center;padding:20px 0 14px;border-bottom:3px solid #1B7430;margin-bottom:14px;';
-    titleDiv.innerHTML = `<div style="font-family:'Segoe UI',Arial,sans-serif;font-size:28px;font-weight:800;color:#1B7430;letter-spacing:0.5px;">${sectionTitle}</div><div style="font-family:'Segoe UI',Arial,sans-serif;font-size:18px;color:#333;margin-top:8px;font-weight:500;letter-spacing:0.3px;">${subtitle}</div>`;
-    ref.current.insertBefore(titleDiv, ref.current.firstChild);
+  const loadImageAsDataUrl = async (src) => {
+    const response = await fetch(src);
+    const blob = await response.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
 
+  const addPdfHeader = (pdf, title, subtitle, logoDataUrl) => {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const marginX = 24;
+
+    if (logoDataUrl) {
+      pdf.addImage(logoDataUrl, 'PNG', marginX, 16, 50, 28);
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(27, 116, 48);
+    pdf.setFontSize(18);
+    pdf.text(title, pageWidth / 2, 28, { align: 'center' });
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(70, 70, 70);
+    pdf.setFontSize(10.5);
+    pdf.text(subtitle, pageWidth / 2, 43, { align: 'center' });
+    pdf.text(`Generado: ${new Date().toLocaleString('es-PE')}`, pageWidth - marginX, 18, { align: 'right' });
+
+    pdf.setDrawColor(27, 116, 48);
+    pdf.setLineWidth(1.1);
+    pdf.line(marginX, 52, pageWidth - marginX, 52);
+    return 60;
+  };
+
+  const createPrintableClone = (rootElement) => {
+    const cloneRoot = rootElement.cloneNode(true);
+
+    cloneRoot.querySelectorAll('button, .pdf-btn-wrapper, .btn-download-excel, .download-btn').forEach((btn) => btn.remove());
+    cloneRoot.querySelectorAll('select').forEach((sel) => sel.remove());
+
+    cloneRoot.querySelectorAll('.data-table td, .data-table td *, .data-table th, .data-table th *').forEach((node) => {
+      node.style.color = '#1f2937';
+      node.style.opacity = '1';
+    });
+    cloneRoot.querySelectorAll('.data-table tbody tr').forEach((row) => {
+      row.style.opacity = '1';
+      row.style.filter = 'none';
+    });
+
+    cloneRoot.querySelectorAll('.table-container, .chart-container').forEach((node) => {
+      node.style.maxHeight = 'none';
+      node.style.height = 'auto';
+      node.style.overflow = 'visible';
+      node.style.overflowX = 'visible';
+      node.style.overflowY = 'visible';
+      node.style.width = `${Math.max(node.scrollWidth, node.offsetWidth)}px`;
+    });
+
+    // Use full horizontal space for financial tables in PDF.
+    cloneRoot.querySelectorAll('.table-container').forEach((node) => {
+      node.style.width = '100%';
+      node.style.display = 'block';
+    });
+    cloneRoot.querySelectorAll('.data-table').forEach((table) => {
+      table.style.width = '100%';
+      table.style.minWidth = '100%';
+      table.style.tableLayout = 'fixed';
+      table.style.borderCollapse = 'collapse';
+    });
+    cloneRoot.querySelectorAll('.data-table th, .data-table td').forEach((cell) => {
+      cell.style.whiteSpace = 'normal';
+      cell.style.wordBreak = 'break-word';
+    });
+
+    cloneRoot.style.position = 'fixed';
+    cloneRoot.style.left = '-10000px';
+    cloneRoot.style.top = '0';
+    cloneRoot.style.width = `${Math.max(rootElement.scrollWidth, rootElement.offsetWidth)}px`;
+    cloneRoot.style.background = '#ffffff';
+    cloneRoot.style.padding = '16px';
+    cloneRoot.style.boxSizing = 'border-box';
+    cloneRoot.style.zIndex = '-1';
+
+    document.body.appendChild(cloneRoot);
+    return cloneRoot;
+  };
+
+  const exportVisualPdfFromElement = async ({ element, fileName, title, subtitle }) => {
+    const cloneRoot = createPrintableClone(element);
     try {
-      const canvas = await html2canvas(ref.current, { scale: 2, useCORS: true, backgroundColor: '#f5f5f5' });
+      const canvas = await html2canvas(cloneRoot, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: cloneRoot.scrollWidth,
+        windowHeight: cloneRoot.scrollHeight,
+      });
+
+      const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = 24;
+      const headerBottomY = addPdfHeader(pdf, title, subtitle, logoDataUrl);
+      const availableWidth = pageWidth - marginX * 2;
+      const pageContentHeight = pageHeight - headerBottomY - 16;
+      const verticalCompression = 0.86;
+
       const imgData = canvas.toDataURL('image/png');
-      const orientation = orientationOverride || (canvas.width > canvas.height ? 'landscape' : 'portrait');
-      const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height] });
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      return pdf;
+      let renderWidth = availableWidth;
+      let renderHeight = (canvas.height * renderWidth) / canvas.width;
+
+      // Keep full width and reduce only vertical size to avoid hard cuts.
+      renderHeight = Math.min(renderHeight * verticalCompression, pageContentHeight);
+      pdf.addImage(imgData, 'PNG', marginX, headerBottomY, renderWidth, renderHeight);
+
+      pdf.save(fileName);
     } finally {
-      ref.current.removeChild(titleDiv);
+      document.body.removeChild(cloneRoot);
+    }
+  };
+
+  const exportVisualPdfFromSections = async ({
+    rootElement,
+    sectionSelector,
+    fileName,
+    title,
+    subtitle,
+  }) => {
+    const cloneRoot = createPrintableClone(rootElement);
+    try {
+      const sectionNodes = Array.from(cloneRoot.querySelectorAll(sectionSelector));
+      const nodesToCapture = sectionNodes.length > 0 ? sectionNodes : [cloneRoot];
+      const sectionCanvases = [];
+
+      for (const section of nodesToCapture) {
+        section.style.overflow = 'visible';
+        section.style.maxHeight = 'none';
+        section.style.height = 'auto';
+        section.style.width = `${Math.max(section.scrollWidth, section.offsetWidth)}px`;
+
+        const canvas = await html2canvas(section, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: Math.max(cloneRoot.scrollWidth, section.scrollWidth),
+          windowHeight: section.scrollHeight,
+        });
+        sectionCanvases.push(canvas);
+      }
+
+      const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = 24;
+      const availableWidth = pageWidth - marginX * 2;
+      const pageContentHeight = pageHeight - 60 - 16;
+      const verticalCompression = 0.86;
+
+      const headerStartY = addPdfHeader(pdf, title, subtitle, logoDataUrl);
+      let y = headerStartY;
+
+      for (const canvas of sectionCanvases) {
+        const imgData = canvas.toDataURL('image/png');
+        const renderWidth = availableWidth;
+        let renderHeight = (canvas.height * renderWidth) / canvas.width;
+        renderHeight = Math.min(renderHeight * verticalCompression, pageContentHeight);
+
+        if (y + renderHeight > pageHeight - 16) {
+          pdf.addPage();
+          y = addPdfHeader(pdf, title, subtitle, logoDataUrl);
+        }
+
+        pdf.addImage(imgData, 'PNG', marginX, y, renderWidth, renderHeight);
+        y += renderHeight + 12;
+      }
+
+      pdf.save(fileName);
+    } finally {
+      document.body.removeChild(cloneRoot);
     }
   };
 
@@ -508,8 +682,13 @@ const DashboardFinanciero = ({ filters }) => {
     if (!cobrarSectionRef.current) return;
     setExportingCobrarPdf(true);
     try {
-      const pdf = await pdfWithTitle(cobrarSectionRef, 'Por Cobrar', localFilters);
-      pdf.save('Por_Cobrar.pdf');
+      await exportVisualPdfFromSections({
+        rootElement: cobrarSectionRef.current,
+        sectionSelector: '.section-card, .chart-section',
+        fileName: 'Por_Cobrar.pdf',
+        title: 'Por Cobrar',
+        subtitle: getPdfSubtitle(localFilters),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingCobrarPdf(false); }
   };
@@ -518,8 +697,12 @@ const DashboardFinanciero = ({ filters }) => {
     if (!cobrarChartRef.current) return;
     setExportingCobrarChartPdf(true);
     try {
-      const pdf = await pdfWithTitle(cobrarChartRef, 'Gráfica - Por Cobrar', localFilters);
-      pdf.save('Grafica_Por_Cobrar.pdf');
+      await exportVisualPdfFromElement({
+        element: cobrarChartRef.current,
+        fileName: 'Grafica_Por_Cobrar.pdf',
+        title: 'Grafica - Por Cobrar',
+        subtitle: getPdfSubtitle(localFilters),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingCobrarChartPdf(false); }
   };
@@ -528,8 +711,12 @@ const DashboardFinanciero = ({ filters }) => {
     if (!pagarChartRef.current) return;
     setExportingPagarChartPdf(true);
     try {
-      const pdf = await pdfWithTitle(pagarChartRef, 'Gráfica - Por Pagar', localFiltersPagar);
-      pdf.save('Grafica_Por_Pagar.pdf');
+      await exportVisualPdfFromElement({
+        element: pagarChartRef.current,
+        fileName: 'Grafica_Por_Pagar.pdf',
+        title: 'Grafica - Por Pagar',
+        subtitle: getPdfSubtitle(localFiltersPagar),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingPagarChartPdf(false); }
   };
@@ -538,8 +725,12 @@ const DashboardFinanciero = ({ filters }) => {
     if (!margenChartRef.current) return;
     setExportingMargenChartPdf(true);
     try {
-      const pdf = await pdfWithTitle(margenChartRef, 'Gráfica - Margen Operativo', localFiltersMargen);
-      pdf.save('Grafica_Margen_Operativo.pdf');
+      await exportVisualPdfFromElement({
+        element: margenChartRef.current,
+        fileName: 'Grafica_Margen_Operativo.pdf',
+        title: 'Grafica - Margen Operativo',
+        subtitle: getPdfSubtitle(localFiltersMargen),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingMargenChartPdf(false); }
   };
@@ -573,8 +764,13 @@ const DashboardFinanciero = ({ filters }) => {
     if (!margenSectionRef.current) return;
     setExportingMargenPdf(true);
     try {
-      const pdf = await pdfWithTitle(margenSectionRef, 'Margen Operativo', localFiltersMargen);
-      pdf.save('Margen_Operativo.pdf');
+      await exportVisualPdfFromSections({
+        rootElement: margenSectionRef.current,
+        sectionSelector: '.section-card, .chart-section',
+        fileName: 'Margen_Operativo.pdf',
+        title: 'Margen Operativo',
+        subtitle: getPdfSubtitle(localFiltersMargen),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingMargenPdf(false); }
   };
@@ -612,7 +808,111 @@ const DashboardFinanciero = ({ filters }) => {
     if (!segSectionRef.current) return;
     setExportingSegPdf(true);
     try {
-      const pdf = await pdfWithTitle(segSectionRef, 'Seguimiento de Transporte', localFiltersSeg, 'landscape');
+      const sData = prepareSeguimientoData(seguimiento || []);
+      const logoDataUrl = await loadImageAsDataUrl(logoEmpresa).catch(() => null);
+      const title = 'Seguimiento de Transporte';
+      const subtitle = getPdfSubtitle(localFiltersSeg);
+
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const marginX = 24;
+      const bottomMargin = 16;
+      const headerRowHeight = 24;
+      const bodyRowHeight = 18;
+
+      const drawHeader = () => addPdfHeader(pdf, title, subtitle, logoDataUrl);
+      let y = drawHeader() + 6;
+
+      // Dynamic column widths: fixed first columns + flexible week columns.
+      const fixedCliente = 170;
+      const fixedEmpresa = 165;
+      const fixedPlaca = 85;
+      const fixedTotal = 95;
+      const weeks = sData.semanas || [];
+      const availableTableWidth = pageWidth - marginX * 2;
+      const weekArea = Math.max(200, availableTableWidth - (fixedCliente + fixedEmpresa + fixedPlaca + fixedTotal));
+      const weekWidth = weeks.length > 0 ? weekArea / weeks.length : 0;
+
+      const columns = [
+        { key: 'cliente', label: 'Cliente', width: fixedCliente },
+        { key: 'empresa', label: 'Empresa', width: fixedEmpresa },
+        { key: 'placa', label: 'Placa', width: fixedPlaca },
+        ...weeks.map((w) => ({ key: `sem_${w}`, label: `Sem. ${w} (TN Rec.)`, width: weekWidth })),
+        { key: 'total', label: 'Total (TN)', width: fixedTotal },
+      ];
+
+      const drawTableHeader = () => {
+        let x = marginX;
+        pdf.setFillColor(27, 116, 48);
+        pdf.rect(marginX, y, availableTableWidth, headerRowHeight, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9.5);
+
+        columns.forEach((col) => {
+          const text = pdf.splitTextToSize(col.label, Math.max(12, col.width - 8)).slice(0, 2);
+          const line1 = text[0] || '';
+          const line2 = text[1] || '';
+          const centerX = x + col.width / 2;
+          if (line2) {
+            pdf.text(line1, centerX, y + 10, { align: 'center' });
+            pdf.text(line2, centerX, y + 19, { align: 'center' });
+          } else {
+            pdf.text(line1, centerX, y + 15, { align: 'center' });
+          }
+
+          pdf.setDrawColor(225, 236, 228);
+          pdf.line(x + col.width, y, x + col.width, y + headerRowHeight);
+          x += col.width;
+        });
+        y += headerRowHeight;
+      };
+
+      const ensureSpace = () => {
+        if (y + bodyRowHeight > pageHeight - bottomMargin) {
+          pdf.addPage();
+          y = drawHeader() + 6;
+          drawTableHeader();
+        }
+      };
+
+      drawTableHeader();
+
+      (sData.rows || []).forEach((row, idx) => {
+        ensureSpace();
+        let x = marginX;
+
+        if (idx % 2 === 1) {
+          pdf.setFillColor(248, 250, 252);
+          pdf.rect(marginX, y, availableTableWidth, bodyRowHeight, 'F');
+        }
+
+        const total = weeks.reduce((sum, w) => sum + (Number(row[w]) || 0), 0);
+        const values = [
+          row.cliente || 'Sin cliente',
+          formatEmpresa(row.empresa),
+          row.placa || '-',
+          ...weeks.map((w) => (row[w] ? `${fmtNum(row[w])} TN` : '-')),
+          `${fmtNum(total)} TN`,
+        ];
+
+        pdf.setTextColor(31, 41, 55);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(9);
+
+        values.forEach((value, colIdx) => {
+          const col = columns[colIdx];
+          const text = pdf.splitTextToSize(String(value), col.width - 6);
+          pdf.text(text[0] || '', x + 3, y + 11);
+          x += col.width;
+        });
+
+        pdf.setDrawColor(230, 230, 230);
+        pdf.line(marginX, y + bodyRowHeight, marginX + availableTableWidth, y + bodyRowHeight);
+        y += bodyRowHeight;
+      });
+
       pdf.save('Seguimiento_Transporte.pdf');
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingSegPdf(false); }
@@ -662,8 +962,13 @@ const DashboardFinanciero = ({ filters }) => {
     if (!pagarSectionRef.current) return;
     setExportingPagarPdf(true);
     try {
-      const pdf = await pdfWithTitle(pagarSectionRef, 'Por Pagar', localFiltersPagar);
-      pdf.save('Por_Pagar.pdf');
+      await exportVisualPdfFromSections({
+        rootElement: pagarSectionRef.current,
+        sectionSelector: '.section-card, .chart-section',
+        fileName: 'Por_Pagar.pdf',
+        title: 'Por Pagar',
+        subtitle: getPdfSubtitle(localFiltersPagar),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingPagarPdf(false); }
   };
@@ -700,9 +1005,14 @@ const DashboardFinanciero = ({ filters }) => {
     try {
       const tnTitle = localFiltersTn.mes
         ? `TN Total Recibido / Cliente - ${capitalizeText(localFiltersTn.mes)} ${new Date().getFullYear()}`
-        : '🧑‍💼 TN por Cliente';
-      const pdf = await pdfWithTitle(tnSectionRef, tnTitle, localFiltersTn);
-      pdf.save('TN_Cliente_Empresa.pdf');
+        : 'TN por Cliente';
+      await exportVisualPdfFromSections({
+        rootElement: tnSectionRef.current.parentElement || tnSectionRef.current,
+        sectionSelector: '.section-card, .chart-section',
+        fileName: 'TN_Cliente_Empresa.pdf',
+        title: tnTitle,
+        subtitle: getPdfSubtitle(localFiltersTn),
+      });
     } catch (err) { console.error('Error generando PDF:', err); }
     finally { setExportingTnPdf(false); }
   };
